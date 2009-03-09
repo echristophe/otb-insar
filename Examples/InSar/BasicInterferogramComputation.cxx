@@ -28,12 +28,6 @@
 #include "itkComplexToPhaseImageFilter.h"
 
 // Command line:
-// ./RegistrationTranslation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr
-// ./RegistrationTranslation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/25394/25394.slc.hdr
-
-
-// ./RegistrationTranslation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr 16242-registered.slc.hdr
-
 
 // ./BasicInterferogramComputation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr interferogram.hdr colorInterferogram.png
 
