@@ -137,9 +137,6 @@ class CommandIterationUpdatePlot : public itk::Command
     CommandIterationUpdatePlot()
     {
       m_filename = "out-GitFobquen3.dat";
-      std::ofstream file;
-      file.open(m_filename.c_str(),ios::trunc);
-      file.close();
     };
 
     std::string m_filename;
