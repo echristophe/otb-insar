@@ -28,51 +28,11 @@
 #include "otbAmplitudePhaseToRGBFunctor.h"
 #include "itkComplexToModulusImageFilter.h"
 #include "itkComplexToPhaseImageFilter.h"
+#include "otbComplexToIntensityImageFilter.h"
 
 // Command line:
 
 // ./BasicInterferogramComputation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr interferogram.hdr colorInterferogram.png
-
-/** Functor to compute Intensity */
-namespace otb
-{
-  namespace Functor
-  {
-    template < class TInput, class TOutput>
-        class ComplexToIntensityFunctor
-        {
-          public:
-            ComplexToIntensityFunctor(){};
-            ~ComplexToIntensityFunctor(){};
-
-            inline TOutput operator()(const TInput & A)
-            {
-              return static_cast<TOutput>(A.real()*A.real() + A.imag()*A.imag());
-            }
-        }; // end namespace Functor
-  }
-}
-
-
-/** Functor to compute Amplitude */
-namespace otb
-{
-  namespace Functor
-  {
-    template < class TInput, class TOutput>
-        class ComplexToAmplitudeFunctor
-        {
-          public:
-            ComplexToAmplitudeFunctor(){};
-            ~ComplexToAmplitudeFunctor(){};
-
-            inline TOutput operator()(const TInput & A)
-            {
-              return static_cast<TOutput>(vcl_sqrt(A.real()*A.real() + A.imag()*A.imag()));
-            }
-        }; // end namespace Functor
-  }
-}
 
 /** Helper class to display progress of the registration */
 class CommandIterationUpdate : public itk::Command
@@ -224,8 +184,6 @@ template< class TInput1, class TInput2, class TOutput>
 int main(int argc, char* argv[])
 {
 
-
-
   typedef std::complex<double> PixelType;
   typedef otb::Image<PixelType,2> ImageType;
   typedef double ScalarPixelType;
@@ -278,10 +236,8 @@ int main(int argc, char* argv[])
 
 
   /* Compute Amplitude or intensity */
-  typedef otb::Functor::ComplexToIntensityFunctor<PixelType, ScalarPixelType> IntensityFunctor;
-  typedef otb::Functor::ComplexToAmplitudeFunctor<PixelType, ScalarPixelType> AmplitudeFunctor;
-//   typedef itk::UnaryFunctorImageFilter<ImageType,ScalarImageType,IntensityFunctor > ComplexFilter;
-  typedef itk::UnaryFunctorImageFilter<ImageType,ScalarImageType,AmplitudeFunctor > ComplexFilter;
+//  typedef otb::ComplexToIntensityImageFilter<ImageType,ScalarImageType> ComplexFilter;
+  typedef itk::ComplexToModulusImageFilter<ImageType,ScalarImageType> ComplexFilter;
 
   ComplexFilter::Pointer masterAorI = ComplexFilter::New();
   ComplexFilter::Pointer slaveAorI = ComplexFilter::New();
