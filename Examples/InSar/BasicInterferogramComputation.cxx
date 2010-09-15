@@ -34,6 +34,8 @@
 
 // ./BasicInterferogramComputation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr interferogram.hdr colorInterferogram.png
 
+
+
 /** Helper class to display progress of the registration */
 class CommandIterationUpdate : public itk::Command
 {
@@ -183,6 +185,13 @@ template< class TInput1, class TInput2, class TOutput>
 
 int main(int argc, char* argv[])
 {
+
+  if (argc != 5)
+    {
+    std::cerr << "Usage: " << argv[0] << " masterImageFile slaveImageFile";
+    std::cerr << " interferogram colorInterferogram" << std::endl;
+    return EXIT_FAILURE;
+    }
 
   typedef std::complex<double> PixelType;
   typedef otb::Image<PixelType,2> ImageType;
