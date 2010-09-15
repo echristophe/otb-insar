@@ -34,7 +34,7 @@
 
 // ./BasicInterferogramComputation ~/data/ERS-Gamma/05721/05721.slc.hdr ~/data/ERS-Gamma/16242/16242.slc.hdr interferogram.hdr colorInterferogram.png
 
-
+// ./BasicInterferogramComputation /home/christop/data2/Palsar/486_0010_20080510_FBD_11/VOL-ALPSRP122180010-H1.1__A /home/christop/data2/Palsar/486_0010_20090928_FBD_11/VOL-ALPSRP195990010-H1.1__A interferogramPalsar.hdr colorInterferogramPalsar.png
 
 /** Helper class to display progress of the registration */
 class CommandIterationUpdate : public itk::Command
@@ -220,8 +220,10 @@ int main(int argc, char* argv[])
 
   /* Extract a region of interest */
 
-  unsigned int startX = 0;
-  unsigned int startY= 2000;
+//  unsigned int startX = 0; //ERS values
+//  unsigned int startY= 2000;
+  unsigned int startX = 2000; // PALSAR values
+  unsigned int startY= 4000;
   unsigned int sizeX = 1000;
   unsigned int sizeY = 1000;
 
@@ -238,7 +240,8 @@ int main(int argc, char* argv[])
 
   ExtractROIType::Pointer slaveRoi = ExtractROIType::New();
   slaveRoi->SetStartX(startX);
-  slaveRoi->SetStartY(startY);
+//  slaveRoi->SetStartY(startY);//ERS
+  slaveRoi->SetStartY(startY+376);//PALSAR
   slaveRoi->SetSizeX(sizeX);
   slaveRoi->SetSizeY(sizeY);
   slaveRoi->SetInput(slave->GetOutput());
@@ -266,6 +269,7 @@ int main(int argc, char* argv[])
   ScalarImageType::SizeType indexRadius;
   indexRadius[0] = 4; // radius along x
   indexRadius[1] = 20; // radius along y
+
   masterFilter->SetRadius( indexRadius );
   slaveFilter->SetRadius( indexRadius );
 
@@ -275,7 +279,7 @@ int main(int argc, char* argv[])
   masterFilter->SetInput(masterAorI->GetOutput());
   slaveFilter->SetInput(slaveAorI->GetOutput());
 
-  //Optionally ouput images
+  //Optionally output images
   typedef otb::StreamingImageFileWriter<ScalarImageType> ScalarWriterType;
 
   ScalarWriterType::Pointer masterWriter = ScalarWriterType:: New();
@@ -332,8 +336,10 @@ int main(int argc, char* argv[])
   //scale values for amplitude
 //   optimizerScales[0]= 10000000000;
 //   optimizerScales[1]= 10000000000;
-  optimizerScales[0]= 100000;// related to the amplitude
-  optimizerScales[1]= 20000;
+//  optimizerScales[0]= 100000;// related to the amplitude ERS
+//  optimizerScales[1]= 20000;
+  optimizerScales[0]= 100000*1000000L;// related to the amplitude Palsar
+  optimizerScales[1]= 20000*1000000L;
   optimizer->SetScales(optimizerScales);
 
   CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
