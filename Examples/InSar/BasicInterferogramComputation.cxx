@@ -15,6 +15,8 @@
 #include "itkTranslationTransform.h"
 #include "itkMeanSquaresImageToImageMetric.h"
 #include "itkLinearInterpolateImageFunction.h"
+#include "itkResampleImageFilter.h"
+
 // #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkGradientDescentOptimizer.h"
 #include "itkMeanImageFilter.h"
