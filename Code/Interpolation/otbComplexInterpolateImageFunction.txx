@@ -213,11 +213,11 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 	{
 		IteratorType::OffsetType offset = nit.GetOffset(elt);
 		RealType  valueFunction = 1.0;
-		vcl_complex<ScalarRealType> PhaseShift(1.0,0.0);
+		RealType PhaseShift(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
 				ScalarRealType delta = otb::CONST_2PI * m_ZeroDoppler * offset[dim];
-				vcl_complex<ScalarRealType> localPhaseShift(cos(delta),sin(delta));
+				RealType localPhaseShift(cos(delta),sin(delta));
 				PhaseShift *= localPhaseShift;
 				RealType valueTmp = m_Function(offset[dim]); 
 				valueFunction *=  valueTmp;
