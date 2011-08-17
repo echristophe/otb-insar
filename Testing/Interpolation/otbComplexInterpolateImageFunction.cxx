@@ -91,7 +91,7 @@ int otbComplexInterpolateImageFunction(int argc, char * argv[])
 
   interpolator->SetInputImage(reader->GetOutput());
   interpolator->SetRadius(radius);
-  interpolator->SetZeroFrequency(zeroFrequency);
+  interpolator->SetNormalizeZeroFrequency(zeroFrequency);
 
   std::ofstream file;
   file.open(outfname);

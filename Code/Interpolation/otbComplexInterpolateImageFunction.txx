@@ -34,7 +34,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   m_WindowSize = 1;
   this->SetRadius(1);
   m_NormalizeWeight =  false;
-  m_ZeroFrequency = 0.0;
+  m_NormalizeZeroFrequency = 0.0;
 }
 
 /** Destructor */
@@ -110,7 +110,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 		RealType PhaseShift(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
-				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetZeroFrequency());
+				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
 				ScalarRealType delta = otb::CONST_2PI * zeroFrequency * currentIndex[dim];
 				RealType localPhaseShift(cos(delta),sin(delta));
 				PhaseShift *= localPhaseShift;
@@ -125,7 +125,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 	{
-		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetZeroFrequency());
+		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
 		ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * index[dim];
 		RealType localPhaseShift(cos(delta),sin(delta));
 		resultValue *= localPhaseShift;

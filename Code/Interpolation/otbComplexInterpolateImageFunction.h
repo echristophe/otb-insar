@@ -115,8 +115,8 @@ public:
   itkGetMacro(NormalizeWeight, bool);
 
   /** ZeroFrequency value */
-  itkSetMacro(ZeroFrequency,double);
-  itkGetConstMacro(ZeroFrequency,double);
+  itkSetMacro(NormalizeZeroFrequency,double);
+  itkGetConstMacro(NormalizeZeroFrequency,double);
 
 protected:
   ComplexInterpolateImageFunction();
@@ -142,7 +142,7 @@ private:
   /** Weights normalization */
   bool m_NormalizeWeight;
 
-  double m_ZeroFrequency;
+  double m_NormalizeZeroFrequency;
 };
 
 } // end namespace itk
