@@ -5,8 +5,6 @@ ENDIF(WIN32)
 
 SET(BASELINE ${ComplexInterpolation_DATA}/Baseline)
 SET(INPUTDATA ${ComplexInterpolation_DATA}/Input)
-SET(TEMP ${OTBTesting_BINARY_DIR}/Temporary)
-
 
 SET(EPSILON 0.01)
 
