@@ -28,7 +28,7 @@ namespace otb
 {
 
 /** \class ComplexInterpolateImageFunction
- * \brief Generic interpolation of an otb::Image.
+ * \brief Complex Generic interpolation of an otb::Image.
  *
  * ComplexInterpolateImageFunction interpolates image intensity according to a
  * resampling profil.
@@ -124,13 +124,6 @@ protected:
    * flag to false */
   virtual void Modified(void);
 
-  /** Delete tables.*/
-  virtual void ResetOffsetTable();
-  /** Initialize used tables*/
-  virtual void InitializeTables();
-  /** Fill the weight offset table*/
-  virtual void FillWeightOffsetTable();
-
 private:
   ComplexInterpolateImageFunction(const Self &); //purposely not implemented
   void operator =(const Self&); //purposely not implemented
@@ -144,18 +137,6 @@ private:
   /** Store the image dimension.*/
   unsigned int m_ImageDimension;
 
-  /** These members are declared mutable so that they can be
-  regenerated seamlessly inside the EvaluateAtContinuousIndex method if
-  they need to */
-  /** Size of the offset table */
-  mutable unsigned int m_OffsetTableSize;
-  /** The offset array, used to keep a list of relevant
-   * offsets in the neihborhoodIterator */
-  mutable unsigned int *m_OffsetTable;
-  /** Index into the weights array for each offset */
-  mutable unsigned int **m_WeightOffsetTable;
-  /** True if internal statistics have been generated */
-  mutable bool m_TablesHaveBeenGenerated;
   /** Weights normalization */
   bool m_NormalizeWeight;
 
