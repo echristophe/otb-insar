@@ -22,7 +22,8 @@ ADD_TEST(coTvComplexInterpolateImageFunction ${INTERPOLATION_TESTS}
         otbComplexInterpolateImageFunction
                 ${INPUTDATA}/prison_toulouse.tif
                 ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
-                3 # radius
+				0 # interpolation ID
+				3 # radius
                 0.10 # normalizeZeroFrequency
                 0.5 0.5
                 127.33 44.9
