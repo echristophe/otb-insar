@@ -22,7 +22,6 @@
 #include "otbMath.h"
 
 #include <complex>
-#include "itkPixelBuilder.h"
 
 namespace otb
 {
@@ -208,11 +207,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   nit.SetLocation(baseIndex);
 
   RealType sumFunction = 0.;
-  vcl_complex<ScalarRealType> resultValue = 0.;
-
-
-  RealType xPixelValue;
-  itk::PixelBuilder<RealType>::Zero(xPixelValue, this->GetInputImage()->GetNumberOfComponentsPerPixel());
+  RealType resultValue = 0.;
 
   for(unsigned int elt = 0 ; elt < nit.Size(); ++elt) 
 	{
