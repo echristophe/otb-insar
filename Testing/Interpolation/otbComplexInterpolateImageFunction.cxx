@@ -47,26 +47,6 @@ public:
 
 int otbComplexInterpolateImageFunction(int argc, char * argv[])
 {
-
-#if 0
-	typedef double InputPixelType;
-  const int Dimension = 2;
-  typedef otb::Image<InputPixelType, Dimension>                  ImageType;
-  typedef Function::ComplexFunction<InputPixelType, InputPixelType> FunctionType;
-  typedef itk::ConstantBoundaryCondition<ImageType>              BoundaryConditionType;
-  typedef double                                                 CoordRepType;
-
-  typedef otb::ComplexInterpolateImageFunction<ImageType, FunctionType, BoundaryConditionType,
-      CoordRepType> GenericFunctionType;
-
-  // Instantiating object
-  GenericFunctionType::Pointer generic = GenericFunctionType::New();
-
-  std::cout << generic << std::endl;
-
-#endif
-
-
   const char * infname = argv[1];
   const char * outfname = argv[2];
 
