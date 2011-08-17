@@ -64,8 +64,9 @@ int otbComplexInterpolateImageFunction(int argc, char * argv[])
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
 
   unsigned int radius = std::atoi(argv[3]);
+  double zeroFrequency = std::atof(argv[4]);
 
-  int i = 4;
+  int i = 5;
 
   std::vector<ContinuousIndexType> indicesList;
 
@@ -89,7 +90,8 @@ int otbComplexInterpolateImageFunction(int argc, char * argv[])
   reader->Update();
 
   interpolator->SetInputImage(reader->GetOutput());
-  //interpolator->SetRadius(radius);
+  interpolator->SetRadius(radius);
+  interpolator->SetZeroFrequency(zeroFrequency);
 
   std::ofstream file;
   file.open(outfname);

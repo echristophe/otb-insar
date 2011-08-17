@@ -23,6 +23,7 @@ ADD_TEST(coTvComplexInterpolateImageFunction ${INTERPOLATION_TESTS}
                 ${INPUTDATA}/prison_toulouse.tif
                 ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
                 3 # radius
+                0.10 # zeroFrequency
                 0.5 0.5
                 127.33 44.9
                 259.67 21.43
