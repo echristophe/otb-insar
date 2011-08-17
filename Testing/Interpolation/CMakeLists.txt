@@ -17,8 +17,8 @@ otbComplexInterpolateImageFunctionNew
 
 ADD_TEST(coTvComplexInterpolateImageFunction ${INTERPOLATION_TESTS}
 #     --compare-ascii ${NOTOL}
-#                          ${BASELINE_FILES}/bfWindowedSincInterpolateImageGaussianFunctionOutput.txt
-#                     ${TEMP}/bfWindowedSincInterpolateImageGaussianFunctionOutput.txt
+#                          ${BASELINE_FILES}/coComplexInterpolateImageFunctionOutput.txt
+#                     ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
         otbComplexInterpolateImageFunction
                 ${INPUTDATA}/prison_toulouse.tif
                 ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
