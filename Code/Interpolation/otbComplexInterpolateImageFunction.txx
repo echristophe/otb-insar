@@ -98,38 +98,38 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 
   /** For each element of the Interpolator Kernel do :
 		1. Evaluate Kernel value                    
-		2. Evaluate the Direct phase shift
+		2. Evaluate the bandshifted phase term: the frequency offset from baseband. 
 		3. Read Pixel value
-		4. Apply the phase shift to the PixelValue
+		4. Apply the bandshifted phase term to the PixelValue
 	*/
   for(unsigned int elt = 0 ; elt < nit.Size(); ++elt) 
 	{
 		IteratorType::OffsetType offset = nit.GetOffset(elt);
 		IteratorType::IndexType  currentIndex = nit.GetIndex();
 		RealType  valueFunction = 1.0;
-		RealType PhaseShift(1.0,0.0);
+		RealType phase(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
 				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
-				ScalarRealType delta = otb::CONST_2PI * zeroFrequency * currentIndex[dim];
-				RealType localPhaseShift(cos(delta),sin(delta));
-				PhaseShift *= localPhaseShift;
+				ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * currentIndex[dim];
+				RealType localPhase(cos(delta),sin(delta));
+				phase *= localPhase;
 				RealType valueTmp = m_Function(offset[dim]); 
 				valueFunction *=  valueTmp;
 			}
 
 		sumFunction = sumFunction + valueFunction;
 		RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
-		resultValue += valueFunction * pixelValue * PhaseShift; 
+		resultValue += valueFunction * pixelValue * phase; 
   }
 
-  /** Apply the reverse shift */
+  /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 	{
 		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
-		ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * baseIndex[dim];
-		RealType localPhaseShift(cos(delta),sin(delta));
-		resultValue *= localPhaseShift;
+		ScalarRealType delta = otb::CONST_2PI * zeroFrequency * baseIndex[dim];
+		RealType phase(cos(delta),sin(delta));
+		resultValue *= phase;
 	}
 
   return resultValue;
