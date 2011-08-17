@@ -207,8 +207,8 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   IteratorType nit = IteratorType(radius, this->GetInputImage(), this->GetInputImage()->GetBufferedRegion());
   nit.SetLocation(baseIndex);
 
-  double sumFunction = 0.;
-  double resultValue = 0.;
+  RealType sumFunction = 0.;
+  vcl_complex<ScalarRealType> resultValue = 0.;
 
 
   RealType xPixelValue;
@@ -218,18 +218,19 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 	{
 		IteratorType::OffsetType offset = nit.GetOffset(elt);
 		RealType  valueFunction = 1.0;
+		vcl_complex<ScalarRealType> PhaseShift(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
 				ScalarRealType delta = otb::CONST_2PI * m_ZeroDoppler * offset[dim];
-				std::complex<ScalarRealType> PhaseShift(cos(delta),sin(delta));
-				//TODO : take into account complex and double type
-				RealType valueTmp = m_Function(offset[dim]) * static_cast<RealType>(std::abs(PhaseShift)); 
+				vcl_complex<ScalarRealType> localPhaseShift(cos(delta),sin(delta));
+				PhaseShift *= localPhaseShift;
+				RealType valueTmp = m_Function(offset[dim]); 
 				valueFunction *=  valueTmp;
-
 			}
-		sumFunction += valueFunction;
+
+		sumFunction = sumFunction + valueFunction;
 		RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
-		resultValue += valueFunction * pixelValue; 
+		resultValue += valueFunction * pixelValue * PhaseShift; 
   }
 
 
@@ -357,7 +358,26 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 #endif
 
   // Return the interpolated value
-  return static_cast<OutputType>(resultValue);
+  //OutputType result;
+  //result = this->ConvertValue(resultValue);
+  //return result;
+  return 0.0;
+}
+
+template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
+typename ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>::OutputType
+ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
+::ConvertValue(std::complex<ScalarRealType> value)
+{
+	return static_cast<OutputType>(std::abs(value)); 
+}
+
+template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
+typename ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>::OutputType
+ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
+::ConvertValue(ScalarRealType value)
+{
+	return static_cast<OutputType>(value); 
 }
 
 template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
