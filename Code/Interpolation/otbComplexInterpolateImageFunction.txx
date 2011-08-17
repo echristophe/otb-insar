@@ -209,14 +209,21 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   RealType sumFunction = 0.;
   RealType resultValue = 0.;
 
+  /** For each element of the Interpolator Kernel do :
+		1. Evaluate Kernel value                    
+		2. Evaluate the Direct phase shift
+		3. Read Pixel value
+		4. Apply the phase shift to the PixelValue
+	*/
   for(unsigned int elt = 0 ; elt < nit.Size(); ++elt) 
 	{
 		IteratorType::OffsetType offset = nit.GetOffset(elt);
+		IteratorType::IndexType  currentIndex = nit.GetIndex();
 		RealType  valueFunction = 1.0;
 		RealType PhaseShift(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
-				ScalarRealType delta = otb::CONST_2PI * m_ZeroDoppler * offset[dim];
+				ScalarRealType delta = otb::CONST_2PI * m_ZeroDoppler * currentIndex[dim];
 				RealType localPhaseShift(cos(delta),sin(delta));
 				PhaseShift *= localPhaseShift;
 				RealType valueTmp = m_Function(offset[dim]); 
@@ -228,12 +235,15 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 		resultValue += valueFunction * pixelValue * PhaseShift; 
   }
 
+  for(unsigned int dim = 0; dim < ImageDimension; ++dim)
+	{
+		ScalarRealType delta = - otb::CONST_2PI * m_ZeroDoppler * index[dim];
+		RealType localPhaseShift(cos(delta),sin(delta));
+		resultValue *= localPhaseShift;
+  }
+  
 
-  // Return the interpolated value
-  //OutputType result;
-  //result = this->ConvertValue(resultValue);
-  //return result;
-  return 0.0;
+  return resultValue;
 }
 
 template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
