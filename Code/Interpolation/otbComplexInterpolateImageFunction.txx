@@ -246,21 +246,6 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   return resultValue;
 }
 
-template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
-typename ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>::OutputType
-ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
-::ConvertValue(std::complex<ScalarRealType> value)
-{
-	return static_cast<OutputType>(std::abs(value)); 
-}
-
-template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
-typename ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>::OutputType
-ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
-::ConvertValue(ScalarRealType value)
-{
-	return static_cast<OutputType>(value); 
-}
 
 template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
 void

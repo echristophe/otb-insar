@@ -131,9 +131,6 @@ protected:
   /** Fill the weight offset table*/
   virtual void FillWeightOffsetTable();
 
-  OutputType ConvertValue(std::complex<ScalarRealType> value);
-  OutputType ConvertValue(ScalarRealType value);
-
 private:
   ComplexInterpolateImageFunction(const Self &); //purposely not implemented
   void operator =(const Self&); //purposely not implemented
