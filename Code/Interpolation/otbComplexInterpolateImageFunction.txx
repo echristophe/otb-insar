@@ -123,10 +123,11 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 		resultValue += valueFunction * pixelValue * PhaseShift; 
   }
 
+  /** Apply the reverse shift */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 	{
 		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
-		ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * index[dim];
+		ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * baseIndex[dim];
 		RealType localPhaseShift(cos(delta),sin(delta));
 		resultValue *= localPhaseShift;
 	}
