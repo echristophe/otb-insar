@@ -47,7 +47,7 @@ public:
 int otbComplexInterpolateImageFunctionNew(int argc, char * argv[])
 {
 
-  typedef double InputPixelType;
+  typedef std::complex<double> InputPixelType;
   const int Dimension = 2;
   typedef otb::Image<InputPixelType, Dimension>                  ImageType;
   typedef Function::SameFunction<InputPixelType, InputPixelType> FunctionType;

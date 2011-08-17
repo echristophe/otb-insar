@@ -70,7 +70,7 @@ int otbComplexInterpolateImageFunction(int argc, char * argv[])
   const char * infname = argv[1];
   const char * outfname = argv[2];
 
-  typedef double													InputPixelType;
+  typedef std::complex<double>										InputPixelType;
   typedef otb::Image<InputPixelType, 2>								ImageType;
   typedef Function::ComplexFunction<InputPixelType, InputPixelType>	FunctionType;
   typedef itk::ConstantBoundaryCondition<ImageType>					BoundaryConditionType;
