@@ -15,16 +15,16 @@ ADD_TEST(coTuComplexInterpolateImageFunctionNew ${INTERPOLATION_TESTS}
 otbComplexInterpolateImageFunctionNew
 )
 
-ADD_TEST(coTvComplexInterpolateImageFunction ${INTERPOLATION_TESTS}
+ADD_TEST(coTvComplexBlackmanWindowInterpolateImageFunction ${INTERPOLATION_TESTS}
 #     --compare-ascii ${NOTOL}
-#                          ${BASELINE_FILES}/coComplexInterpolateImageFunctionOutput.txt
-#                     ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
+#                          ${BASELINE_FILES}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
+#                     ${TEMP}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
         otbComplexInterpolateImageFunction
                 ${INPUTDATA}/prison_toulouse.tif
-                ${TEMP}/coComplexInterpolateImageFunctionOutput.txt
-				0 # interpolation ID
+                ${TEMP}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
+				0 # interpolation ID "Blackman"
 				3 # radius
-                0.10 # normalizeZeroFrequency
+                0.00 # normalizeZeroFrequency
                 0.5 0.5
                 127.33 44.9
                 259.67 21.43
