@@ -70,10 +70,10 @@ public:
 
   /** RealType typedef support. */
   typedef typename itk::NumericTraits<typename InputImageType::PixelType>::RealType RealType;
-
+  
   /** ScalarRealType typedef support. */
   typedef typename itk::NumericTraits<typename InputImageType::PixelType>::ScalarRealType ScalarRealType;
-  
+
   /** ContinuousIndex typedef support. */
   typedef typename Superclass::ContinuousIndexType ContinuousIndexType;
 
@@ -96,7 +96,6 @@ public:
   {
     return m_Function.GetRadius();
   }
-  //unsigned int GetRadius() { return this->GetFunction().GetRadius(); };
 
   /** Set/Get the window radius*/
   // Don't have to be used here, just declared for the inheritance classes.
@@ -115,13 +114,16 @@ public:
   itkSetMacro(NormalizeWeight, bool);
   itkGetMacro(NormalizeWeight, bool);
 
+  /** ZeroFrequency value */
+  itkSetMacro(ZeroFrequency,double);
+  itkGetConstMacro(ZeroFrequency,double);
+
 protected:
   ComplexInterpolateImageFunction();
   virtual ~ComplexInterpolateImageFunction();
   virtual void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
-  /** Call the superclass implementation and set the TablesHaveBeenGenerated
-   * flag to false */
+  /** Call the superclass implementation */
   virtual void Modified(void);
 
 private:
@@ -140,7 +142,7 @@ private:
   /** Weights normalization */
   bool m_NormalizeWeight;
 
-  double m_ZeroDoppler;
+  double m_ZeroFrequency;
 };
 
 } // end namespace itk
