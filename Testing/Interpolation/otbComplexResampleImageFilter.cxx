@@ -20,13 +20,16 @@
 #include "otbComplexInterpolateImageFunction.h"
 #include "otbImage.h"
 #include "otbImageFileReader.h"
+#include "otbImageFileWriter.h"
+#include "itkResampleImageFilter.h"
+#include "otbStreamingImageFileWriter.h"
 #include <fstream>
 
 #include "otbWindowedSincInterpolateImageBlackmanFunction.h"
 #include "otbWindowedSincInterpolateImageHammingFunction.h"
 
 template<class TFunction>
-int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
+int otbComplexResampleImageFilter_generic(int argc, char * argv[])
 {
   const char * infname = argv[1];
   const char * outfname = argv[2];
@@ -43,61 +46,56 @@ int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
 
   typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
+  typedef otb::ImageFileWriter<ImageType>                           WriterType;
+
 
   unsigned int radius = std::atoi(argv[4]);
   double zeroFrequency = std::atof(argv[5]);
 
-  int i = 6;
-
-  std::vector<ContinuousIndexType> indicesList;
-
-  while (i < argc && (i + 1) < argc)
-    {
-    ContinuousIndexType idx;
-
-    idx[0] = atof(argv[i]);
-    idx[1] = atof(argv[i + 1]);
-
-    indicesList.push_back(idx);
-
-    i += 2;
-    }
+  typedef itk::ResampleImageFilter<ImageType, ImageType, double> StreamingResampleImageFilterType;
 
   // Instantiating object
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(infname);
   reader->Update();
 
+  InterpolatorType::Pointer interpolator = InterpolatorType::New();
   interpolator->SetInputImage(reader->GetOutput());
   interpolator->SetRadius(radius);
   interpolator->SetNormalizeZeroFrequency(zeroFrequency);
 
-  std::ofstream file;
-  file.open(outfname);
+  StreamingResampleImageFilterType::Pointer resampler = StreamingResampleImageFilterType::New();
+  resampler->SetInput(reader->GetOutput());
+  resampler->SetInterpolator(interpolator);
 
-  for (std::vector<ContinuousIndexType>::iterator it = indicesList.begin(); it != indicesList.end(); ++it)
-    {
-    file << (*it) << " -> " << interpolator->EvaluateAtContinuousIndex((*it)) << std::endl;
-    }
+  StreamingResampleImageFilterType::SizeType size;
+  size[0] = 512;
+  size[1] = 512;
+  double tutu = 1;
+  resampler->SetSize(size);
+  resampler->SetOutputSpacing(tutu);
 
-  file.close();
+  // Result of resampler is written
+  WriterType::Pointer writer     = WriterType::New();
+  writer->SetInput(resampler->GetOutput());
+  writer->SetFileName(outfname);
+  writer->Update();
 
   return EXIT_SUCCESS;
 }
 
 
-int otbComplexInterpolateImageFunction(int argc, char * argv[])
+int otbComplexResampleImageFilter(int argc, char * argv[])
 {
   int FunctionType = atoi(argv[3]);
   switch (FunctionType)
     {
     case 0:
-      return otbComplexInterpolateImageFunction_generic<otb::Function::BlackmanWindowFunction<double> > (argc, argv);
+      return otbComplexResampleImageFilter_generic<otb::Function::BlackmanWindowFunction<double> > (argc, argv);
       break;
     case 1:
-      return otbComplexInterpolateImageFunction_generic<otb::Function::HammingWindowFunction<double> > (argc, argv);
+      return otbComplexResampleImageFilter_generic<otb::Function::HammingWindowFunction<double> > (argc, argv);
       break;
     default:
       std::cerr << "No more function available\n";

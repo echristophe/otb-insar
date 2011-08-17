@@ -28,4 +28,5 @@ void RegisterTests()
 {
   REGISTER_TEST(otbComplexInterpolateImageFunctionNew);
   REGISTER_TEST(otbComplexInterpolateImageFunction);
+  REGISTER_TEST(otbComplexResampleImageFilter);
 }
