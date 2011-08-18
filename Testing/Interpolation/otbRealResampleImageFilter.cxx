@@ -28,21 +28,17 @@
 #include "otbWindowedSincInterpolateImageBlackmanFunction.h"
 #include "otbWindowedSincInterpolateImageHammingFunction.h"
 
-template<class TFunction>
-int otbComplexResampleImageFilter_generic(int argc, char * argv[])
+
+
+template<class TInputPixelType, class TImageType, class TInterpolator>
+int otbRealResampleImageFilter_generic(int argc, char * argv[])
 {
   const char * infname = argv[1];
   const char * outfname = argv[2];
 
-  typedef std::complex<double>										InputPixelType;
-  typedef otb::Image<InputPixelType, 2>								ImageType;
-  typedef TFunction												    FunctionType;
-  typedef itk::ConstantBoundaryCondition<ImageType>					BoundaryConditionType;
-  typedef double													CoordRepType;
-
-  typedef otb::ComplexInterpolateImageFunction<ImageType, 
-						FunctionType, BoundaryConditionType,
-						CoordRepType>								InterpolatorType;
+  typedef TInputPixelType											InputPixelType;
+  typedef TImageType												ImageType;
+  typedef TInterpolator												InterpolatorType;
 
   typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
@@ -50,7 +46,6 @@ int otbComplexResampleImageFilter_generic(int argc, char * argv[])
 
 
   unsigned int radius = std::atoi(argv[4]);
-  double zeroFrequency = std::atof(argv[5]);
 
   typedef itk::ResampleImageFilter<ImageType, ImageType, double> StreamingResampleImageFilterType;
 
@@ -63,7 +58,7 @@ int otbComplexResampleImageFilter_generic(int argc, char * argv[])
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
   interpolator->SetInputImage(reader->GetOutput());
   interpolator->SetRadius(radius);
-  interpolator->SetNormalizeZeroFrequency(zeroFrequency);
+  interpolator->Initialize();
 
   StreamingResampleImageFilterType::Pointer resampler = StreamingResampleImageFilterType::New();
   resampler->SetInput(reader->GetOutput());
@@ -82,23 +77,24 @@ int otbComplexResampleImageFilter_generic(int argc, char * argv[])
   writer->SetFileName(outfname);
   writer->Update();
 
+
   return EXIT_SUCCESS;
 }
 
 
-int otbComplexResampleImageFilter(int argc, char * argv[])
+int otbRealResampleImageFilter(int argc, char * argv[])
 {
-  typedef std::complex<double>										InputPixelType;
-  typedef otb::Image<InputPixelType, 2>								ImageType;
+  typedef double										InputPixelType;
+  typedef otb::Image<InputPixelType, 2>					ImageType;
 
   int FunctionType = atoi(argv[3]);
   switch (FunctionType)
     {
     case 0:
-      return otbComplexResampleImageFilter_generic<otb::Function::BlackmanWindowFunction<double> > (argc, argv);
+      return otbRealResampleImageFilter_generic<InputPixelType, ImageType, otb::WindowedSincInterpolateImageBlackmanFunction<ImageType> > (argc, argv);
       break;
     case 1:
-      return otbComplexResampleImageFilter_generic<otb::Function::HammingWindowFunction<double> > (argc, argv);
+      return otbRealResampleImageFilter_generic<InputPixelType, ImageType, otb::WindowedSincInterpolateImageHammingFunction<ImageType> > (argc, argv);
       break;
     default:
       std::cerr << "No more function available\n";

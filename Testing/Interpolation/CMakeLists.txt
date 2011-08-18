@@ -17,11 +17,11 @@ otbComplexInterpolateImageFunctionNew
 
 ADD_TEST(coTvComplexBlackmanWindowInterpolateImageFunction ${INTERPOLATION_TESTS}
 #     --compare-ascii ${NOTOL}
-#                          ${BASELINE_FILES}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
-#                     ${TEMP}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
+#                          ${BASELINE_FILES}/coRealBlackmanWindowInterpolateImageFunctionOutput.txt
+#                     ${TEMP}/coRealBlackmanWindowInterpolateImageFunctionOutput.txt
         otbComplexInterpolateImageFunction
                 ${INPUTDATA}/prison_toulouse.tif
-                ${TEMP}/coComplexBlackmanWindowInterpolateImageFunctionOutput.txt
+                ${TEMP}/coRealBlackmanWindowInterpolateImageFunctionOutput.txt
 				0 # interpolation ID "Blackman"
 				3 # radius
                 0.01 # normalizeZeroFrequency
@@ -45,8 +45,8 @@ ADD_TEST(coTvComplexHammingWindowInterpolateImageFunction ${INTERPOLATION_TESTS}
 				1 # interpolation ID "Hamming"
 				3 # radius
                 0.01 # normalizeZeroFrequency
-                0.5 0.5
-                127.33 44.9
+                0.5 0.5 
+				127.33 44.9
                 259.67 21.43
                 12.13 61.79
                 89.5 11
@@ -64,14 +64,26 @@ ADD_TEST(coTvComplexHammingWindowResampleImageFilter ${INTERPOLATION_TESTS}
                 ${TEMP}/coComplexHammingWindowResampleImageFilterOutput.tif
 				0 # interpolation ID "Hamming"
 				3 # radius
-                0.01 # normalizeZeroFrequency
+                0.00 # normalizeZeroFrequency
                 )
-				       
+
+ADD_TEST(coTvRealHammingWindowResampleImageFilter ${INTERPOLATION_TESTS}
+#     --compare-ascii ${NOTOL}
+#                          ${BASELINE_FILES}/coComplexHammingWindowResampleImageFilterOutput.tif
+#                     ${TEMP}/coComplexHammingWindowResampleImageFilterOutput.tif
+        otbRealResampleImageFilter
+                ${INPUTDATA}/prison_toulouse.tif
+                ${TEMP}/coRealHammingWindowResampleImageFilterOutput.tif
+				0 # interpolation ID "Hamming"
+				3 # radius
+                )	
+							       
 SET(INTERPOLATION_SRCS
 otbInterpolationTests.cxx
 otbComplexInterpolateImageFunctionNew.cxx
 otbComplexInterpolateImageFunction.cxx
 otbComplexResampleImageFilter.cxx
+otbRealResampleImageFilter.cxx
 )
 
 
