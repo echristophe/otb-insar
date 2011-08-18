@@ -31,7 +31,6 @@ template<class TInputImage, class TFunction, class TBoundaryCondition, class TCo
 ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
 ::ComplexInterpolateImageFunction()
 {
-  m_WindowSize = 1;
   this->SetRadius(1);
   m_NormalizeWeight =  false;
   m_NormalizeZeroFrequency = 0.0;
@@ -50,9 +49,7 @@ void
 ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
 ::SetRadius(unsigned int rad)
 {
-  //m_Radius = rad;
   this->GetFunction().SetRadius(rad);
-  m_WindowSize = rad << 1;
   this->Modified();
 }
 

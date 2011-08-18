@@ -33,7 +33,6 @@ namespace otb
  * ComplexInterpolateImageFunction interpolates image intensity according to a
  * resampling profil.
  *
- * The Initialize() method need to be call to create the filter.
  *
  * \ingroup ImageFunctions ImageInterpolators
  */
@@ -58,9 +57,6 @@ public:
   /** Input and output images typedef definition. */
   typedef typename Superclass::OutputType     OutputType;
   typedef typename Superclass::InputImageType InputImageType;
-
-  /** Dimension underlying input image. */
-  //itkStaticConstMacro(ImageDimension, unsigned int, Superclass::ImageDimension);
 
   /** Index and typedef support. */
   typedef typename Superclass::IndexType                                     IndexType;
@@ -129,15 +125,9 @@ protected:
 private:
   ComplexInterpolateImageFunction(const Self &); //purposely not implemented
   void operator =(const Self&); //purposely not implemented
-  /** Store the window radius. */
-  //unsigned int m_Radius;
-  // Constant to store twice the radius
-  unsigned int m_WindowSize;
 
   /** Used function */
   FunctionType m_Function;
-  /** Store the image dimension.*/
-  unsigned int m_ImageDimension;
 
   /** Weights normalization */
   bool m_NormalizeWeight;
