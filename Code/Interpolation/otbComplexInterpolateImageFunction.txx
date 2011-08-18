@@ -121,6 +121,12 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 		resultValue += valueFunction * pixelValue * phase; 
   }
 
+#if 0
+  if( this->GetNormalizeWeight() )
+	{
+		resultValue /= sumFunction;
+	}
+#endif
 
   /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)

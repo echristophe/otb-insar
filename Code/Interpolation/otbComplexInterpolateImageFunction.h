@@ -41,10 +41,10 @@ namespace otb
  * And with the previous result applies a back bandshiftedifted phase term. 
  * Hence, value is still frequency offseted from the baseband.
  *
- */
  *
  * \ingroup ImageFunctions ImageInterpolators
  */
+
 template <class TInputImage, class TFunction, class TBoundaryCondition = itk::ZeroFluxNeumannBoundaryCondition<TInputImage>,
     class TCoordRep = double>
 class ITK_EXPORT ComplexInterpolateImageFunction :
@@ -111,9 +111,6 @@ public:
   {
     return m_Function;
   }
-
-  /** Initialize tables: need to be call explicitely */
-  virtual void Initialize();
 
   /** Weights normalization accessors*/
   itkSetMacro(NormalizeWeight, bool);
