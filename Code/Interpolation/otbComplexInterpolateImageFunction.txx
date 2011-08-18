@@ -32,7 +32,8 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   this->SetRadius(1);
   m_NormalizeWeight =  false;
   m_IsSumNormalizeWeight = true;
-  m_NormalizeZeroFrequency = 0.0;
+  m_NormalizeZeroFrequency.SetSize(ImageDimension);
+  m_NormalizeZeroFrequency.Fill(0.0);
 }
 
 /** Destructor */
@@ -91,7 +92,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 		RealType phase(1.0,0.0);
 		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 			{
-				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
+				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
 				ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * currentIndex[dim];
 				RealType localPhase(cos(delta),sin(delta));
 				phase *= localPhase;
@@ -122,7 +123,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
 	{
-		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(this->GetNormalizeZeroFrequency());
+		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
 		ScalarRealType delta = otb::CONST_2PI * zeroFrequency * baseIndex[dim];
 		RealType phase(cos(delta),sin(delta));
 		resultValue *= phase;

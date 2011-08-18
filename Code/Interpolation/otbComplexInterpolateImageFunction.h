@@ -23,6 +23,7 @@
 #include "itkConstantBoundaryCondition.h"
 #include "itkZeroFluxNeumannBoundaryCondition.h"
 #include "itkNumericTraits.h"
+#include "itkVariableLengthVector.h"
 
 namespace otb
 {
@@ -82,6 +83,9 @@ public:
   /** ContinuousIndex typedef support. */
   typedef typename Superclass::ContinuousIndexType ContinuousIndexType;
 
+  /** VariableLengthVectorType typedef support*/
+  typedef itk::VariableLengthVector<double> VariableLengthVectorType;
+
   /** Dimension underlying input image. */
   itkStaticConstMacro(ImageDimension, unsigned int, Superclass::ImageDimension);
 
@@ -117,8 +121,21 @@ public:
   itkGetConstMacro(IsSumNormalizeWeight, bool);
   
   /** Normalize Frequency offset from baseband accessors */
-  itkSetMacro(NormalizeZeroFrequency,double);
-  itkGetConstMacro(NormalizeZeroFrequency,double);
+  itkGetConstMacro(NormalizeZeroFrequency,VariableLengthVectorType);
+
+  void SetNormalizeZeroFrequency(double value)
+  {
+	m_NormalizeZeroFrequency.Fill(value);
+  }
+
+  void SetNormalizeZeroFrequency(VariableLengthVectorType value)
+  {
+	  if(value.Size() != m_NormalizeZeroFrequency.Size())
+	  {
+		itkExceptionMacro(<< "The agrument dimension of the SetNormalizeZeroFrequency() method must be the same dimension as the input image");
+	  }
+	  m_NormalizeZeroFrequency = value ;
+  }
 
 
 protected:
@@ -140,7 +157,7 @@ private:
   bool m_IsSumNormalizeWeight;
 
   /** Normalize Frequency offset from baseband*/
-  double m_NormalizeZeroFrequency;
+  VariableLengthVectorType m_NormalizeZeroFrequency;
 };
 
 } // end namespace itk
