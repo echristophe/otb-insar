@@ -30,9 +30,18 @@ namespace otb
 /** \class ComplexInterpolateImageFunction
  * \brief Complex Generic interpolation of an otb::Image.
  *
- * ComplexInterpolateImageFunction interpolates image intensity according to a
+ * ComplexInterpolateImageFunction interpolates complex image according to a
  * resampling profil.
  *
+ * Along the resampling profil, the processing steps are  :  
+ *		- Evaluating Kernel value at the given position                    
+ * 		- Evaluating the bandshifted phase term: the frequency offset from baseband. 
+ *		- Apply the bandshifted phase term to the PixelValue
+ * 
+ * And with the previous result applies a back bandshiftedifted phase term. 
+ * Hence, value is still frequency offseted from the baseband.
+ *
+ */
  *
  * \ingroup ImageFunctions ImageInterpolators
  */
