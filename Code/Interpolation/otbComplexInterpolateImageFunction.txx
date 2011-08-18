@@ -54,13 +54,6 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   this->Modified();
 }
 
-template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
-void
-ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
-::Modified()
-{
-  Superclass::Modified();
-}
 
 
 /** Evaluate at image index position */

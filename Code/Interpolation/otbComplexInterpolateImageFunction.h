@@ -126,9 +126,6 @@ protected:
   virtual ~ComplexInterpolateImageFunction();
   virtual void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
-  /** Call the superclass implementation */
-  virtual void Modified(void);
-
 private:
   ComplexInterpolateImageFunction(const Self &); //purposely not implemented
   void operator =(const Self&); //purposely not implemented
