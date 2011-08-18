@@ -102,10 +102,6 @@ public:
     return m_Function.GetRadius();
   }
 
-  /** Set/Get the window radius*/
-  // Don't have to be used here, just declared for the inheritance classes.
-  //virtual void SetWindowSize(unsigned int win){ m_WindowSize = win; };
-
   /** Get the functor list */
   virtual FunctionType& GetFunction(void)
   {
@@ -114,11 +110,16 @@ public:
 
   /** Weights normalization accessors*/
   itkSetMacro(NormalizeWeight, bool);
-  itkGetMacro(NormalizeWeight, bool);
+  itkGetConstMacro(NormalizeWeight, bool);
 
-  /** ZeroFrequency value */
+  /** Sum Normalize Weight  accessors*/
+  itkSetMacro(IsSumNormalizeWeight, bool);
+  itkGetConstMacro(IsSumNormalizeWeight, bool);
+  
+  /** Normalize Frequency offset from baseband accessors */
   itkSetMacro(NormalizeZeroFrequency,double);
   itkGetConstMacro(NormalizeZeroFrequency,double);
+
 
 protected:
   ComplexInterpolateImageFunction();
@@ -138,6 +139,10 @@ private:
   /** Weights normalization */
   bool m_NormalizeWeight;
 
+  /** Normalization with the sum (L1 norm) or square (L2 norm) of the resampling profil*/
+  bool m_IsSumNormalizeWeight;
+
+  /** Normalize Frequency offset from baseband*/
   double m_NormalizeZeroFrequency;
 };
 

@@ -33,6 +33,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 {
   this->SetRadius(1);
   m_NormalizeWeight =  false;
+  m_IsSumNormalizeWeight = true;
   m_NormalizeZeroFrequency = 0.0;
 }
 
@@ -62,15 +63,6 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 }
 
 
-/** Initialize tables: need to be call explicitely */
-template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
-void
-ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>
-::Initialize()
-{
-
-}
-
 /** Evaluate at image index position */
 template<class TInputImage, class TFunction, class TBoundaryCondition, class TCoordRep>
 typename ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoordRep>::OutputType
@@ -91,6 +83,7 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   nit.SetLocation(baseIndex);
 
   RealType sumFunction = 0.;
+  RealType squareFunction = 0.;
   RealType resultValue = 0.;
 
   /** For each element of the Interpolator Kernel do :
@@ -116,17 +109,24 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 			}
 
 		sumFunction +=  valueFunction;
+		squareFunction += (valueFunction * valueFunction);
 
 		RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
 		resultValue += valueFunction * pixelValue * phase; 
   }
 
-#if 0
   if( this->GetNormalizeWeight() )
 	{
-		resultValue /= sumFunction;
+		if(this->GetIsSumNormalizeWeight())
+			{
+				resultValue /= sumFunction;
+			}
+		else
+			{
+				resultValue /= squareFunction;
+			}
 	}
-#endif
+
 
   /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
