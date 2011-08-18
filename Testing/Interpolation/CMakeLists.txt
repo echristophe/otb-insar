@@ -77,6 +77,10 @@ ADD_TEST(coTvRealHammingWindowResampleImageFilter ${INTERPOLATION_TESTS}
 				0 # interpolation ID "Hamming"
 				3 # radius
                 )	
+
+ADD_TEST(TvGridIntersectionPointSetSource ${INTERPOLATION_TESTS}
+  otbGridIntersectionPointSetSourceTest)
+
 							       
 SET(INTERPOLATION_SRCS
 otbInterpolationTests.cxx
@@ -84,6 +88,7 @@ otbComplexInterpolateImageFunctionNew.cxx
 otbComplexInterpolateImageFunction.cxx
 otbComplexResampleImageFilter.cxx
 otbRealResampleImageFilter.cxx
+otbGridIntersectionPointSetSourceTest.cxx
 )
 
 
