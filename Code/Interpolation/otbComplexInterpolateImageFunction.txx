@@ -118,10 +118,12 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
 				valueFunction *=  valueTmp;
 			}
 
-		sumFunction = sumFunction + valueFunction;
+		sumFunction +=  valueFunction;
+
 		RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
 		resultValue += valueFunction * pixelValue * phase; 
   }
+
 
   /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
