@@ -18,10 +18,8 @@
 #ifndef __otbComplexInterpolateImageFunction_txx
 #define __otbComplexInterpolateImageFunction_txx
 #include "otbComplexInterpolateImageFunction.h"
-#include "vnl/vnl_math.h"
-#include "otbMath.h"
 
-#include <complex>
+#include "otbMath.h"
 
 namespace otb
 {
