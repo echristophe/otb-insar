@@ -93,7 +93,7 @@ class CommandIterationUpdatePlot : public itk::Command
       m_filename=filename;
       //remove file
       std::ofstream file;
-      file.open(m_filename.c_str(),ios::trunc);
+      file.open(m_filename.c_str(),std::ios::trunc);
       file.close();
     }
 
@@ -127,7 +127,7 @@ class CommandIterationUpdatePlot : public itk::Command
         return;
       }
       std::ofstream file;
-      file.open(m_filename.c_str(),ios::app);
+      file.open(m_filename.c_str(),std::ios::app);
 
       file << optimizer->GetCurrentIteration() << " ";
       file << optimizer->GetValue() << " ";
