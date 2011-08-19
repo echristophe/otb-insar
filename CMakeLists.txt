@@ -7,7 +7,7 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
      
      
-PROJECT(ComplexInterpolation)
+PROJECT(InSAR)
 
 #-----------------------------------------------------------------------------
 # OTB option to access large file (> 4Go).
@@ -26,7 +26,7 @@ IF(OTB_FOUND)
   INCLUDE(${OTB_USE_FILE})
 ELSE(OTB_FOUND)
   MESSAGE(FATAL_ERROR
-          "Cannot build ComplexInterpolation without OTB.  Please set OTB_DIR.")
+          "Cannot build InSAR without OTB.  Please set OTB_DIR.")
 ENDIF(OTB_FOUND)
 
 INCLUDE_DIRECTORIES (
@@ -44,37 +44,37 @@ INCLUDE_DIRECTORIES (
 # FIND_PATH(OTB_SPECTRAL_RESPONSE otbSR.readme ${OTB_SR_DIR} $ENV{OTB_SPECTRAL_RESPONSE})
 # FIND_PATH(OTB_SAT_RSR otbSATRSR.readme ${OTB_SATRSR_DIR} $ENV{OTB_SAT_RSR})
 
-SET(ComplexInterpolation_DATA ${ComplexInterpolation_SOURCE_DIR}/Data)
-SET(BASELINE_FILES ${ComplexInterpolation_DATA}/Baseline)
-SET(INPUTDATA ${ComplexInterpolation_DATA}/Input)
+SET(InSAR_DATA ${InSAR_SOURCE_DIR}/Data)
+SET(BASELINE_FILES ${InSAR_DATA}/Baseline)
+SET(INPUTDATA ${InSAR_DATA}/Input)
 
 
 # Output directories.
-SET (LIBRARY_OUTPUT_PATH ${ComplexInterpolation_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all libraries.")
-SET (EXECUTABLE_OUTPUT_PATH ${ComplexInterpolation_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all executables.")
+SET (LIBRARY_OUTPUT_PATH ${InSAR_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all libraries.")
+SET (EXECUTABLE_OUTPUT_PATH ${InSAR_BINARY_DIR}/bin CACHE INTERNAL "Single output directory for building all executables.")
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
-SET(ComplexInterpolation_LIBRARY_PATH "${LIBRARY_OUTPUT_PATH}")
-SET(ComplexInterpolation_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}")
-SET (ComplexInterpolationTesting_BINARY_DIR ${ComplexInterpolation_BINARY_DIR}/Testing)
-SET(TEMP ${ComplexInterpolationTesting_BINARY_DIR}/Temporary)
+SET(InSAR_LIBRARY_PATH "${LIBRARY_OUTPUT_PATH}")
+SET(InSAR_EXECUTABLE_PATH "${EXECUTABLE_OUTPUT_PATH}")
+SET (InSARTesting_BINARY_DIR ${InSAR_BINARY_DIR}/Testing)
+SET(TEMP ${InSARTesting_BINARY_DIR}/Temporary)
 
-INCLUDE_DIRECTORIES( ${ComplexInterpolation_LIBRARY_PATH} )
+INCLUDE_DIRECTORIES( ${InSAR_LIBRARY_PATH} )
 
-# Put "." in the rpath of all ComplexInterpolation exe.
+# Put "." in the rpath of all InSAR exe.
 LINK_DIRECTORIES(.)
 
 # IF(WIN32)
 #    IF(BUILD_SHARED_LIBS)
-#      SET(ComplexInterpolation_COMMON_BUILD_TYPE "SHARED")
+#      SET(InSAR_COMMON_BUILD_TYPE "SHARED")
 #    ELSE(BUILD_SHARED_LIBS)
-#      SET(ComplexInterpolation_COMMON_BUILD_TYPE "STATIC")
+#      SET(InSAR_COMMON_BUILD_TYPE "STATIC")
 #    ENDIF(BUILD_SHARED_LIBS)
 #    SET(BUILD_SHARED_LIBS OFF)
 # ENDIF(WIN32)
 
-SET(ComplexInterpolation_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/ComplexInterpolation")
-SET(ComplexInterpolation_INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
-SET(ComplexInterpolation_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include/ComplexInterpolation")
+SET(InSAR_INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib/InSAR")
+SET(InSAR_INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin")
+SET(InSAR_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/include/InSAR")
 
 ENABLE_TESTING()
 

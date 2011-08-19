@@ -3,8 +3,8 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-SET(BASELINE ${ComplexInterpolation_DATA}/Baseline)
-SET(INPUTDATA ${ComplexInterpolation_DATA}/Input)
+SET(BASELINE ${InSAR_DATA}/Baseline)
+SET(INPUTDATA ${InSAR_DATA}/Input)
 
 SET(EPSILON 0.01)
 
