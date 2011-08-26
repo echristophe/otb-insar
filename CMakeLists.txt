@@ -37,12 +37,6 @@ INCLUDE_DIRECTORIES (
 )
 
 
-# Find the data directory
-# SET(OTB_SR_DIR /home2/arnaud/PROJETS/SimuCapteur/data/BD-CNES)
-# SET(OTB_SATRSR_DIR /home2/arnaud/PROJETS/SimuCapteur/hg/SimuPerformances/Data/Rsr)
-# FIND_PATH(OTB_SPECTRAL_RESPONSE otbSR.readme ${OTB_SR_DIR} $ENV{OTB_SPECTRAL_RESPONSE})
-# FIND_PATH(OTB_SAT_RSR otbSATRSR.readme ${OTB_SATRSR_DIR} $ENV{OTB_SAT_RSR})
-
 SET(InSAR_DATA ${InSAR_SOURCE_DIR}/Data)
 SET(BASELINE_FILES ${InSAR_DATA}/Baseline)
 SET(INPUTDATA ${InSAR_DATA}/Input)
