@@ -65,9 +65,9 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   IndexType baseIndex;
 
   for (unsigned int dim = 0; dim < ImageDimension; ++dim)
-	{
-	baseIndex[dim] = std::floor(index[dim]);
-	}
+  {
+  baseIndex[dim] = std::floor(index[dim]);
+  }
 
   // Position the neighborhood at the index of interest
   SizeType radius;
@@ -80,55 +80,55 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   RealType resultValue = 0.;
 
   /** For each element of the Interpolator Kernel do :
-		1. Evaluate Kernel value                    
-		2. Evaluate the bandshifted phase term: the frequency offset from baseband. 
-		3. Read Pixel value
-		4. Apply the bandshifted phase term to the PixelValue
-	*/
+    1. Evaluate Kernel value                    
+    2. Evaluate the bandshifted phase term: the frequency offset from baseband. 
+    3. Read Pixel value
+    4. Apply the bandshifted phase term to the PixelValue
+  */
   for(unsigned int elt = 0 ; elt < nit.Size(); ++elt) 
-	{
-		IteratorType::OffsetType offset = nit.GetOffset(elt);
-		IteratorType::IndexType  currentIndex = nit.GetIndex();
-		RealType  valueFunction = 1.0;
-		RealType phase(1.0,0.0);
-		for(unsigned int dim = 0; dim < ImageDimension; ++dim)
-			{
-				ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
-				ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * currentIndex[dim];
-				RealType localPhase(cos(delta),sin(delta));
-				phase *= localPhase;
-				RealType valueTmp = m_Function(offset[dim]); 
-				valueFunction *=  valueTmp;
-			}
+  {
+    IteratorType::OffsetType offset = nit.GetOffset(elt);
+    IteratorType::IndexType  currentIndex = nit.GetIndex();
+    RealType  valueFunction = 1.0;
+    RealType phase(1.0,0.0);
+    for(unsigned int dim = 0; dim < ImageDimension; ++dim)
+      {
+        ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
+        ScalarRealType delta = - otb::CONST_2PI * zeroFrequency * currentIndex[dim];
+        RealType localPhase(cos(delta),sin(delta));
+        phase *= localPhase;
+        RealType valueTmp = m_Function(offset[dim]); 
+        valueFunction *=  valueTmp;
+      }
 
-		sumFunction +=  valueFunction;
-		squareFunction += (valueFunction * valueFunction);
+    sumFunction +=  valueFunction;
+    squareFunction += (valueFunction * valueFunction);
 
-		RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
-		resultValue += valueFunction * pixelValue * phase; 
+    RealType pixelValue = static_cast<RealType>(nit.GetPixel(elt));
+    resultValue += valueFunction * pixelValue * phase; 
   }
 
   if( this->GetNormalizeWeight() )
-	{
-		if(this->GetIsSumNormalizeWeight())
-			{
-				resultValue /= sumFunction;
-			}
-		else
-			{
-				resultValue /= squareFunction;
-			}
-	}
+  {
+    if(this->GetIsSumNormalizeWeight())
+      {
+        resultValue /= sumFunction;
+      }
+    else
+      {
+        resultValue /= squareFunction;
+      }
+  }
 
 
   /** Apply the bandshifted back to its original center frequency after interpolation */
   for(unsigned int dim = 0; dim < ImageDimension; ++dim)
-	{
-		ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
-		ScalarRealType delta = otb::CONST_2PI * zeroFrequency * baseIndex[dim];
-		RealType phase(cos(delta),sin(delta));
-		resultValue *= phase;
-	}
+  {
+    ScalarRealType zeroFrequency = static_cast<ScalarRealType>(m_NormalizeZeroFrequency[dim]);
+    ScalarRealType delta = otb::CONST_2PI * zeroFrequency * baseIndex[dim];
+    RealType phase(cos(delta),sin(delta));
+    resultValue *= phase;
+  }
 
   return resultValue;
 }
