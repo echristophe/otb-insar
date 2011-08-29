@@ -14,3 +14,7 @@ ENDIF(OTB_FOUND)
 
 ADD_EXECUTABLE(BasicInterferogramComputation BasicInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
+
+ADD_EXECUTABLE(SARCoregistrationComputation SARCoregistrationComputation.cxx)
+TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
+
