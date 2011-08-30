@@ -71,16 +71,16 @@ public:
 
   void SetNumberOfPoints(unsigned int numberOfPoints)
   {
-	m_NumberOfPoints.Fill(numberOfPoints);
+  m_NumberOfPoints.Fill(numberOfPoints);
   }
 
   void SetNumberOfPoints(VariableLengthVectorType value)
   {
-	  if(value.Size() != m_NumberOfPoints.Size())
-	  {
-		itkExceptionMacro(<< "The agrument dimension of the SetNumberOfPoints() method must be the same dimension as the Point");
-	  }
-	  m_NumberOfPoints = value ;
+    if(value.Size() != m_NumberOfPoints.Size())
+    {
+    itkExceptionMacro(<< "The agrument dimension of the SetNumberOfPoints() method must be the same dimension as the Point");
+    }
+    m_NumberOfPoints = value ;
   }
 
 

@@ -38,9 +38,9 @@ int otbRealResampleImageFilter_generic(int argc, char * argv[])
   const char * infname = argv[1];
   const char * outfname = argv[2];
 
-  typedef TInputPixelType											InputPixelType;
-  typedef TImageType												ImageType;
-  typedef TInterpolator												InterpolatorType;
+  typedef TInputPixelType                      InputPixelType;
+  typedef TImageType                        ImageType;
+  typedef TInterpolator                        InterpolatorType;
 
   typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
@@ -86,8 +86,8 @@ int otbRealResampleImageFilter_generic(int argc, char * argv[])
 
 int otbRealResampleImageFilter(int argc, char * argv[])
 {
-  typedef double										InputPixelType;
-  typedef otb::Image<InputPixelType, 2>					ImageType;
+  typedef double                    InputPixelType;
+  typedef otb::Image<InputPixelType, 2>          ImageType;
 
   int FunctionType = atoi(argv[3]);
   switch (FunctionType)
