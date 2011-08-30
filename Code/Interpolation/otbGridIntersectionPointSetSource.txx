@@ -49,9 +49,9 @@ GridIntersectionPointSetSource<TOutputPointSet>
   unsigned int numberOfPoints = m_NumberOfPoints[0];
 
   for(unsigned int dim = 1 ; dim < PointDimension; ++dim)
-	{
-		numberOfPoints *= m_NumberOfPoints[dim];
-	}
+  {
+    numberOfPoints *= m_NumberOfPoints[dim];
+  }
 
   outPoints->Reserve(numberOfPoints);
 
@@ -64,27 +64,27 @@ GridIntersectionPointSetSource<TOutputPointSet>
   PointType pointValue;
   for(unsigned int i = 0 ; i < m_NumberOfPoints[0]; ++i)
   {
-	if(m_NumberOfPoints[0] > 1)
-		{
-			pointValue[0] = m_MinPoint[0] + (m_MaxPoint[0]-m_MinPoint[0])/(m_NumberOfPoints[0]-1) * i ;
-		}
-	  else
-		{
-			pointValue[0] = (m_MinPoint[0]+m_MaxPoint[0])/2 ;
-		}
-	for(unsigned int j = 0 ; j < m_NumberOfPoints[1]; ++j)
-		{
-		  if(m_NumberOfPoints[1] > 1)
-			{
-				pointValue[1] = m_MinPoint[1] + (m_MaxPoint[1]-m_MinPoint[1])/(m_NumberOfPoints[1]-1) * j ;
-			}
-		  else
-			{
-			pointValue[1] = (m_MinPoint[1]+m_MaxPoint[1])/2 ;
-			}
-		outputPoint.Value() = pointValue;
-		++outputPoint;
-		}
+  if(m_NumberOfPoints[0] > 1)
+    {
+      pointValue[0] = m_MinPoint[0] + (m_MaxPoint[0]-m_MinPoint[0])/(m_NumberOfPoints[0]-1) * i ;
+    }
+    else
+    {
+      pointValue[0] = (m_MinPoint[0]+m_MaxPoint[0])/2 ;
+    }
+  for(unsigned int j = 0 ; j < m_NumberOfPoints[1]; ++j)
+    {
+      if(m_NumberOfPoints[1] > 1)
+      {
+        pointValue[1] = m_MinPoint[1] + (m_MaxPoint[1]-m_MinPoint[1])/(m_NumberOfPoints[1]-1) * j ;
+      }
+      else
+      {
+      pointValue[1] = (m_MinPoint[1]+m_MaxPoint[1])/2 ;
+      }
+    outputPoint.Value() = pointValue;
+    ++outputPoint;
+    }
   }
 
 }

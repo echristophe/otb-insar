@@ -32,15 +32,15 @@ int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
   const char * infname = argv[1];
   const char * outfname = argv[2];
 
-  typedef std::complex<double>										InputPixelType;
-  typedef otb::Image<InputPixelType, 2>								ImageType;
-  typedef TFunction												    FunctionType;
-  typedef itk::ConstantBoundaryCondition<ImageType>					BoundaryConditionType;
-  typedef double													CoordRepType;
+  typedef std::complex<double>                    InputPixelType;
+  typedef otb::Image<InputPixelType, 2>                ImageType;
+  typedef TFunction                            FunctionType;
+  typedef itk::ConstantBoundaryCondition<ImageType>          BoundaryConditionType;
+  typedef double                          CoordRepType;
 
   typedef otb::ComplexInterpolateImageFunction<ImageType, 
-						FunctionType, BoundaryConditionType,
-						CoordRepType>								InterpolatorType;
+            FunctionType, BoundaryConditionType,
+            CoordRepType>                InterpolatorType;
 
   typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;

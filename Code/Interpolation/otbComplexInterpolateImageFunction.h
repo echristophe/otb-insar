@@ -36,9 +36,9 @@ namespace otb
  * resampling profil.
  *
  * Along the resampling profil, the processing steps are  :  
- *		- Evaluating Kernel value at the given position                    
- * 		- Evaluating the bandshifted phase term: the frequency offset from baseband. 
- *		- Apply the bandshifted phase term to the PixelValue
+ *    - Evaluating Kernel value at the given position                    
+ *     - Evaluating the bandshifted phase term: the frequency offset from baseband. 
+ *    - Apply the bandshifted phase term to the PixelValue
  * 
  * And with the previous result applies a back bandshiftedifted phase term. 
  * Hence, value is still frequency offseted from the baseband.
@@ -126,16 +126,16 @@ public:
 
   void SetNormalizeZeroFrequency(double value)
   {
-	m_NormalizeZeroFrequency.Fill(value);
+  m_NormalizeZeroFrequency.Fill(value);
   }
 
   void SetNormalizeZeroFrequency(VariableLengthVectorType value)
   {
-	  if(value.Size() != m_NormalizeZeroFrequency.Size())
-	  {
-		itkExceptionMacro(<< "The agrument dimension of the SetNormalizeZeroFrequency() method must be the same dimension as the input image");
-	  }
-	  m_NormalizeZeroFrequency = value ;
+    if(value.Size() != m_NormalizeZeroFrequency.Size())
+    {
+    itkExceptionMacro(<< "The agrument dimension of the SetNormalizeZeroFrequency() method must be the same dimension as the input image");
+    }
+    m_NormalizeZeroFrequency = value ;
   }
 
 
