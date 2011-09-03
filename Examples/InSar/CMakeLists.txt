@@ -1,3 +1,6 @@
 
 ADD_EXECUTABLE(BasicInterferogramComputation BasicInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
+
+ADD_EXECUTABLE(SensorModelRegistration SensorModelRegistration.cxx)
+TARGET_LINK_LIBRARIES(SensorModelRegistration OTBCommon OTBIO Interpolation)
