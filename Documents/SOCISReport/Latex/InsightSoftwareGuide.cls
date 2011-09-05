@@ -86,7 +86,7 @@
 % .sty file is distributed with Insight, so you should not need to disable
 % it.  You'd also end up with a mixed page style; uglier than stock LaTeX!
 %
-\RequirePackage[Bjarne]{fncychap}\typeout{Using fancy chapter headings.}
+%\RequirePackage[Bjarne]{fncychap}\typeout{Using fancy chapter headings.}
 % Do horizontal rules it this way to match:
 \newcommand{\itk@doHorizontalRule}{\mghrulefill{\RW}}
 %

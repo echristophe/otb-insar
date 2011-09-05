@@ -42,7 +42,7 @@ int otbRealResampleImageFilter_generic(int argc, char * argv[])
   typedef TImageType                        ImageType;
   typedef TInterpolator                        InterpolatorType;
 
-  typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
+  typedef typename InterpolatorType::ContinuousIndexType            ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
   typedef otb::ImageFileWriter<ImageType>                           WriterType;
 
@@ -53,20 +53,20 @@ int otbRealResampleImageFilter_generic(int argc, char * argv[])
 
   // Instantiating object
 
-  ReaderType::Pointer reader = ReaderType::New();
+  typename ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(infname);
   reader->Update();
 
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
   interpolator->SetInputImage(reader->GetOutput());
   interpolator->SetRadius(radius);
   interpolator->Initialize();
 
-  StreamingResampleImageFilterType::Pointer resampler = StreamingResampleImageFilterType::New();
+  typename StreamingResampleImageFilterType::Pointer resampler = StreamingResampleImageFilterType::New();
   resampler->SetInput(reader->GetOutput());
   resampler->SetInterpolator(interpolator);
 
-  StreamingResampleImageFilterType::SizeType size;
+  typename StreamingResampleImageFilterType::SizeType size;
   size[0] = 512;
   size[1] = 512;
   double tutu = 1;
@@ -74,7 +74,7 @@ int otbRealResampleImageFilter_generic(int argc, char * argv[])
   resampler->SetOutputSpacing(tutu);
 
   // Result of resampler is written
-  WriterType::Pointer writer     = WriterType::New();
+  typename WriterType::Pointer writer     = WriterType::New();
   writer->SetInput(resampler->GetOutput());
   writer->SetFileName(outfname);
   writer->Update();

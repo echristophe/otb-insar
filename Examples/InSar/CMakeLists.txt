@@ -18,3 +18,6 @@ TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(SARCoregistrationComputation SARCoregistrationComputation.cxx)
 TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
 
+ADD_EXECUTABLE(SensorModelRegistration SensorModelRegistration.cxx)
+TARGET_LINK_LIBRARIES(SensorModelRegistration OTBCommon OTBIO Interpolation)
+

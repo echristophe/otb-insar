@@ -42,7 +42,7 @@ int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
             FunctionType, BoundaryConditionType,
             CoordRepType>                InterpolatorType;
 
-  typedef InterpolatorType::ContinuousIndexType                     ContinuousIndexType;
+  typedef typename InterpolatorType::ContinuousIndexType            ContinuousIndexType;
   typedef otb::ImageFileReader<ImageType>                           ReaderType;
 
   unsigned int radius = std::atoi(argv[4]);
@@ -65,7 +65,7 @@ int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
     }
 
   // Instantiating object
-  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
 
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(infname);
@@ -78,7 +78,7 @@ int otbComplexInterpolateImageFunction_generic(int argc, char * argv[])
   std::ofstream file;
   file.open(outfname);
 
-  for (std::vector<ContinuousIndexType>::iterator it = indicesList.begin(); it != indicesList.end(); ++it)
+  for (typename std::vector<ContinuousIndexType>::iterator it = indicesList.begin(); it != indicesList.end(); ++it)
     {
     file << (*it) << " -> " << interpolator->EvaluateAtContinuousIndex((*it)) << std::endl;
     }

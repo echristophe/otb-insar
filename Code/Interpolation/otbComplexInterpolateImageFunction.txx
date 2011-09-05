@@ -87,8 +87,8 @@ ComplexInterpolateImageFunction<TInputImage, TFunction, TBoundaryCondition, TCoo
   */
   for(unsigned int elt = 0 ; elt < nit.Size(); ++elt) 
   {
-    IteratorType::OffsetType offset = nit.GetOffset(elt);
-    IteratorType::IndexType  currentIndex = nit.GetIndex();
+    typename IteratorType::OffsetType offset = nit.GetOffset(elt);
+    typename IteratorType::IndexType  currentIndex = nit.GetIndex();
     RealType  valueFunction = 1.0;
     RealType phase(1.0,0.0);
     for(unsigned int dim = 0; dim < ImageDimension; ++dim)

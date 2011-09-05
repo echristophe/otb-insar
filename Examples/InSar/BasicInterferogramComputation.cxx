@@ -442,7 +442,7 @@ int main(int argc, char* argv[])
 
   /* Display the interferogram with nice colors */
 
-
+  
   typedef itk::RGBPixel<unsigned char> RGBPixelType;
   typedef otb::Image<RGBPixelType, 2> RGBImageType;
 
