@@ -81,6 +81,11 @@ ADD_TEST(coTvRealHammingWindowResampleImageFilter ${INTERPOLATION_TESTS}
 ADD_TEST(TvGridIntersectionPointSetSource ${INTERPOLATION_TESTS}
   otbGridIntersectionPointSetSourceTest)
 
+ADD_TEST(coTvNormalizeZeroFrequencyCalculator ${INTERPOLATION_TESTS}
+        otbNormalizeZeroFrequencyCalculatorTest
+                ${INPUTDATA}/prison_toulouse.tif
+                )	
+
 							       
 SET(INTERPOLATION_SRCS
 otbInterpolationTests.cxx
@@ -89,6 +94,7 @@ otbComplexInterpolateImageFunction.cxx
 otbComplexResampleImageFilter.cxx
 otbRealResampleImageFilter.cxx
 otbGridIntersectionPointSetSourceTest.cxx
+otbNormalizeZeroFrequencyCalculatorTest.cxx
 )
 
 

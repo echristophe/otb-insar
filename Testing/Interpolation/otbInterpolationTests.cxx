@@ -32,4 +32,5 @@ void RegisterTests()
   REGISTER_TEST(otbComplexResampleImageFilter);
   REGISTER_TEST(otbRealResampleImageFilter);
   REGISTER_TEST(otbGridIntersectionPointSetSourceTest);
+  REGISTER_TEST(otbNormalizeZeroFrequencyCalculatorTest);
 }
