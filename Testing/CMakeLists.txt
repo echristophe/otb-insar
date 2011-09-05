@@ -1,0 +1,5 @@
+
+SET(CXX_TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+
+SUBDIRS (Interpolation)
+
