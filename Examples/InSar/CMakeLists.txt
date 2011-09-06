@@ -21,3 +21,5 @@ TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(SensorModelRegistration SensorModelRegistration.cxx)
 TARGET_LINK_LIBRARIES(SensorModelRegistration OTBCommon OTBIO Interpolation)
 
+ADD_EXECUTABLE(ComplexCoarseRegistrationComputation ComplexCoarseRegistrationComputation.cxx)
+TARGET_LINK_LIBRARIES(ComplexCoarseRegistrationComputation OTBCommon OTBIO Interpolation)
