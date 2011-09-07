@@ -27,14 +27,15 @@
 #include "otbGenericRSTransform.h"
 #include "otbLeastSquareAffineTransformEstimator.h"
 
-//#include "otbComplexInterpolateImageFunction.h"
-//#include "otbWindowedSincInterpolateImageBlackmanFunction.h"
+#include "otbComplexInterpolateImageFunction.h"
+#include "otbWindowedSincInterpolateImageBlackmanFunction.h"
 
 #include "itkPointSet.h"
 #include "otbGridIntersectionPointSetSource.h"
 #include "itkFFTComplexToComplexImageFilter.h"
+#include "otbStreamingResampleImageFilter.h"
 
-#include "itkResampleImageFilter.h"
+#include "otbStandardWriterWatcher.h"
 
 typedef std::complex<double>						PixelType;
 typedef otb::Image<PixelType,2>						ImageType;
@@ -59,10 +60,17 @@ typedef FFTType::OutputImageType								FFTOutputImageType;
 
 typedef itk::ImageRegionIteratorWithIndex<FFTOutputImageType>	ImageRegionIteratorType;
 
-typedef itk::ResampleImageFilter< ImageType, ImageType >		ResampleFilterType;
+typedef otb::StreamingResampleImageFilter< ImageType, ImageType >		ResampleFilterType;
 
 typedef itk::Point<double,2>						myPointType;
 typedef otb::LeastSquareAffineTransformEstimator<myPointType>		EstimateFilterType;
+
+typedef otb::Function::BlackmanWindowFunction<double> FunctionType;
+typedef itk::ConstantBoundaryCondition<ImageType> BoundaryConditionType;
+typedef double CoordRepType;
+typedef otb::ComplexInterpolateImageFunction<ImageType,FunctionType, BoundaryConditionType, CoordRepType> InterpolatorType;
+
+
 
 int main(int argc, char* argv[])
 {
@@ -87,25 +95,7 @@ int main(int argc, char* argv[])
   slave->SetFileName(slaveImage);
 
   master->GenerateOutputInformation();
-  //slave->GenerateOutputInformation();
-
-  /** Temp ROI generation to avoid memory burst for resampling */
-  ExtractFilterType::Pointer slvTMPExtract = ExtractFilterType::New();
-  ExtractFilterType::Pointer mstTMPExtract = ExtractFilterType::New();
-  slvTMPExtract->SetInput(slave->GetOutput());
-  mstTMPExtract->SetInput(master->GetOutput());
-  RegionType tmpRegion;
-  IndexType tmpIndex;
-  SizeType tmpSize;
-  tmpSize[0] = 2000;
-  tmpSize[1] = 2000;
-  tmpIndex[0] = 0;
-  tmpIndex[1] = 0;
-  tmpRegion.SetIndex(tmpIndex);
-  tmpRegion.SetSize(tmpSize);
-  slvTMPExtract->SetExtractionRegion(tmpRegion);
-  mstTMPExtract->SetExtractionRegion(tmpRegion);
-  /** End temp extraction */
+  slave->GenerateOutputInformation();
 
   ExtractFilterType::Pointer mstExtract = ExtractFilterType::New();
   ExtractFilterType::Pointer slvExtract = ExtractFilterType::New();
@@ -227,30 +217,28 @@ int main(int argc, char* argv[])
 
   std::cout << "RMS error is:" << rmsError[0] << " in range and " << rmsError[1] << " in azimuth." << std::endl;
   std::cout << "Relative residual is:" << relResidual[0] << " in range and " << relResidual[1] << " in azimuth." << std::endl;
+
+    // Set-up interpolator
+  InterpolatorType::Pointer interpolator = InterpolatorType::New();
+  interpolator->SetInputImage(slave->GetOutput());
+  interpolator->SetRadius(3);
+  interpolator->SetNormalizeZeroFrequency(0.01);
+  resample->SetInterpolator(interpolator);
   
   resample->SetTransform(estimate->GetAffineTransform());
-  //resample->SetInput(slave->GetOutput());
-  resample->SetInput(slvTMPExtract->GetOutput());
-  //resample->SetSize(mstSize);
-  tmpSize[0] -= 100;
-  tmpSize[1] -= 100;
-  resample->SetSize(tmpSize);
+  resample->SetInput(slave->GetOutput());
+  resample->SetOutputSize(mstSize);
   resample->SetOutputOrigin(master->GetOutput()->GetOrigin());
   resample->SetOutputSpacing(master->GetOutput()->GetSpacing());
-  resample->SetDefaultPixelValue(0);
 
   typedef otb::StreamingImageFileWriter<ImageType> WriterFixedType;
   WriterFixedType::Pointer writer = WriterFixedType::New();
   writer->SetFileName(outRegisteredSlave);
   writer->SetInput(resample->GetOutput());
-  writer->Update();
 
-  /** Temp ROI generation to avoid memory burst for resampling */
-  WriterFixedType::Pointer writerTMP = WriterFixedType::New();
-  writerTMP->SetFileName("master-ROI.hdr");
-  writerTMP->SetInput(mstTMPExtract->GetOutput());
-  writerTMP->Update();
-  /** End temp extraction */
+  otb::StandardWriterWatcher watcher1(writer,resample,"Resampling slave image.");
+
+  writer->Update();
 
   return EXIT_SUCCESS;
 }
