@@ -9,6 +9,10 @@ endif(COMMAND cmake_policy)
      
 PROJECT(InSAR)
 
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+
 #-----------------------------------------------------------------------------
 # OTB option to access large file (> 4Go).
 # ADD_DEFINITIONS(
@@ -29,11 +33,19 @@ ELSE(OTB_FOUND)
           "Cannot build InSAR without OTB.  Please set OTB_DIR.")
 ENDIF(OTB_FOUND)
 
+
+#-------------------------------
+# Librairie FFTW
+#-------------------------------
+find_package(fftw3 REQUIRED)
+
+
 INCLUDE_DIRECTORIES (
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/Code
   ${CMAKE_CURRENT_SOURCE_DIR}/Code/Interpolation
   ${CMAKE_CURRENT_BINARY_DIR}/Code
+  ${FFTW3_INCLUDE_DIRS}
 )
 
 
