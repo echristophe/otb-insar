@@ -83,7 +83,10 @@ ADD_TEST(TvGridIntersectionPointSetSource ${INTERPOLATION_TESTS}
 
 ADD_TEST(coTvNormalizeZeroFrequencyCalculator ${INTERPOLATION_TESTS}
         otbNormalizeZeroFrequencyCalculatorTest
-                ${INPUTDATA}/prison_toulouse.tif
+                2048
+				1024
+				0.24
+				0.325
                 )	
 
 							       
