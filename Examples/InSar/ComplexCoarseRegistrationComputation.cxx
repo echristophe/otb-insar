@@ -66,6 +66,10 @@ typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, ImageType::I
 typedef FFTType::OutputImageType																			FFTOutputImageType;
 typedef FFTType::TransformDirectionType																		FFTDirectionType;
 
+//==================================== FOR VALIDATION PURPOSES ===========================================
+typedef otb::ImageFileWriter<FFTOutputImageType>										FFTWriterType;
+//========================================================================================================
+
 typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >												ImageRegionIteratorType;
 
 int main(int argc, char* argv[])
@@ -115,11 +119,11 @@ int main(int argc, char* argv[])
   
   PointSetSourceType::Pointer pointSet = PointSetSourceType::New();
   PointSetType::PointType minPoint, maxPoint;
-  minPoint[0] = (mstSize[0] - (mstSize[0] % tiePointsPerDim)) / tiePointsPerDim;
-  minPoint[1] = (mstSize[1] - (mstSize[1] % tiePointsPerDim)) / tiePointsPerDim;
+  minPoint[0] = (mstSize[0] - ((mstSize[0] - 1) % tiePointsPerDim) - 1) / tiePointsPerDim;
+  minPoint[1] = (mstSize[1] - ((mstSize[1] - 1) % tiePointsPerDim) - 1) / tiePointsPerDim;
   pointSet->SetMinPoint(minPoint);
-  maxPoint[0] = mstSize[0] - (mstSize[0] % tiePointsPerDim);
-  maxPoint[1] = mstSize[1] - (mstSize[1] % tiePointsPerDim);
+  maxPoint[0] = mstSize[0] - ((mstSize[0] - 1) % tiePointsPerDim) - 1;
+  maxPoint[1] = mstSize[1] - ((mstSize[1] - 1) % tiePointsPerDim) - 1;
   pointSet->SetMaxPoint(maxPoint);
 
   pointSet->SetNumberOfPoints(tiePointsPerDim);
@@ -143,7 +147,8 @@ int main(int argc, char* argv[])
 
   IndexType currentIndex;
   IndexType slvIndex;
-  RegionType currentRegion;
+  RegionType curMstRegion;
+  RegionType curSlvRegion;
   SizeType currentSize;
   currentSize[0] = patchSizePerDim;
   currentSize[1] = patchSizePerDim;
@@ -152,11 +157,11 @@ int main(int argc, char* argv[])
 
   currentIndex[0] = 0;
   currentIndex[1] = 0;
-  currentRegion.SetIndex(currentIndex);
-  currentRegion.SetSize(currentSize);
+  curMstRegion.SetIndex(currentIndex);
+  curMstRegion.SetSize(currentSize);
   crossImage->SetSpacing(master->GetOutput()->GetSpacing());
   crossImage->SetOrigin(master->GetOutput()->GetOrigin());
-  crossImage->SetRegions(currentRegion);
+  crossImage->SetRegions(curMstRegion);
   crossImage->Allocate();
 
   FFTType::Pointer crossFFT = FFTType::New();
@@ -171,35 +176,44 @@ int main(int argc, char* argv[])
 	PointType slvPoint = transform->TransformPoint(mstPoint);
 	slvPoint[0] = floor(slvPoint[0]);
 	slvPoint[1] = floor(slvPoint[1]);
-	if(mstPoint[1] 5000)
-		break;
-	currentIndex[0] = mstPoint[0];
-	currentIndex[1] = mstPoint[1];
-	currentRegion.SetIndex(currentIndex);
-	currentRegion.SetSize(currentSize);
-	currentRegion.Crop(master->GetOutput()->GetLargestPossibleRegion());
+	//if(mstPoint[1] > 5000)
+		//int j = 1;
+		//	break;
+	currentIndex[0] = mstPoint[0] - (patchSizePerDim / 2);
+	currentIndex[1] = mstPoint[1] - (patchSizePerDim / 2);
+	curMstRegion.SetIndex(currentIndex);
+	curMstRegion.SetSize(currentSize);
+	//currentRegion.Crop(master->GetOutput()->GetLargestPossibleRegion());
 
-	mstExtract->SetExtractionRegion(currentRegion);
 	//slvExtract->SetExtractionRegion(currentRegion); // Should take into account GenericRSTransform-calculated initial offset (if genericRS is used)
-	currentIndex[0] = slvPoint[0];
-	currentIndex[1] = slvPoint[1];
-	currentRegion.SetIndex(currentIndex);
-	currentRegion.SetSize(currentSize);
-	currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
-	if(!currentRegion.IsInside(slave->GetOutput()->GetLargestPossibleRegion()))
+	currentIndex[0] = slvPoint[0] - (patchSizePerDim / 2);
+	currentIndex[1] = slvPoint[1] - (patchSizePerDim / 2);
+	curSlvRegion.SetIndex(currentIndex);
+	curSlvRegion.SetSize(currentSize);
+	//currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
+	//if(!currentRegion.IsInside(slave->GetOutput()->GetLargestPossibleRegion()))
+	if(!(slave->GetOutput()->GetLargestPossibleRegion().IsInside(curSlvRegion)) || !(master->GetOutput()->GetLargestPossibleRegion().IsInside(curMstRegion)))
 	{
+		/*
 		currentIndex[0] = mstPoint[0];
 		currentIndex[1] = mstPoint[1];
 		currentRegion.SetIndex(currentIndex);
 		currentRegion.SetSize(currentSize);
 		currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
+		*/
+		++it;
+		continue;
 	}
-	slvExtract->SetExtractionRegion(currentRegion);
-	offset[0] = slvPoint[0] - mstPoint[0];
-	offset[1] = slvPoint[1] - mstPoint[1];
+	mstExtract->SetExtractionRegion(curMstRegion);
+	slvExtract->SetExtractionRegion(curSlvRegion);
+	offset[0] = mstPoint[0] - slvPoint[0];
+	offset[1] = mstPoint[1] - slvPoint[1];
+	std::cout << "Initial offset: " << offset[0] << ", " << offset[1] << std::endl;
 
-	mstFFT->Update();
-	slvFFT->Update();
+	//mstFFT->Update();
+	//slvFFT->Update();
+	mstFFT->UpdateLargestPossibleRegion();
+	slvFFT->UpdateLargestPossibleRegion();
 
 	ImageRegionIteratorType mstIt(mstFFT->GetOutput(), mstFFT->GetOutput()->GetRequestedRegion());
 	ImageRegionIteratorType slvIt(slvFFT->GetOutput(), slvFFT->GetOutput()->GetRequestedRegion());
@@ -219,27 +233,50 @@ int main(int argc, char* argv[])
 	double maxValue = 0.0;
 	//PointType slvPoint = mstPoint;
 
+	slvIndex.Fill(0.0);
 	for(invIt.GoToBegin(); !invIt.IsAtEnd(); ++invIt)
 	{
 		double value = abs(invIt.Value());
 
-		if(value maxValue)
+		if(value > maxValue)
 		{
 			maxValue = value;
 
 			slvIndex = invIt.GetIndex();
 
-			slvPoint[0] = slvIndex[0] + mstPoint[0] + offset[0];
-			slvPoint[1] = slvIndex[1] + mstPoint[1] + offset[1];
+			//slvPoint[0] = slvIndex[0] + mstPoint[0] + offset[0];
+			//slvPoint[1] = slvIndex[1] + mstPoint[1] + offset[1];			
 		}
 	}
+	slvPoint[0] = slvPoint[0] + slvIndex[0] - (patchSizePerDim / 2);
+	slvPoint[1] = slvPoint[1] + slvIndex[1] - (patchSizePerDim / 2);
 
 	std::cout << "Master: " << mstPoint[0] << ", " << mstPoint[1];
-	std::cout << "Slave: " << slvPoint[0] << ", " << slvPoint[1] << std::endl;
+	std::cout << " - Slave: " << slvPoint[0] << ", " << slvPoint[1] << std::endl;
+
+	offset[0] = mstPoint[0] - slvPoint[0];
+	offset[1] = mstPoint[1] - slvPoint[1];
+	std::cout << "Final offset: " << offset[0] << ", " << offset[1] << std::endl;
     
 	estimate->AddTiePoints(mstPoint, slvPoint);
 
     ++it;
+
+	if(mstPoint[0] == 5100 && mstPoint[1] == 3474)
+	{
+		FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
+		mstFFTWriter->SetInput(mstFFT->GetOutput());
+		mstFFTWriter->SetFileName("masterFFTx5100_y3474_256.hdr");
+		mstFFTWriter->Update();
+		FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
+		slvFFTWriter->SetInput(slvFFT->GetOutput());
+		slvFFTWriter->SetFileName("slaveFFTx5100_y3474_256.hdr");
+		slvFFTWriter->Update();
+		FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
+		crossFFTWriter->SetInput(crossFFT->GetOutput());
+		crossFFTWriter->SetFileName("crossFFTx5100_y3474_256.hdr");
+		crossFFTWriter->Update();
+	}
   }
 
   estimate->Compute();
@@ -251,17 +288,16 @@ int main(int argc, char* argv[])
   std::cout << "Relative residual is:" << relResidual[0] << " in range and " << relResidual[1] << " in azimuth." << std::endl;
   
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
-  interpolator->SetInputImage(slvTMPExtract->GetOutput());
+  interpolator->SetInputImage(slave->GetOutput());
   interpolator->SetRadius(3);
   interpolator->SetNormalizeZeroFrequency(0.01);
 
   resample->SetTransform(estimate->GetAffineTransform());
   resample->SetInterpolator(interpolator);
   resample->SetInput(slave->GetOutput());
-  resample->SetSize(mstSize);
+  resample->SetOutputSize(mstSize);
   resample->SetOutputOrigin(master->GetOutput()->GetOrigin());
   resample->SetOutputSpacing(master->GetOutput()->GetSpacing());
-  resample->SetDefaultPixelValue(0);
 
   typedef otb::StreamingImageFileWriter< ImageType > WriterFixedType;
   WriterFixedType::Pointer writer = WriterFixedType::New();
