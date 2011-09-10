@@ -1,0 +1,221 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Complete documentation on the extended LaTeX markup used for Insight
+% documentation is available in ``Documenting Insight'', that is part
+% of the standard documentation for Insight.  It may be found online
+% at:
+%
+%                    http://www.itk.org
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{InsightSoftwareGuide}
+
+\usepackage[pdftex]{graphicx}
+
+\usepackage{times,lscape,url}
+
+\usepackage[latin1]{inputenc}
+
+\usepackage{tikz}
+
+\usepackage{color}
+
+\usepackage{xspace}
+
+\definecolor{listcomment}{rgb}{0.0,0.5,0.0}
+\definecolor{listkeyword}{rgb}{0.0,0.0,0.5}
+\definecolor{listnumbers}{gray}{0.65}
+\definecolor{listlightgray}{gray}{0.955}
+\definecolor{listwhite}{gray}{1.0}
+
+\usepackage{listings}
+\newcommand{\lstsetcpp}
+{
+\lstset{frame = tb,
+       framerule = 0.25pt,
+       float,
+       fontadjust,
+       backgroundcolor={\color{listlightgray}},
+       basicstyle = {\ttfamily\footnotesize},
+       keywordstyle = {\ttfamily\color{listkeyword}\textbf},
+       identifierstyle = {\ttfamily},
+       commentstyle = {\ttfamily\color{listcomment}\textit},
+       stringstyle = {\ttfamily},
+       showstringspaces = false,
+       showtabs = false,
+       numbers = none,
+       numbersep = 6pt,
+       numberstyle={\ttfamily\color{listnumbers}},
+       tabsize = 2,
+       language=[ANSI]C++,
+       floatplacement=!h
+       }
+}
+\newcommand{\lstsetpython}
+{
+\lstset{language=Python
+        }
+}
+\newcommand{\lstsetjava}
+{
+\lstset{language=Java
+        }
+}
+
+
+\newif\ifitkFullVersion
+\itkFullVersiontrue
+%\itkFullVersionfalse
+
+\newif\ifitkPrintedVersion
+\itkPrintedVersiontrue
+%\itkPrintedVersionfalse
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  hyperref should be the last package to be loaded.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[pdftex,
+pdftitle={The Orfeo ToolBox Cookbook, a guide for non-developers},
+pdfauthor={CNES},
+pdfsubject={Remote Sensing, Orfeo, Pleiades, Cosmo Skymed},
+pdfkeywords={image processing, Remote sensing, Guide},
+pdfpagemode={UseOutlines},
+bookmarks,bookmarksopen,
+pdfstartview={FitH},
+backref,
+colorlinks,linkcolor={red},citecolor={blue},urlcolor={blue},
+]{hyperref}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bbm}
+
+\def\logoCNES{../Art/logoVectoriel.pdf}
+
+
+
+% Useful macros
+\newcommand{\otb}{\textbf{Orfeo ToolBox}\xspace}
+\newcommand{\app}{\textbf{OTB-Applications}\xspace}
+\newcommand{\mont}{\textbf{Monteverdi}\xspace}
+\newcommand{\mmod}[1]{\emph{#1}\index{#1}\xspace}
+\newcommand{\application}[1]{\emph{#1}\index{#1}\xspace}
+\newcommand{\ossim}{\href{http://www.ossim.org/OSSIM/OSSIM_Home.html}{OSSIM}\xspace}
+\newcommand{\sg}{\href{http://orfeo-toolbox.org/SoftwareGuide/}{OTB Software Guide}\xspace}
+\newcommand{\dox}{\href{http://orfeo-toolbox.org/doxygen/}{Doxygen}\xspace}
+\newcommand{\website}{\href{http://orfeo-toolbox.org}{Orfeo ToolBox website}\xspace}
+\newcommand{\qgis}{\href{http://www.qgis.org/}{Quantum GIS}\xspace}
+\newcommand{\gdal}{\href{http://www.gdal.org/}{GDAL}\xspace}
+\newcommand{\osgeow}{\href{http://trac.osgeo.org/osgeo4w/}{OSGeo4W}\xspace}
+\newcommand{\download}{\href{http://sourceforge.net/projects/orfeo-toolbox/}{OTB download
+   page}\xspace}
+\newcommand{\googleearth}{\textbf{Google Earth\copyright}\xspace}
+
+\newtheorem{algo}{Algorithm}
+\newtheorem{defin}{Definition}
+
+\title{SOCIS 2011 : InSAR processing \\with OTB library}
+
+\author{SOCIS Team}
+
+\authoraddress{
+  \url{http://www.orfeo-toolbox.org}\\
+  e-mail: \email{otb@cnes.fr}
+}
+
+\date{\today}
+
+
+% actually write the .idx file
+\makeindex
+
+\setcounter{tocdepth}{3}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%           Begin Document
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\ifitkPrintedVersion
+\fi
+
+\maketitle
+
+\frontmatter
+
+\hyperbaseurl{http://www.orfeo-toolbox.org}
+
+\lstsetcpp
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% remove headings from the following material
+\pagestyle{plain}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%\ifitkPrintedVersion
+%% \input{Cover.tex}
+%%\fi
+
+%\input{Abstract.tex}
+\chapter*{Foreword}
+\noindent
+
+ESA Summer of Code in Space (SOCIS) is a pilot program run 
+by the Advanced Concepts Team of the European Space Agency 
+that offers student developers stipends to write code for various 
+space-related open source software projects. 
+Through SOCIS, accepted student applicants are paired with a mentor 
+or mentors from the participating projects, thus gaining exposure to 
+real-world software development scenarios. In turn, the participating 
+projects are able to more easily identify and bring in new developers.
+
+InSAR framework has been choose.  
+
+After almost 5 years of development, the \otb has become a
+rich library used in many remote sensing context, from research work
+to operational systems.  For more information on the \otb, please 
+feel free to visit the \website.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Insert Table of Contents; List of Figures and Tables
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% enable headings from the following material
+\pagestyle{normal}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\small
+\tableofcontents
+\listoffigures
+\listoftables
+\normalsize
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Begin technical content
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\mainmatter
+
+\include{InSAR}
+
+
+\end{document}
+
+
+
