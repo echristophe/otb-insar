@@ -20,15 +20,9 @@
 #ifndef __otbImageNormalizeZeroFrequencyCalculator_h
 #define __otbImageNormalizeZeroFrequencyCalculator_h
 
-//#include "itkAffineTransform.h"
 #include "otbMacro.h"
 #include "otbImage.h"
 #include "itkNumericTraits.h"
-
-
-//#include "vnl/vnl_vector_fixed.h"
-//#include "vnl/vnl_matrix_fixed.h"
-//#include "vnl/vnl_diag_matrix.h"
 
 namespace otb
 {

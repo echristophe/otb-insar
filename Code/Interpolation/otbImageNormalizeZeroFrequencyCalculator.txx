@@ -24,6 +24,7 @@
 #include "itkFFTComplexToComplexImageFilter.h"
 #include "itkComplexToModulusImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
+#include "itkBinaryThresholdImageFilter.h"
 
 namespace otb
 { 
@@ -94,45 +95,76 @@ Compute()
 
   typedef itk::Image<typename FFTImageType::OutputImagePixelType,ImageDimension> FFTOutputImageType;
   typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,ScalarImageType>   ComplexToModulusImageType;
+  typedef itk::MinimumMaximumImageCalculator<ScalarImageType> MaxImageCalulatorType;
+  typedef itk::BinaryThresholdImageFilter< ScalarImageType, ScalarImageType > ThresholdImageFilterType;
 
   FFTImageType::Pointer fftImage = FFTImageType::New(); 
-  ComplexToModulusImageType::Pointer complexToModulusImage = ComplexToModulusImageType::New(); 
+  ComplexToModulusImageType::Pointer modulusImage = ComplexToModulusImageType::New(); 
 
   fftImage->SetInput(m_Image.GetPointer());
-  complexToModulusImage->SetInput(fftImage->GetOutput());
-  complexToModulusImage->Update();
 
-  itk::ImageRegionConstIteratorWithIndex< ScalarImageType > it(	complexToModulusImage->GetOutput(),
-																complexToModulusImage->GetOutput()->GetRequestedRegion() ); 
-  
-  typedef itk::MinimumMaximumImageCalculator<ScalarImageType> MaxImageCalulatorType;
+  fftImage->SetTransformDirection(FFTImageType::DIRECT);
+  FFTOutputImageType::SpacingType spacingFFT;
+
+  fftImage->GetOutput()->UpdateOutputInformation();
+
+  for(unsigned int dim = 0 ; dim < ImageDimension ; ++dim)
+	{	
+	spacingFFT[dim] = 1.0 / fftImage->GetOutput()->GetLargestPossibleRegion ().GetSize()[dim];
+	}	
+
+  modulusImage->SetInput(fftImage->GetOutput());
+  modulusImage->Update();
 
   MaxImageCalulatorType::Pointer  maxCalculator = MaxImageCalulatorType::New();
 
-  maxCalculator->SetImage(complexToModulusImage->GetOutput());
+  maxCalculator->SetImage(modulusImage->GetOutput());
   maxCalculator->ComputeMaximum();
-  
+  	  
   ScalarPixelType maximumValue;
 
   maximumValue = maxCalculator->GetMaximum();
-    
+  //std::cout << "Maximum : "  << maximumValue << std::endl;
+  //std::cout << "IndexMax : " << maxCalculator->GetIndexOfMaximum() << std::endl;
+
+  ThresholdImageFilterType::Pointer thresholdImage = ThresholdImageFilterType::New();
+  thresholdImage->SetInput(modulusImage->GetOutput());
+  thresholdImage->SetOutsideValue(0.0);
+  thresholdImage->SetInsideValue(1.0);
+  thresholdImage->SetLowerThreshold(maximumValue/2.0 );
+  thresholdImage->SetUpperThreshold(maximumValue );
+  thresholdImage->Update();
+
+  itk::ImageRegionConstIteratorWithIndex< ScalarImageType > it(	thresholdImage->GetOutput(),
+																thresholdImage->GetOutput()->GetRequestedRegion() ); 
+  
   IndexType averageIndex;
+  averageIndex.Fill(0);
   double nbIndex =0.0;
+
+  it.Begin();
 
   while( !it.IsAtEnd() )
     {
     IndexType indexPosition = it.GetIndex();
-	for(unsigned int dim = 0 ; dim < ImageDimension ; ++dim)
-		{	
-		averageIndex[dim] +=indexPosition[dim]; 	
-		}	
+
+	double value =it.Get();
+	if(value >0.0)
+		{
+		for(unsigned int dim = 0 ; dim < ImageDimension ; ++dim)
+			{	
+			averageIndex[dim] += (indexPosition[dim]) ; 	
+			}	
+		++nbIndex;
+		}
     ++it;
-	++nbIndex;
 	}
+  //std::cout << "averageIndex : " << averageIndex[0] << " , "<< averageIndex[1] << std::endl;
+
 
  for(unsigned int dim = 0 ; dim < ImageDimension ; ++dim)
 	{	
-	m_NormalizeZeroFrequency[dim] = static_cast<ScalarType>(averageIndex[dim] / nbIndex ); 	
+	m_NormalizeZeroFrequency[dim] = static_cast<ScalarType>(averageIndex[dim] / nbIndex * spacingFFT[dim]); 	
 	}	
 
 
