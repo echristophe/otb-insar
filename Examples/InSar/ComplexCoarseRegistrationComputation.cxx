@@ -27,50 +27,50 @@
 #include "otbGenericRSTransform.h"
 #include "otbLeastSquareAffineTransformEstimator.h"
 
-#include "otbComplexInterpolateImageFunction.h"
 #include "otbWindowedSincInterpolateImageBlackmanFunction.h"
+#include "otbComplexInterpolateImageFunction.h"
 
 #include "itkPointSet.h"
 #include "otbGridIntersectionPointSetSource.h"
 #include "itkFFTComplexToComplexImageFilter.h"
-#include "otbStreamingResampleImageFilter.h"
 
+#include "otbStreamingResampleImageFilter.h"
 #include "otbStandardWriterWatcher.h"
 
-typedef std::complex<double>						PixelType;
-typedef otb::Image<PixelType,2>						ImageType;
-typedef ImageType::SizeType							SizeType;
-typedef ImageType::IndexType						IndexType;
-typedef ImageType::RegionType						RegionType;
+typedef std::complex< double >																				PixelType;
+typedef otb::Image< PixelType,2 >																			ImageType;
+typedef ImageType::SizeType																					SizeType;
+typedef ImageType::IndexType																				IndexType;
+typedef ImageType::RegionType																				RegionType;
 
-typedef otb::ImageFileReader<ImageType>				ReaderType;
-typedef otb::StreamingImageFileWriter<ImageType>	WriterType;
+typedef itk::PointSet< PixelType, ImageType::ImageDimension >												PointSetType;
+typedef otb::GridIntersectionPointSetSource< PointSetType >													PointSetSourceType;
+typedef PointSetType::PointsContainer																		PointsContainerType;
+typedef PointSetType::PointType																				PointType;
 
-typedef otb::GenericRSTransform< >					TransformType; // Default is Double, 2 dimensions
+typedef otb::ImageFileReader< ImageType >																	ReaderType;
+typedef otb::StreamingImageFileWriter< ImageType >															WriterType;
 
-typedef itk::PointSet<PixelType, 2>							PointSetType;
-typedef otb::GridIntersectionPointSetSource<PointSetType>	PointSetSourceType;
-typedef PointSetType::PointsContainer						PointsContainerType;
-typedef PointSetType::PointType								PointType;
+typedef otb::GenericRSTransform<  >																			TransformType; // Default is Double, 2 dimensions
+typedef otb::ExtractROI< PixelType, PixelType >																ExtractFilterType;
+typedef otb::StreamingResampleImageFilter< ImageType, ImageType >											ResampleFilterType;
+typedef itk::Point< PixelType::value_type,ImageType::ImageDimension >										LSQPointType;
+typedef otb::LeastSquareAffineTransformEstimator< LSQPointType >											EstimateFilterType;
 
-typedef otb::ExtractROI< PixelType, PixelType >				ExtractFilterType;
+typedef otb::Function::BlackmanWindowFunction< PixelType::value_type >										FunctionType;
+typedef itk::ConstantBoundaryCondition< ImageType >															BoundaryConditionType;
+typedef PixelType::value_type																				CoordRepType;
+typedef otb::ComplexInterpolateImageFunction< ImageType,FunctionType, BoundaryConditionType, CoordRepType > InterpolatorType;
 
-typedef itk::FFTComplexToComplexImageFilter<double, 2>			FFTType;
-typedef FFTType::OutputImageType								FFTOutputImageType;
+typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, ImageType::ImageDimension >				FFTType;
+typedef FFTType::OutputImageType																			FFTOutputImageType;
+typedef FFTType::TransformDirectionType																		FFTDirectionType;
 
-typedef itk::ImageRegionIteratorWithIndex<FFTOutputImageType>	ImageRegionIteratorType;
+//==================================== FOR VALIDATION PURPOSES ===========================================
+typedef otb::ImageFileWriter<FFTOutputImageType>										FFTWriterType;
+//========================================================================================================
 
-typedef otb::StreamingResampleImageFilter< ImageType, ImageType >		ResampleFilterType;
-
-typedef itk::Point<double,2>						myPointType;
-typedef otb::LeastSquareAffineTransformEstimator<myPointType>		EstimateFilterType;
-
-typedef otb::Function::BlackmanWindowFunction<double> FunctionType;
-typedef itk::ConstantBoundaryCondition<ImageType> BoundaryConditionType;
-typedef double CoordRepType;
-typedef otb::ComplexInterpolateImageFunction<ImageType,FunctionType, BoundaryConditionType, CoordRepType> InterpolatorType;
-
-
+typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >												ImageRegionIteratorType;
 
 int main(int argc, char* argv[])
 {
@@ -119,11 +119,11 @@ int main(int argc, char* argv[])
   
   PointSetSourceType::Pointer pointSet = PointSetSourceType::New();
   PointSetType::PointType minPoint, maxPoint;
-  minPoint[0] = (mstSize[0] - (mstSize[0] % tiePointsPerDim)) / tiePointsPerDim;
-  minPoint[1] = (mstSize[1] - (mstSize[1] % tiePointsPerDim)) / tiePointsPerDim;
+  minPoint[0] = (mstSize[0] - ((mstSize[0] - 1) % tiePointsPerDim) - 1) / tiePointsPerDim;
+  minPoint[1] = (mstSize[1] - ((mstSize[1] - 1) % tiePointsPerDim) - 1) / tiePointsPerDim;
   pointSet->SetMinPoint(minPoint);
-  maxPoint[0] = mstSize[0] - (mstSize[0] % tiePointsPerDim);
-  maxPoint[1] = mstSize[1] - (mstSize[1] % tiePointsPerDim);
+  maxPoint[0] = mstSize[0] - ((mstSize[0] - 1) % tiePointsPerDim) - 1;
+  maxPoint[1] = mstSize[1] - ((mstSize[1] - 1) % tiePointsPerDim) - 1;
   pointSet->SetMaxPoint(maxPoint);
 
   pointSet->SetNumberOfPoints(tiePointsPerDim);
@@ -132,82 +132,151 @@ int main(int argc, char* argv[])
   // Get the the point container
   PointSetSourceType::PointsContainerPointer
   points = pointSet->GetOutput()->GetPoints();
-/*  
-  // Temp test to insure no "in between points" at non existing indexes
-  PointsContainerType::ConstIterator it = points->Begin();
-  while (it != points->End())
-    {
-    PointSetType::PointType p = it.Value();
-    std::cout.width(5); std::cout << p[0] << ", ";
-    std::cout.width(5); std::cout << p[1] << std::endl;
-    ++it;
-    }
-*/
 
   PointType offset;
   offset.Fill(0.0);
   ///////////////////////////////////////////////////
   // Perform genericRSTransform here if needed
+  transform->SetInputKeywordList(master->GetOutput()->GetImageKeywordlist());
+  transform->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
+  transform->SetOutputDictionary(slave->GetOutput()->GetMetaDataDictionary());
+  transform->SetOutputProjectionRef(slave->GetOutput()->GetProjectionRef());
+
+  transform->InstanciateTransform();
   ///////////////////////////////////////////////////
 
   IndexType currentIndex;
   IndexType slvIndex;
-  RegionType currentRegion;
+  RegionType curMstRegion;
+  RegionType curSlvRegion;
   SizeType currentSize;
   currentSize[0] = patchSizePerDim;
   currentSize[1] = patchSizePerDim;
 
+  FFTOutputImageType::Pointer crossImage = FFTOutputImageType::New();
+
+  currentIndex[0] = 0;
+  currentIndex[1] = 0;
+  curMstRegion.SetIndex(currentIndex);
+  curMstRegion.SetSize(currentSize);
+  crossImage->SetSpacing(master->GetOutput()->GetSpacing());
+  crossImage->SetOrigin(master->GetOutput()->GetOrigin());
+  crossImage->SetRegions(curMstRegion);
+  crossImage->Allocate();
+
+  FFTType::Pointer crossFFT = FFTType::New();
+  crossFFT->SetTransformDirection(FFTDirectionType::INVERSE);
+
   PointsContainerType::ConstIterator it = points->Begin();
   while (it != points->End())
   {
+	crossImage->FillBuffer(0.0);
+
     PointType mstPoint = it.Value();
-	if(mstPoint[1] > 5983)
-		break;
-	currentIndex[0] = mstPoint[0];
-	currentIndex[1] = mstPoint[1];
-	currentRegion.SetIndex(currentIndex);
-	currentRegion.SetSize(currentSize);
-	currentRegion.Crop(master->GetOutput()->GetLargestPossibleRegion());
+	PointType slvPoint = transform->TransformPoint(mstPoint);
+	slvPoint[0] = floor(slvPoint[0]);
+	slvPoint[1] = floor(slvPoint[1]);
+	//if(mstPoint[1] > 5000)
+		//int j = 1;
+		//	break;
+	currentIndex[0] = mstPoint[0] - (patchSizePerDim / 2);
+	currentIndex[1] = mstPoint[1] - (patchSizePerDim / 2);
+	curMstRegion.SetIndex(currentIndex);
+	curMstRegion.SetSize(currentSize);
+	//currentRegion.Crop(master->GetOutput()->GetLargestPossibleRegion());
 
-	mstExtract->SetExtractionRegion(currentRegion);
-	slvExtract->SetExtractionRegion(currentRegion); // Should take into account GenericRSTransform-calculated initial offset (if genericRS is used)
-/*
-	mstExtract->SetStartX(mstPoint[0]);
-	mstExtract->SetStartY(mstPoint[1]);
-	mstExtract->SetSizeX(patchSizePerDim);
-	mstExtract->SetSizeY(patchSizePerDim);
+	//slvExtract->SetExtractionRegion(currentRegion); // Should take into account GenericRSTransform-calculated initial offset (if genericRS is used)
+	currentIndex[0] = slvPoint[0] - (patchSizePerDim / 2);
+	currentIndex[1] = slvPoint[1] - (patchSizePerDim / 2);
+	curSlvRegion.SetIndex(currentIndex);
+	curSlvRegion.SetSize(currentSize);
+	//currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
+	//if(!currentRegion.IsInside(slave->GetOutput()->GetLargestPossibleRegion()))
+	if(!(slave->GetOutput()->GetLargestPossibleRegion().IsInside(curSlvRegion)) || !(master->GetOutput()->GetLargestPossibleRegion().IsInside(curMstRegion)))
+	{
+		/*
+		currentIndex[0] = mstPoint[0];
+		currentIndex[1] = mstPoint[1];
+		currentRegion.SetIndex(currentIndex);
+		currentRegion.SetSize(currentSize);
+		currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
+		*/
+		++it;
+		continue;
+	}
+	mstExtract->SetExtractionRegion(curMstRegion);
+	slvExtract->SetExtractionRegion(curSlvRegion);
+	offset[0] = mstPoint[0] - slvPoint[0];
+	offset[1] = mstPoint[1] - slvPoint[1];
+	std::cout << "Initial offset: " << offset[0] << ", " << offset[1] << std::endl;
 
-	slvExtract->SetStartX(mstPoint[0] + offset[0]);
-	slvExtract->SetStartY(mstPoint[1] + offset[1]);
-	slvExtract->SetSizeX(patchSizePerDim);
-	slvExtract->SetSizeY(patchSizePerDim);
-*/
-	mstFFT->Update();
-	slvFFT->Update();
+	//mstFFT->Update();
+	//slvFFT->Update();
+	mstFFT->UpdateLargestPossibleRegion();
+	slvFFT->UpdateLargestPossibleRegion();
 
 	ImageRegionIteratorType mstIt(mstFFT->GetOutput(), mstFFT->GetOutput()->GetRequestedRegion());
 	ImageRegionIteratorType slvIt(slvFFT->GetOutput(), slvFFT->GetOutput()->GetRequestedRegion());
 
-	double maxValue = 0.0;
-	PointType slvPoint = mstPoint;
+	ImageRegionIteratorType crossIt(crossImage, crossImage->GetRequestedRegion());
 
-	for(mstIt.GoToBegin(),	slvIt.GoToBegin(); !mstIt.IsAtEnd(), !slvIt.IsAtEnd(); ++mstIt, ++slvIt)
+	for(mstIt.GoToBegin(),	slvIt.GoToBegin(), crossIt.GoToBegin(); !mstIt.IsAtEnd(), !slvIt.IsAtEnd(); ++mstIt, ++slvIt, ++crossIt)
 	{
-		double value = abs(mstIt.Value()*conj(slvIt.Value()));
+		crossIt.Value() = mstIt.Value()*conj(slvIt.Value());
+	}
+
+	crossFFT->SetInput(crossImage);
+	crossFFT->Update();
+
+	ImageRegionIteratorType invIt(crossFFT->GetOutput(), crossFFT->GetOutput()->GetRequestedRegion());
+
+	double maxValue = 0.0;
+	//PointType slvPoint = mstPoint;
+
+	slvIndex.Fill(0.0);
+	for(invIt.GoToBegin(); !invIt.IsAtEnd(); ++invIt)
+	{
+		double value = abs(invIt.Value());
 
 		if(value > maxValue)
 		{
 			maxValue = value;
 
-			slvIndex = slvIt.GetIndex();
+			slvIndex = invIt.GetIndex();
 
-			slvPoint[0] = slvIndex[0] + mstPoint[0] + offset[0];
-			slvPoint[1] = slvIndex[1] + mstPoint[1] + offset[1];
+			//slvPoint[0] = slvIndex[0] + mstPoint[0] + offset[0];
+			//slvPoint[1] = slvIndex[1] + mstPoint[1] + offset[1];			
 		}
 	}
+	slvPoint[0] = slvPoint[0] + slvIndex[0] - (patchSizePerDim / 2);
+	slvPoint[1] = slvPoint[1] + slvIndex[1] - (patchSizePerDim / 2);
+
+	std::cout << "Master: " << mstPoint[0] << ", " << mstPoint[1];
+	std::cout << " - Slave: " << slvPoint[0] << ", " << slvPoint[1] << std::endl;
+
+	offset[0] = mstPoint[0] - slvPoint[0];
+	offset[1] = mstPoint[1] - slvPoint[1];
+	std::cout << "Final offset: " << offset[0] << ", " << offset[1] << std::endl;
+    
 	estimate->AddTiePoints(mstPoint, slvPoint);
 
     ++it;
+
+	if(mstPoint[0] == 5100 && mstPoint[1] == 3474)
+	{
+		FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
+		mstFFTWriter->SetInput(mstFFT->GetOutput());
+		mstFFTWriter->SetFileName("masterFFTx5100_y3474_256.hdr");
+		mstFFTWriter->Update();
+		FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
+		slvFFTWriter->SetInput(slvFFT->GetOutput());
+		slvFFTWriter->SetFileName("slaveFFTx5100_y3474_256.hdr");
+		slvFFTWriter->Update();
+		FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
+		crossFFTWriter->SetInput(crossFFT->GetOutput());
+		crossFFTWriter->SetFileName("crossFFTx5100_y3474_256.hdr");
+		crossFFTWriter->Update();
+	}
   }
 
   estimate->Compute();
@@ -217,21 +286,20 @@ int main(int argc, char* argv[])
 
   std::cout << "RMS error is:" << rmsError[0] << " in range and " << rmsError[1] << " in azimuth." << std::endl;
   std::cout << "Relative residual is:" << relResidual[0] << " in range and " << relResidual[1] << " in azimuth." << std::endl;
-
-    // Set-up interpolator
+  
   InterpolatorType::Pointer interpolator = InterpolatorType::New();
   interpolator->SetInputImage(slave->GetOutput());
   interpolator->SetRadius(3);
   interpolator->SetNormalizeZeroFrequency(0.01);
-  resample->SetInterpolator(interpolator);
-  
+
   resample->SetTransform(estimate->GetAffineTransform());
+  resample->SetInterpolator(interpolator);
   resample->SetInput(slave->GetOutput());
   resample->SetOutputSize(mstSize);
   resample->SetOutputOrigin(master->GetOutput()->GetOrigin());
   resample->SetOutputSpacing(master->GetOutput()->GetSpacing());
 
-  typedef otb::StreamingImageFileWriter<ImageType> WriterFixedType;
+  typedef otb::StreamingImageFileWriter< ImageType > WriterFixedType;
   WriterFixedType::Pointer writer = WriterFixedType::New();
   writer->SetFileName(outRegisteredSlave);
   writer->SetInput(resample->GetOutput());
