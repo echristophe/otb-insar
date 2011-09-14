@@ -37,40 +37,40 @@
 #include "otbStreamingResampleImageFilter.h"
 #include "otbStandardWriterWatcher.h"
 
-typedef std::complex< double >																				PixelType;
-typedef otb::Image< PixelType,2 >																			ImageType;
-typedef ImageType::SizeType																					SizeType;
-typedef ImageType::IndexType																				IndexType;
-typedef ImageType::RegionType																				RegionType;
+typedef std::complex< double >                                         PixelType;
+typedef otb::Image< PixelType,2 >                                      ImageType;
+typedef ImageType::SizeType                                            SizeType;
+typedef ImageType::IndexType                                           IndexType;
+typedef ImageType::RegionType                                          RegionType;
 
-typedef itk::PointSet< PixelType, ImageType::ImageDimension >												PointSetType;
-typedef otb::GridIntersectionPointSetSource< PointSetType >													PointSetSourceType;
-typedef PointSetType::PointsContainer																		PointsContainerType;
-typedef PointSetType::PointType																				PointType;
+typedef itk::PointSet< PixelType, ImageType::ImageDimension >          PointSetType;
+typedef otb::GridIntersectionPointSetSource< PointSetType >            PointSetSourceType;
+typedef PointSetType::PointsContainer                                  PointsContainerType;
+typedef PointSetType::PointType                                        PointType;
 
-typedef otb::ImageFileReader< ImageType >																	ReaderType;
-typedef otb::StreamingImageFileWriter< ImageType >															WriterType;
+typedef otb::ImageFileReader< ImageType >                              ReaderType;
+typedef otb::StreamingImageFileWriter< ImageType >                     WriterType;
 
-typedef otb::GenericRSTransform<  >																			TransformType; // Default is Double, 2 dimensions
-typedef otb::ExtractROI< PixelType, PixelType >																ExtractFilterType;
-typedef otb::StreamingResampleImageFilter< ImageType, ImageType >											ResampleFilterType;
-typedef itk::Point< PixelType::value_type,ImageType::ImageDimension >										LSQPointType;
-typedef otb::LeastSquareAffineTransformEstimator< LSQPointType >											EstimateFilterType;
+typedef otb::GenericRSTransform<  >                                    TransformType; // Default is Double, 2 dimensions
+typedef otb::ExtractROI< PixelType, PixelType >                        ExtractFilterType;
+typedef otb::StreamingResampleImageFilter< ImageType, ImageType >      ResampleFilterType;
+typedef itk::Point< PixelType::value_type,ImageType::ImageDimension >  LSQPointType;
+typedef otb::LeastSquareAffineTransformEstimator< LSQPointType >       EstimateFilterType;
+typedef otb::Function::BlackmanWindowFunction< PixelType::value_type > FunctionType;
+typedef itk::ConstantBoundaryCondition< ImageType >                    BoundaryConditionType;
+typedef PixelType::value_type                                          CoordRepType;
+typedef otb::ComplexInterpolateImageFunction< ImageType,FunctionType, 
+                                 BoundaryConditionType, CoordRepType > InterpolatorType;
 
-typedef otb::Function::BlackmanWindowFunction< PixelType::value_type >										FunctionType;
-typedef itk::ConstantBoundaryCondition< ImageType >															BoundaryConditionType;
-typedef PixelType::value_type																				CoordRepType;
-typedef otb::ComplexInterpolateImageFunction< ImageType,FunctionType, BoundaryConditionType, CoordRepType > InterpolatorType;
-
-typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, ImageType::ImageDimension >				FFTType;
-typedef FFTType::OutputImageType																			FFTOutputImageType;
-typedef FFTType::TransformDirectionType																		FFTDirectionType;
+typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, 
+                                           ImageType::ImageDimension > FFTType;
+typedef FFTType::OutputImageType                                       FFTOutputImageType;
+typedef FFTType::TransformDirectionType                                FFTDirectionType;
 
 //==================================== FOR VALIDATION PURPOSES ===========================================
-typedef otb::ImageFileWriter<FFTOutputImageType>										FFTWriterType;
+typedef otb::ImageFileWriter<FFTOutputImageType>                       FFTWriterType;
 //========================================================================================================
-
-typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >												ImageRegionIteratorType;
+typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >        ImageRegionIteratorType;
 
 int main(int argc, char* argv[])
 {
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
   {
 	crossImage->FillBuffer(0.0);
 
-    PointType mstPoint = it.Value();
+        PointType mstPoint = it.Value();
 	PointType slvPoint = transform->TransformPoint(mstPoint);
 	slvPoint[0] = floor(slvPoint[0]);
 	slvPoint[1] = floor(slvPoint[1]);
