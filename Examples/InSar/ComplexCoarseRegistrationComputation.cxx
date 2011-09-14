@@ -75,18 +75,27 @@ typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >        ImageRegi
 int main(int argc, char* argv[])
 {
 
-  if (argc != 6)
+  if (argc != 12)
     {
-    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim registeredSlaveImageFile";
+    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2";
     std::cerr << " OTHER PARAMS and OUTPUTS?" << std::endl;
     return EXIT_FAILURE;
     }
+  ImageType::SizeType size;
+  ImageType::IndexType index;
 
   const char * masterImage = argv[1];
   const char * slaveImage = argv[2];
   unsigned int tiePointsPerDim = atoi(argv[3]);
   unsigned int patchSizePerDim = atoi(argv[4]);
-  const char * outRegisteredSlave = argv[5];
+  const char * demdir  = argv[5];
+  index[0] = atoi(argv[6]);
+  index[1] = atoi(argv[7]);
+  size[0] = atoi(argv[8]);
+  size[1] = atoi(argv[9]);
+  const char * outfname1 = argv[10];
+  const char * outfname2 = argv[11];
+
   
   ReaderType::Pointer master = ReaderType::New();
   ReaderType::Pointer slave = ReaderType::New();
@@ -141,6 +150,7 @@ int main(int argc, char* argv[])
   transform->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
   transform->SetOutputDictionary(slave->GetOutput()->GetMetaDataDictionary());
   transform->SetOutputProjectionRef(slave->GetOutput()->GetProjectionRef());
+  transform->SetDEMDirectory(demdir);
 
   transform->InstanciateTransform();
   ///////////////////////////////////////////////////
@@ -262,21 +272,21 @@ int main(int argc, char* argv[])
 
     ++it;
 
-	if(mstPoint[0] == 5100 && mstPoint[1] == 3474)
-	{
-		FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
-		mstFFTWriter->SetInput(mstFFT->GetOutput());
-		mstFFTWriter->SetFileName("masterFFTx5100_y3474_256.hdr");
-		mstFFTWriter->Update();
-		FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
-		slvFFTWriter->SetInput(slvFFT->GetOutput());
-		slvFFTWriter->SetFileName("slaveFFTx5100_y3474_256.hdr");
-		slvFFTWriter->Update();
-		FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
-		crossFFTWriter->SetInput(crossFFT->GetOutput());
-		crossFFTWriter->SetFileName("crossFFTx5100_y3474_256.hdr");
-		crossFFTWriter->Update();
-	}
+	// if(mstPoint[0] == 5100 && mstPoint[1] == 3474)
+	// {
+	// 	FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
+	// 	mstFFTWriter->SetInput(mstFFT->GetOutput());
+	// 	mstFFTWriter->SetFileName("masterFFTx5100_y3474_256.hdr");
+	// 	mstFFTWriter->Update();
+	// 	FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
+	// 	slvFFTWriter->SetInput(slvFFT->GetOutput());
+	// 	slvFFTWriter->SetFileName("slaveFFTx5100_y3474_256.hdr");
+	// 	slvFFTWriter->Update();
+	// 	FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
+	// 	crossFFTWriter->SetInput(crossFFT->GetOutput());
+	// 	crossFFTWriter->SetFileName("crossFFTx5100_y3474_256.hdr");
+	// 	crossFFTWriter->Update();
+	// }
   }
 
   estimate->Compute();
@@ -299,13 +309,32 @@ int main(int argc, char* argv[])
   resample->SetOutputOrigin(master->GetOutput()->GetOrigin());
   resample->SetOutputSpacing(master->GetOutput()->GetSpacing());
 
+
+  ExtractFilterType::Pointer extract = ExtractFilterType::New();
+  ImageType::RegionType region;
+  region.SetSize(size);
+  region.SetIndex(index);
+  extract->SetExtractionRegion(region);
+  extract->SetInput(master->GetOutput());
+
   typedef otb::StreamingImageFileWriter< ImageType > WriterFixedType;
   WriterFixedType::Pointer writer = WriterFixedType::New();
-  writer->SetFileName(outRegisteredSlave);
-  writer->SetInput(resample->GetOutput());
+  writer->SetFileName(outfname1);
+  writer->SetInput(extract->GetOutput());
 
-  otb::StandardWriterWatcher watcher1(writer,resample,"Resampling slave image.");
+  otb::StandardWriterWatcher watcher1(writer,resample,"Extracting from master image.");
 
+  writer->Update();
+
+  extract = ExtractFilterType::New();
+  extract->SetExtractionRegion(region);
+  extract->SetInput(resample->GetOutput());
+  
+  writer = WriterFixedType::New();
+  writer->SetFileName(outfname2);
+  writer->SetInput(extract->GetOutput());
+
+  otb::StandardWriterWatcher watcher2(writer,resample,"Extracting from registered slave image.");
   writer->Update();
 
   return EXIT_SUCCESS;
