@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
   crossImage->Allocate();
 
   FFTType::Pointer crossFFT = FFTType::New();
-  crossFFT->SetTransformDirection(FFTDirectionType::INVERSE);
+  crossFFT->SetTransformDirection(FFTType::INVERSE);
 
   PointsContainerType::ConstIterator it = points->Begin();
   while (it != points->End())
