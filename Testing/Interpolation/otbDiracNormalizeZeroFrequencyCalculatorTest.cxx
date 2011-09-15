@@ -26,7 +26,7 @@
 #include "itkFFTComplexToComplexImageFilter.h"
 
 int 
-otbNormalizeZeroFrequencyCalculatorTest(int argc, char * argv[] )
+otbDiracNormalizeZeroFrequencyCalculatorTest(int argc, char * argv[] )
 {
 	typedef double													InternalPixelType;   
 	typedef std::complex<InternalPixelType>							InputPixelType;
