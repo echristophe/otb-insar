@@ -37,6 +37,12 @@
 #include "otbStreamingResampleImageFilter.h"
 #include "otbStandardWriterWatcher.h"
 
+#include "itkFFTShiftImageFilter.h"
+#include "itkConstantPadImageFilter.h"
+#include "itkBinaryFunctorImageFilter.h"
+#include "itkMinimumMaximumImageCalculator.h"
+#include "itkComplexToModulusImageFilter.h"
+
 typedef std::complex< double >                                         PixelType;
 typedef otb::Image< PixelType,2 >                                      ImageType;
 typedef ImageType::SizeType                                            SizeType;
@@ -67,10 +73,27 @@ typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type,
 typedef FFTType::OutputImageType                                       FFTOutputImageType;
 typedef FFTType::TransformDirectionType                                FFTDirectionType;
 
+typedef itk::FFTShiftImageFilter<FFTOutputImageType,FFTOutputImageType> ShiftFilterType;
+typedef itk::ConstantPadImageFilter<ImageType,ImageType>          PadFilterType;
+typedef otb::Image<double,2>                                           RealImageType;
+typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,RealImageType>      ModulusFilterType;
+typedef itk::MinimumMaximumImageCalculator<RealImageType>              MinMaxCalculatorType;
+
 //==================================== FOR VALIDATION PURPOSES ===========================================
 typedef otb::ImageFileWriter<FFTOutputImageType>                       FFTWriterType;
 //========================================================================================================
 typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >        ImageRegionIteratorType;
+
+class ComplexConjugateProduct
+{
+public:
+  inline PixelType operator()(const PixelType & a, const PixelType & b) const
+  {
+    return a * vcl_conj(b);
+  }
+};
+
+typedef itk::BinaryFunctorImageFilter<FFTOutputImageType,FFTOutputImageType,FFTOutputImageType,ComplexConjugateProduct> ConjugateProductFilterType;
 
 int main(int argc, char* argv[])
 {
@@ -111,12 +134,6 @@ int main(int argc, char* argv[])
 
   mstExtract->SetInput(master->GetOutput());
   slvExtract->SetInput(slave->GetOutput());
-
-  FFTType::Pointer mstFFT = FFTType::New();
-  FFTType::Pointer slvFFT = FFTType::New();
-
-  mstFFT->SetInput(mstExtract->GetOutput());
-  slvFFT->SetInput(slvExtract->GetOutput());
   
   SizeType mstSize = master->GetOutput()->GetLargestPossibleRegion().GetSize();
   
@@ -163,54 +180,26 @@ int main(int argc, char* argv[])
   currentSize[0] = patchSizePerDim;
   currentSize[1] = patchSizePerDim;
 
-  FFTOutputImageType::Pointer crossImage = FFTOutputImageType::New();
-
-  currentIndex[0] = 0;
-  currentIndex[1] = 0;
-  curMstRegion.SetIndex(currentIndex);
-  curMstRegion.SetSize(currentSize);
-  crossImage->SetSpacing(master->GetOutput()->GetSpacing());
-  crossImage->SetOrigin(master->GetOutput()->GetOrigin());
-  crossImage->SetRegions(curMstRegion);
-  crossImage->Allocate();
-
-  FFTType::Pointer crossFFT = FFTType::New();
-  crossFFT->SetTransformDirection(FFTType::INVERSE);
-
   PointsContainerType::ConstIterator it = points->Begin();
   while (it != points->End())
   {
-	crossImage->FillBuffer(0.0);
-
         PointType mstPoint = it.Value();
 	PointType slvPoint = transform->TransformPoint(mstPoint);
 	slvPoint[0] = floor(slvPoint[0]);
 	slvPoint[1] = floor(slvPoint[1]);
-	//if(mstPoint[1] > 5000)
-		//int j = 1;
-		//	break;
+
 	currentIndex[0] = mstPoint[0] - (patchSizePerDim / 2);
 	currentIndex[1] = mstPoint[1] - (patchSizePerDim / 2);
 	curMstRegion.SetIndex(currentIndex);
 	curMstRegion.SetSize(currentSize);
-	//currentRegion.Crop(master->GetOutput()->GetLargestPossibleRegion());
 
 	//slvExtract->SetExtractionRegion(currentRegion); // Should take into account GenericRSTransform-calculated initial offset (if genericRS is used)
 	currentIndex[0] = slvPoint[0] - (patchSizePerDim / 2);
 	currentIndex[1] = slvPoint[1] - (patchSizePerDim / 2);
 	curSlvRegion.SetIndex(currentIndex);
 	curSlvRegion.SetSize(currentSize);
-	//currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
-	//if(!currentRegion.IsInside(slave->GetOutput()->GetLargestPossibleRegion()))
 	if(!(slave->GetOutput()->GetLargestPossibleRegion().IsInside(curSlvRegion)) || !(master->GetOutput()->GetLargestPossibleRegion().IsInside(curMstRegion)))
 	{
-		/*
-		currentIndex[0] = mstPoint[0];
-		currentIndex[1] = mstPoint[1];
-		currentRegion.SetIndex(currentIndex);
-		currentRegion.SetSize(currentSize);
-		currentRegion.Crop(slave->GetOutput()->GetLargestPossibleRegion());
-		*/
 		++it;
 		continue;
 	}
@@ -220,44 +209,54 @@ int main(int argc, char* argv[])
 	offset[1] = mstPoint[1] - slvPoint[1];
 	std::cout << "Initial offset: " << offset[0] << ", " << offset[1] << std::endl;
 
-	//mstFFT->Update();
-	//slvFFT->Update();
-	mstFFT->UpdateLargestPossibleRegion();
-	slvFFT->UpdateLargestPossibleRegion();
+        ImageType::SizeType paddsize;
+        paddsize.Fill(patchSizePerDim/2);        
 
-	ImageRegionIteratorType mstIt(mstFFT->GetOutput(), mstFFT->GetOutput()->GetRequestedRegion());
-	ImageRegionIteratorType slvIt(slvFFT->GetOutput(), slvFFT->GetOutput()->GetRequestedRegion());
+        PadFilterType::Pointer pad1 = PadFilterType::New();
+        pad1->SetInput(mstExtract->GetOutput());
+        pad1->SetPadBound(paddsize);
+        
+        PadFilterType::Pointer pad2 = PadFilterType::New();
+        pad2->SetInput(slvExtract->GetOutput());
+        pad2->SetPadBound(paddsize);
 
-	ImageRegionIteratorType crossIt(crossImage, crossImage->GetRequestedRegion());
+        FFTType::Pointer fft = FFTType::New();
+        fft->SetInput(pad1->GetOutput());
+        fft->Update();
 
-	for(mstIt.GoToBegin(),	slvIt.GoToBegin(), crossIt.GoToBegin(); !mstIt.IsAtEnd(), !slvIt.IsAtEnd(); ++mstIt, ++slvIt, ++crossIt)
-	{
-		crossIt.Value() = mstIt.Value()*conj(slvIt.Value());
-	}
+        FFTOutputImageType::Pointer fft1 = fft->GetOutput();
 
-	crossFFT->SetInput(crossImage);
-	crossFFT->Update();
+        fft = FFTType::New();
+        fft->SetInput(pad2->GetOutput());
+        fft->Update();
 
-	ImageRegionIteratorType invIt(crossFFT->GetOutput(), crossFFT->GetOutput()->GetRequestedRegion());
+        FFTOutputImageType::Pointer fft2 = fft->GetOutput();
 
-	double maxValue = 0.0;
-	//PointType slvPoint = mstPoint;
+        ConjugateProductFilterType::Pointer conjProd = ConjugateProductFilterType::New();
+        conjProd->SetInput1(fft1);
+        conjProd->SetInput2(fft2);
 
-	slvIndex.Fill(0.0);
-	for(invIt.GoToBegin(); !invIt.IsAtEnd(); ++invIt)
-	{
-		double value = abs(invIt.Value());
+        fft = FFTType::New();
+        fft->SetInput(conjProd->GetOutput());
+        fft->SetTransformDirection(FFTType::INVERSE);
+        fft->Update();
+  
+        FFTOutputImageType::Pointer ifft = fft->GetOutput();
 
-		if(value > maxValue)
-		{
-			maxValue = value;
+        ShiftFilterType::Pointer shifter = ShiftFilterType::New();
+        shifter->SetInput(ifft);
 
-			slvIndex = invIt.GetIndex();
+        ModulusFilterType::Pointer modulus = ModulusFilterType::New();
+        modulus->SetInput(shifter->GetOutput());
+        modulus->Update();
+  
 
-			//slvPoint[0] = slvIndex[0] + mstPoint[0] + offset[0];
-			//slvPoint[1] = slvIndex[1] + mstPoint[1] + offset[1];			
-		}
-	}
+        MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
+        minMax->SetImage(modulus->GetOutput());
+        minMax->ComputeMaximum();
+        
+        slvIndex = minMax->GetIndexOfMaximum();
+
 	slvPoint[0] = slvPoint[0] + slvIndex[0] - (patchSizePerDim / 2);
 	slvPoint[1] = slvPoint[1] + slvIndex[1] - (patchSizePerDim / 2);
 
@@ -266,26 +265,39 @@ int main(int argc, char* argv[])
 
 	offset[0] = mstPoint[0] - slvPoint[0];
 	offset[1] = mstPoint[1] - slvPoint[1];
+        std::cout<<"slvIndex: "<<slvIndex<<std::endl;
 	std::cout << "Final offset: " << offset[0] << ", " << offset[1] << std::endl;
     
 	estimate->AddTiePoints(mstPoint, slvPoint);
 
-    ++it;
+        ++it;
 
-	// if(mstPoint[0] == 5100 && mstPoint[1] == 3474)
+	// if(mstPoint[0] == 4364 && mstPoint[1] == 2472)
 	// {
-	// 	FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
-	// 	mstFFTWriter->SetInput(mstFFT->GetOutput());
-	// 	mstFFTWriter->SetFileName("masterFFTx5100_y3474_256.hdr");
-	// 	mstFFTWriter->Update();
-	// 	FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
-	// 	slvFFTWriter->SetInput(slvFFT->GetOutput());
-	// 	slvFFTWriter->SetFileName("slaveFFTx5100_y3474_256.hdr");
-	// 	slvFFTWriter->Update();
-	// 	FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
-	// 	crossFFTWriter->SetInput(crossFFT->GetOutput());
-	// 	crossFFTWriter->SetFileName("crossFFTx5100_y3474_256.hdr");
-	// 	crossFFTWriter->Update();
+        // WriterType::Pointer mstWriter = WriterType::New();
+        // mstWriter->SetInput(mstExtract->GetOutput());
+        // mstWriter->SetFileName("mst.tif");
+        // mstWriter->Update();
+
+        // WriterType::Pointer slvWriter = WriterType::New();
+        // slvWriter->SetInput(slvExtract->GetOutput());
+        // slvWriter->SetFileName("slv.tif");
+        // slvWriter->Update();
+
+        // FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
+        // mstFFTWriter->SetInput(fft1);
+        // mstFFTWriter->SetFileName("masterFFT.tif");
+        // mstFFTWriter->Update();
+        
+        // FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
+        // slvFFTWriter->SetInput(fft2);
+        // slvFFTWriter->SetFileName("slaveFFT.tif");
+        // slvFFTWriter->Update();
+        
+        // FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
+        // crossFFTWriter->SetInput(shifter->GetOutput());
+        // crossFFTWriter->SetFileName("invcrossFFT.tif");
+        // crossFFTWriter->Update();
 	// }
   }
 
