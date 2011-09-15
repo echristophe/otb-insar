@@ -23,3 +23,6 @@ TARGET_LINK_LIBRARIES(SensorModelRegistration OTBCommon OTBIO Interpolation)
 
 ADD_EXECUTABLE(ComplexCoarseRegistrationComputation ComplexCoarseRegistrationComputation.cxx)
 TARGET_LINK_LIBRARIES(ComplexCoarseRegistrationComputation OTBCommon OTBIO Interpolation)
+
+ADD_EXECUTABLE(FFTConvolutionTest FFTConvolutionTest.cxx)
+TARGET_LINK_LIBRARIES(FFTConvolutionTest OTBCommon OTBIO Interpolation)
