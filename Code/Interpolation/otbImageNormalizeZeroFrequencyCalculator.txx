@@ -98,13 +98,13 @@ Compute()
   typedef itk::MinimumMaximumImageCalculator<ScalarImageType> MaxImageCalulatorType;
   typedef itk::BinaryThresholdImageFilter< ScalarImageType, ScalarImageType > ThresholdImageFilterType;
 
-  FFTImageType::Pointer fftImage = FFTImageType::New(); 
-  ComplexToModulusImageType::Pointer modulusImage = ComplexToModulusImageType::New(); 
+  typename FFTImageType::Pointer fftImage = FFTImageType::New(); 
+  typename ComplexToModulusImageType::Pointer modulusImage = ComplexToModulusImageType::New(); 
 
   fftImage->SetInput(m_Image.GetPointer());
 
   fftImage->SetTransformDirection(FFTImageType::DIRECT);
-  FFTOutputImageType::SpacingType spacingFFT;
+  typename FFTOutputImageType::SpacingType spacingFFT;
 
   fftImage->GetOutput()->UpdateOutputInformation();
 
@@ -116,7 +116,7 @@ Compute()
   modulusImage->SetInput(fftImage->GetOutput());
   modulusImage->Update();
 
-  MaxImageCalulatorType::Pointer  maxCalculator = MaxImageCalulatorType::New();
+  typename MaxImageCalulatorType::Pointer  maxCalculator = MaxImageCalulatorType::New();
 
   maxCalculator->SetImage(modulusImage->GetOutput());
   maxCalculator->ComputeMaximum();
@@ -127,7 +127,7 @@ Compute()
   //std::cout << "Maximum : "  << maximumValue << std::endl;
   //std::cout << "IndexMax : " << maxCalculator->GetIndexOfMaximum() << std::endl;
 
-  ThresholdImageFilterType::Pointer thresholdImage = ThresholdImageFilterType::New();
+  typename ThresholdImageFilterType::Pointer thresholdImage = ThresholdImageFilterType::New();
   thresholdImage->SetInput(modulusImage->GetOutput());
   thresholdImage->SetOutsideValue(0.0);
   thresholdImage->SetInsideValue(1.0);
