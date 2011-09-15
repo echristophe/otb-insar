@@ -97,7 +97,7 @@ otbComplexInterpolateImageFunction.cxx
 otbComplexResampleImageFilter.cxx
 otbRealResampleImageFilter.cxx
 otbGridIntersectionPointSetSourceTest.cxx
-otbNormalizeZeroFrequencyCalculatorTest.cxx
+otbDiracNormalizeZeroFrequencyCalculatorTest.cxx
 )
 
 
