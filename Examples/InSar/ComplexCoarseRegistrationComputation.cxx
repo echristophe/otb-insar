@@ -42,6 +42,7 @@
 #include "itkBinaryFunctorImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkComplexToModulusImageFilter.h"
+#include "itkDivideImageFilter.h"
 
 typedef std::complex< double >                                         PixelType;
 typedef otb::Image< PixelType,2 >                                      ImageType;
@@ -77,6 +78,7 @@ typedef itk::FFTShiftImageFilter<FFTOutputImageType,FFTOutputImageType> ShiftFil
 typedef itk::ConstantPadImageFilter<ImageType,ImageType>          PadFilterType;
 typedef otb::Image<double,2>                                           RealImageType;
 typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,RealImageType>      ModulusFilterType;
+typedef itk::DivideImageFilter<FFTOutputImageType,RealImageType,FFTOutputImageType> DivideFilterType;
 typedef itk::MinimumMaximumImageCalculator<RealImageType>              MinMaxCalculatorType;
 
 //==================================== FOR VALIDATION PURPOSES ===========================================
@@ -98,10 +100,9 @@ typedef itk::BinaryFunctorImageFilter<FFTOutputImageType,FFTOutputImageType,FFTO
 int main(int argc, char* argv[])
 {
 
-  if (argc != 12)
+  if (argc != 13)
     {
-    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2";
-    std::cerr << " OTHER PARAMS and OUTPUTS?" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2 coherency_threshold";
     return EXIT_FAILURE;
     }
   ImageType::SizeType size;
@@ -118,6 +119,7 @@ int main(int argc, char* argv[])
   size[1] = atoi(argv[9]);
   const char * outfname1 = argv[10];
   const char * outfname2 = argv[11];
+  double coherency_threshold = atof(argv[12]);
 
   
   ReaderType::Pointer master = ReaderType::New();
@@ -159,14 +161,10 @@ int main(int argc, char* argv[])
   PointSetSourceType::PointsContainerPointer
   points = pointSet->GetOutput()->GetPoints();
 
-  PointType offset;
-  offset.Fill(0.0);
   ///////////////////////////////////////////////////
   // Perform genericRSTransform here if needed
   transform->SetInputKeywordList(master->GetOutput()->GetImageKeywordlist());
   transform->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
-  transform->SetOutputDictionary(slave->GetOutput()->GetMetaDataDictionary());
-  transform->SetOutputProjectionRef(slave->GetOutput()->GetProjectionRef());
   transform->SetDEMDirectory(demdir);
 
   transform->InstanciateTransform();
@@ -205,9 +203,6 @@ int main(int argc, char* argv[])
 	}
 	mstExtract->SetExtractionRegion(curMstRegion);
 	slvExtract->SetExtractionRegion(curSlvRegion);
-	offset[0] = mstPoint[0] - slvPoint[0];
-	offset[1] = mstPoint[1] - slvPoint[1];
-	std::cout << "Initial offset: " << offset[0] << ", " << offset[1] << std::endl;
 
         ImageType::SizeType paddsize;
         paddsize.Fill(patchSizePerDim/2);        
@@ -236,8 +231,16 @@ int main(int argc, char* argv[])
         conjProd->SetInput1(fft1);
         conjProd->SetInput2(fft2);
 
+        // Try to normalise to get the normalized coherence coeff
+        ModulusFilterType::Pointer conjProdMod = ModulusFilterType::New();
+        conjProdMod->SetInput(conjProd->GetOutput());
+
+        DivideFilterType::Pointer conjProdNorm = DivideFilterType::New();
+        conjProdNorm->SetInput1(conjProd->GetOutput());
+        conjProdNorm->SetInput2(conjProdMod->GetOutput());
+        
         fft = FFTType::New();
-        fft->SetInput(conjProd->GetOutput());
+        fft->SetInput(conjProdNorm->GetOutput());
         fft->SetTransformDirection(FFTType::INVERSE);
         fft->Update();
   
@@ -250,55 +253,27 @@ int main(int argc, char* argv[])
         modulus->SetInput(shifter->GetOutput());
         modulus->Update();
   
-
         MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
         minMax->SetImage(modulus->GetOutput());
         minMax->ComputeMaximum();
         
         slvIndex = minMax->GetIndexOfMaximum();
 
-	slvPoint[0] = slvPoint[0] + slvIndex[0] - (patchSizePerDim / 2);
-	slvPoint[1] = slvPoint[1] + slvIndex[1] - (patchSizePerDim / 2);
+	slvPoint[0] = slvPoint[0] - slvIndex[0] + (patchSizePerDim / 2);
+	slvPoint[1] = slvPoint[1] - slvIndex[1] + (patchSizePerDim / 2);
 
 	std::cout << "Master: " << mstPoint[0] << ", " << mstPoint[1];
 	std::cout << " - Slave: " << slvPoint[0] << ", " << slvPoint[1] << std::endl;
-
-	offset[0] = mstPoint[0] - slvPoint[0];
-	offset[1] = mstPoint[1] - slvPoint[1];
-        std::cout<<"slvIndex: "<<slvIndex<<std::endl;
-	std::cout << "Final offset: " << offset[0] << ", " << offset[1] << std::endl;
-    
-	estimate->AddTiePoints(mstPoint, slvPoint);
-
+	std::cout << "Final offset: " << slvIndex[0] - (patchSizePerDim / 2) << ", " << slvIndex[1] - (patchSizePerDim / 2) << std::endl;
+        std::cout<<"Coherency: "<<minMax->GetMaximum()<<std::endl;
+        
+        if(minMax->GetMaximum()>coherency_threshold)
+          {
+          estimate->AddTiePoints(mstPoint, slvPoint);
+          std::cout<<"Tie points added"<<std::endl;
+          }
+        std::cout<<"==================================="<<std::endl;
         ++it;
-
-	// if(mstPoint[0] == 4364 && mstPoint[1] == 2472)
-	// {
-        // WriterType::Pointer mstWriter = WriterType::New();
-        // mstWriter->SetInput(mstExtract->GetOutput());
-        // mstWriter->SetFileName("mst.tif");
-        // mstWriter->Update();
-
-        // WriterType::Pointer slvWriter = WriterType::New();
-        // slvWriter->SetInput(slvExtract->GetOutput());
-        // slvWriter->SetFileName("slv.tif");
-        // slvWriter->Update();
-
-        // FFTWriterType::Pointer mstFFTWriter = FFTWriterType::New();
-        // mstFFTWriter->SetInput(fft1);
-        // mstFFTWriter->SetFileName("masterFFT.tif");
-        // mstFFTWriter->Update();
-        
-        // FFTWriterType::Pointer slvFFTWriter = FFTWriterType::New();
-        // slvFFTWriter->SetInput(fft2);
-        // slvFFTWriter->SetFileName("slaveFFT.tif");
-        // slvFFTWriter->Update();
-        
-        // FFTWriterType::Pointer crossFFTWriter = FFTWriterType::New();
-        // crossFFTWriter->SetInput(shifter->GetOutput());
-        // crossFFTWriter->SetFileName("invcrossFFT.tif");
-        // crossFFTWriter->Update();
-	// }
   }
 
   estimate->Compute();
@@ -313,6 +288,12 @@ int main(int argc, char* argv[])
   interpolator->SetInputImage(slave->GetOutput());
   interpolator->SetRadius(3);
   interpolator->SetNormalizeZeroFrequency(0.01);
+
+  std::cout<<"Transform matrix: "<<std::endl;
+  std::cout<<estimate->GetAffineTransform()->GetMatrix()<<std::endl;
+
+  std::cout<<"Transform offset: "<<std::endl;
+  std::cout<<estimate->GetAffineTransform()->GetTranslation()<<std::endl;
 
   resample->SetTransform(estimate->GetAffineTransform());
   resample->SetInterpolator(interpolator);
@@ -334,7 +315,7 @@ int main(int argc, char* argv[])
   writer->SetFileName(outfname1);
   writer->SetInput(extract->GetOutput());
 
-  otb::StandardWriterWatcher watcher1(writer,resample,"Extracting from master image.");
+  otb::StandardWriterWatcher watcher1(writer,extract,"Extracting from master image.");
 
   writer->Update();
 
