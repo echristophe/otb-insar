@@ -9,6 +9,7 @@
 #include "itkBinaryFunctorImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "itkComplexToModulusImageFilter.h"
+#include "itkDivideImageFilter.h"
 
 typedef std::complex< double >                                         PixelType;
 typedef otb::Image< PixelType,2 >                                      ImageType;
@@ -25,7 +26,7 @@ typedef otb::StreamingImageFileWriter< ImageType >                     WriterTyp
 ;typedef otb::StreamingImageFileWriter< RealImageType >                RealWriterType;
 typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,RealImageType>      ModulusFilterType;
 typedef itk::MinimumMaximumImageCalculator<RealImageType>              MinMaxCalculatorType;
-
+typedef itk::DivideImageFilter<FFTOutputImageType,RealImageType,FFTOutputImageType> DivideFilterType;
 class ComplexConjugateProduct
 {
 public:
@@ -114,13 +115,21 @@ int main(int argc, char * argv[])
   conjProd->SetInput1(fft1);
   conjProd->SetInput2(fft2);
 
+  // Try to normalise to get the normalized coherence coeff
+  ModulusFilterType::Pointer conjProdMod = ModulusFilterType::New();
+  conjProdMod->SetInput(conjProd->GetOutput());
+  
+  DivideFilterType::Pointer conjProdNorm = DivideFilterType::New();
+  conjProdNorm->SetInput1(conjProd->GetOutput());
+  conjProdNorm->SetInput2(conjProdMod->GetOutput());
+
   FFTWriterType::Pointer writer5 = FFTWriterType::New();
   writer5->SetFileName("fftprod.tif");
-  writer5->SetInput(conjProd->GetOutput());
+  writer5->SetInput(conjProdNorm->GetOutput());
   writer5->Update();
 
   fft = FFTType::New();
-  fft->SetInput(conjProd->GetOutput());
+  fft->SetInput(conjProdNorm->GetOutput());
   fft->SetTransformDirection(FFTType::INVERSE);
   fft->Update();
   
