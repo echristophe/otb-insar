@@ -264,7 +264,7 @@ int main(int argc, char* argv[])
 
 	std::cout << "Master: " << mstPoint[0] << ", " << mstPoint[1];
 	std::cout << " - Slave: " << slvPoint[0] << ", " << slvPoint[1] << std::endl;
-	std::cout << "Final offset: " << slvIndex[0] - (patchSizePerDim / 2) << ", " << slvIndex[1] - (patchSizePerDim / 2) << std::endl;
+	std::cout << "Final offset: " << slvIndex[0] - (patchSizePerDim / 2.) << ", " << slvIndex[1] - (patchSizePerDim / 2.) << std::endl;
         std::cout<<"Coherency: "<<minMax->GetMaximum()<<std::endl;
         
         if(minMax->GetMaximum()>coherency_threshold)
