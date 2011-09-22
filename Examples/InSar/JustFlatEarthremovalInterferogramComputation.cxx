@@ -21,21 +21,16 @@
 #include "otbImageFileReader.h"
 #include "otbStreamingImageFileWriter.h"
 #include "otbImageFileWriter.h"
-#include "itkUnaryFunctorImageFilter.h"
-
-#include "itkTernaryFunctorImageFilter.h"
-#include "otbAmplitudePhaseToRGBFunctor.h"
 #include "itkComplexToModulusImageFilter.h"
 #include "itkComplexToPhaseImageFilter.h"
-#include "otbComplexToIntensityImageFilter.h"
-#include "itkAccumulateImageFilter.h"
-#include "itkFFTComplexToComplexImageFilter.h"
 #include "itkMinimumMaximumImageCalculator.h"
 #include "otbUnaryFunctorWithIndexImageFilter.h"
+#include "itkFFTRealToComplexConjugateImageFilter.h"
+
 
 // Command line:
 
-// ./JustFlatEarthRemovalInterferogramComputation registered_master.tif registered_slave.tif interf.tif remove_earth_interf.tif interf_pretty.png
+// ./JustFlatEarthRemovalInterferogramComputation interf.tif phase.tif remove_earth_interf.tif cleanphase.tif
 
 
 /** Functor to compute the remove earth phase */
@@ -46,139 +41,113 @@ template< class TInput, class TOutput>
 {
   public:
   // The constructor and destructor.
-    EarthRemovePhaseInterferogramCalculator() : m_RangeFrequency(0.0) {};
+    EarthRemovePhaseInterferogramCalculator()  {};
     ~EarthRemovePhaseInterferogramCalculator() {};
 
 	typedef itk::Index<2> IndexType;
 
 	inline TOutput operator ()(const TInput& inPix, IndexType index)
     {
-	  TOutput phase(cos(otb::CONST_2PI*m_RangeFrequency*index[1]), sin(otb::CONST_2PI*m_RangeFrequency*index[1]));
-      return static_cast<TOutput>( inPix * phase );
+ 	  TOutput result = static_cast<TOutput>( inPix);
+	  for(unsigned int i = 0 ; i<2 ; ++i)
+	  {
+		double tmp_phase;
+		tmp_phase= otb::CONST_2PI*m_IndexFrequencyMax[0]*index[0];
+		TOutput phase(cos(tmp_phase), sin(tmp_phase));
+	    result *= phase;
+	}
+      return result;
     }
 
-  void SetRangeFrequency(double value)
+  void SetIndexFrequencyMax(IndexType value)
   {
-    m_RangeFrequency = value;
+    m_IndexFrequencyMax = value;
   }
 
   private:
-	  double m_RangeFrequency;
+	  IndexType m_IndexFrequencyMax;
 };
 }
 
-int main(int argc, char* argv[])
-{
+  typedef double                           ScalarPixelType;
+  typedef std::complex<ScalarPixelType>    PixelType;
+  typedef otb::Image<PixelType,2>          ImageType;
+  typedef ImageType::IndexType             IndexType;
+  typedef otb::Image<ScalarPixelType,2>    ScalarImageType;
 
-  if (argc != 6)
-    {
-    std::cerr << "Usage: " << argv[0] << " masterImageFile slaveImageFile";
-    std::cerr << " interferogram flatEarthRemoveInterferogram colorInterferogram" << std::endl;
-    return EXIT_FAILURE;
-    }
-
-  typedef std::complex<double>    PixelType;
-  typedef otb::Image<PixelType,2> ImageType;
-  typedef ImageType::IndexType    IndexType;
-  typedef double                  ScalarPixelType;
-  typedef otb::Image<ScalarPixelType,2>                      ScalarImageType;
-  typedef itk::FFTComplexToComplexImageFilter< ScalarPixelType, ImageType::ImageDimension >  FFTType;
-  typedef FFTType::TransformDirectionType                                FFTDirectionType;
-
-  typedef itk::ComplexToModulusImageFilter<FFTType::OutputImageType,ScalarImageType>      ModulusFilterType;
-  typedef itk::AccumulateImageFilter<ModulusFilterType::OutputImageType,
-									 ModulusFilterType::OutputImageType>                  AccumulateImageFilterType;
-  typedef itk::MinimumMaximumImageCalculator<AccumulateImageFilterType::OutputImageType>  MinMaxCalculatorType;
+  typedef itk::ComplexToPhaseImageFilter<ImageType,ScalarImageType> PhaseFilterType;
+  typedef itk::FFTRealToComplexConjugateImageFilter< ScalarPixelType, ImageType::ImageDimension >  RealFFTType;
+  typedef itk::ComplexToModulusImageFilter<RealFFTType::OutputImageType,ScalarImageType>      ModulusFilterType;
+  typedef itk::MinimumMaximumImageCalculator<ModulusFilterType::OutputImageType>  MinMaxCalculatorType;
 
   typedef Functor::EarthRemovePhaseInterferogramCalculator<PixelType, PixelType> InterferogramCalculatorType;
   typedef otb::UnaryFunctorWithIndexImageFilter<ImageType,ImageType,InterferogramCalculatorType> EarthRemovePhaseInterferogramFilterType;
 
-  /* Reading master and slave images */
+
+  /* Reading images */
   typedef otb::ImageFileReader<ImageType> ReaderType;
   typedef otb::StreamingImageFileWriter<ImageType> WriterType;
+  typedef otb::StreamingImageFileWriter<ScalarImageType> ScalarWriterType;
 
-  ReaderType::Pointer master = ReaderType::New();
-  ReaderType::Pointer slave = ReaderType::New();
 
-  master->SetFileName(argv[1]);
-  slave->SetFileName(argv[2]);
 
-  master->UpdateOutputInformation();
-  slave->UpdateOutputInformation();
+int main(int argc, char* argv[])
+{
+
+  if (argc != 5)
+    {
+    std::cerr << "Usage: " << argv[0] << " interferogram Phase flatEarthRemoveInterferogram cleanedPhase" << std::endl;
+    return EXIT_FAILURE;
+    }
 
   ReaderType::Pointer interferogram = ReaderType::New();
-  interferogram->SetFileName(argv[3]);
-  interferogram->UpdateOutputInformation();
+  interferogram->SetFileName(argv[1]);
 
-  FFTType::Pointer fft = FFTType::New();
-  fft->SetInput(interferogram->GetOutput());
-  fft->Update();
+  PhaseFilterType::Pointer phaseFilter = PhaseFilterType::New();
+  phaseFilter->SetInput(interferogram->GetOutput());
+  phaseFilter->Update();
+
+  ScalarWriterType::Pointer modulusFFTWriter = ScalarWriterType::New();
+  modulusFFTWriter->SetFileName(argv[2]);
+  modulusFFTWriter->SetInput(phaseFilter->GetOutput());
+  modulusFFTWriter->Update();
+
+  RealFFTType::Pointer phaseFFT = RealFFTType::New();
+  phaseFFT->SetInput(phaseFilter->GetOutput());
+  phaseFFT->Update();
   
-  ModulusFilterType::Pointer modulusFFT = ModulusFilterType::New();
-  modulusFFT->SetInput( fft->GetOutput() );
-  modulusFFT->Update();
-
-  AccumulateImageFilterType::Pointer averageModulusFilter = AccumulateImageFilterType::New();
-  averageModulusFilter->SetInput(modulusFFT->GetOutput());
-  averageModulusFilter->SetAverage(true);
-  averageModulusFilter->SetAccumulateDimension(0);
+  ModulusFilterType::Pointer modulusPhaseFFT = ModulusFilterType::New();
+  modulusPhaseFFT->SetInput( phaseFFT->GetOutput() );
+  modulusPhaseFFT->Update();
 
   MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
-  minMax->SetImage(averageModulusFilter->GetOutput());
+  minMax->SetImage(modulusPhaseFFT->GetOutput());
   minMax->ComputeMaximum();
   
   IndexType index;
   index = minMax->GetIndexOfMaximum();
 
-  std::cout << "Frequency max evaluation : " << index[0] << " , " << index[1] << std::endl;
+  std::cout << "Frequency max evaluation : " << index[0]<< " with " << modulusPhaseFFT->GetOutput()->GetLargestPossibleRegion().GetSize()[0] 
+	        << " , "                         << index[0]/(modulusPhaseFFT->GetOutput()->GetLargestPossibleRegion().GetSize()[0]*1.0) << std::endl;
 
   EarthRemovePhaseInterferogramFilterType::Pointer earthRemovePhaseInterferogram = EarthRemovePhaseInterferogramFilterType::New();
   earthRemovePhaseInterferogram->SetInput(interferogram->GetOutput());
-  earthRemovePhaseInterferogram->GetFunctor().SetRangeFrequency(index[1]);
+  earthRemovePhaseInterferogram->GetFunctor().SetIndexFrequencyMax( index);
   earthRemovePhaseInterferogram->Update();
 
-
   WriterType::Pointer flatEarthRemoveWriterInterferogram = WriterType::New();
-  flatEarthRemoveWriterInterferogram->SetFileName(argv[4]);
+  flatEarthRemoveWriterInterferogram->SetFileName(argv[3]);
   flatEarthRemoveWriterInterferogram->SetInput(earthRemovePhaseInterferogram->GetOutput());
   flatEarthRemoveWriterInterferogram->Update();
 
+  PhaseFilterType::Pointer cleanPhaseFilter = PhaseFilterType::New();
+  cleanPhaseFilter->SetInput(earthRemovePhaseInterferogram->GetOutput());
+  cleanPhaseFilter->Update();
 
-  /* Display the interferogram with nice colors */
-
-  
-  typedef itk::RGBPixel<unsigned char> RGBPixelType;
-  typedef otb::Image<RGBPixelType, 2> RGBImageType;
-
-  ModulusFilterType::Pointer modulusFilter = ModulusFilterType::New();
-  modulusFilter->SetInput(master->GetOutput());
-
-  ModulusFilterType::Pointer coherenceFilter = ModulusFilterType::New();
-  coherenceFilter->SetInput(interferogram->GetOutput());
-
-  typedef itk::ComplexToPhaseImageFilter<ImageType,ScalarImageType> PhaseFilterType;
-  PhaseFilterType::Pointer phaseFilter = PhaseFilterType::New();
-  phaseFilter->SetInput(interferogram->GetOutput());
-
-  typedef otb::Functor::AmplitudePhaseToRGBFunctor
-      <ScalarPixelType,ScalarPixelType,ScalarPixelType,RGBPixelType> ColorMapFunctorType;
-  typedef itk::TernaryFunctorImageFilter
-      <ScalarImageType, ScalarImageType, ScalarImageType, RGBImageType, ColorMapFunctorType> ColorMapFilterType;
-  ColorMapFilterType::Pointer colormapper = ColorMapFilterType::New();
-  colormapper->GetFunctor().SetMaximum(2000);
-  colormapper->GetFunctor().SetMinimum(0);
-
-  colormapper->SetInput1(modulusFilter->GetOutput());
-  colormapper->SetInput2(coherenceFilter->GetOutput());
-  colormapper->SetInput3(phaseFilter->GetOutput());
-  //       colormapper->SetNumberOfThreads(1);
-
-  typedef otb::StreamingImageFileWriter<RGBImageType> WriterRGBType;
-  WriterRGBType::Pointer writerRGB = WriterRGBType::New();
-  writerRGB->SetFileName(argv[5]);
-  writerRGB->SetInput(colormapper->GetOutput());
-
-  writerRGB->Update();
+  ScalarWriterType::Pointer modulusCleanPhaseWriter = ScalarWriterType::New();
+  modulusCleanPhaseWriter->SetFileName(argv[4]);
+  modulusCleanPhaseWriter->SetInput(cleanPhaseFilter->GetOutput());
+  modulusCleanPhaseWriter->Update();
 
   return EXIT_SUCCESS;
 }
