@@ -27,10 +27,20 @@
 #include "otbUnaryFunctorWithIndexImageFilter.h"
 #include "itkFFTRealToComplexConjugateImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
+#include "itkUnaryFunctorImageFilter.h"
+#include "itkFFTComplexToComplexImageFilter.h"
+
 
 // Command line:
 
 // ./JustFlatEarthRemovalInterferogramComputation interf.tif phase.tif remove_earth_interf.tif cleanphase.tif
+
+  typedef double                           ScalarPixelType;
+  typedef std::complex<ScalarPixelType>    PixelType;
+  typedef otb::Image<PixelType,2>          ImageType;
+  typedef ImageType::IndexType             IndexType;
+  typedef ImageType::SizeType              SizeType;
+  typedef otb::Image<ScalarPixelType,2>    ScalarImageType;
 
 
 /** Functor to compute the remove earth phase */
@@ -49,31 +59,47 @@ template< class TInput, class TOutput>
 	inline TOutput operator ()(const TInput& inPix, IndexType index)
     {
  	  TOutput result = static_cast<TOutput>( inPix);
-	  for(unsigned int i = 0 ; i<2 ; ++i)
+	  for(unsigned int i = 0 ; i<2 ; i++)
 	  {
 		double tmp_phase;
-		tmp_phase= otb::CONST_2PI*m_IndexFrequencyMax[0]*index[0];
-		TOutput phase(cos(tmp_phase), -sin(tmp_phase));
-	    result *= phase;
+		tmp_phase= otb::CONST_2PI*m_IndexFrequencyMax[i] / m_ImageSize[i] *index[i] ;
+		TOutput phase(0.0, tmp_phase);
+	    result *= exp(phase);
 	}
-      return result;
+// 	  std::cout << "phase : " << static_cast<TOutput>( inPix) << " -> "<<  result << std::endl;
+	  return result;
     }
 
   void SetIndexFrequencyMax(IndexType value)
   {
     m_IndexFrequencyMax = value;
   }
+  void SetImageSize(SizeType size)
+  {
+    m_ImageSize = size;
+	std::cout << "Image Size : " << m_ImageSize << std::endl;
+  }
 
   private:
 	  IndexType m_IndexFrequencyMax;
+	  SizeType  m_ImageSize;
 };
 }
 
-  typedef double                           ScalarPixelType;
-  typedef std::complex<ScalarPixelType>    PixelType;
-  typedef otb::Image<PixelType,2>          ImageType;
-  typedef ImageType::IndexType             IndexType;
-  typedef otb::Image<ScalarPixelType,2>    ScalarImageType;
+template<class TInput, class TOutput>
+class PhaseToComplexFunctor
+{
+public:
+  inline PixelType operator()(const TInput & inPix) const
+  {
+ 	TOutput result = static_cast<TOutput>( inPix);
+	TOutput phase(0.0,inPix);
+    return static_cast<TOutput>( exp(phase) );
+  }
+};
+
+  typedef PhaseToComplexFunctor<ScalarPixelType,PixelType> PhaseToComplexFunctorType;
+  typedef itk::UnaryFunctorImageFilter<ScalarImageType,ImageType,PhaseToComplexFunctorType> PhaseToComplexFilterType;
 
   typedef itk::ComplexToPhaseImageFilter<ImageType,ScalarImageType> PhaseFilterType;
   typedef itk::FFTRealToComplexConjugateImageFilter< ScalarPixelType, ImageType::ImageDimension >  RealFFTType;
@@ -82,6 +108,11 @@ template< class TInput, class TOutput>
 
   typedef Functor::EarthRemovePhaseInterferogramCalculator<PixelType, PixelType> InterferogramCalculatorType;
   typedef otb::UnaryFunctorWithIndexImageFilter<ImageType,ImageType,InterferogramCalculatorType> EarthRemovePhaseInterferogramFilterType;
+
+  typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, 
+                                           ImageType::ImageDimension > FFTType;
+  typedef FFTType::OutputImageType                                       FFTOutputImageType;
+  typedef FFTType::TransformDirectionType                                FFTDirectionType;
 
 
   /* Reading images */
@@ -105,6 +136,7 @@ int main(int argc, char* argv[])
 
   ReaderType::Pointer interferogram = ReaderType::New();
   interferogram->SetFileName(argv[1]);
+  interferogram->UpdateOutputInformation();
 
   PhaseFilterType::Pointer phaseFilter = PhaseFilterType::New();
   phaseFilter->SetInput(interferogram->GetOutput());
@@ -120,8 +152,12 @@ int main(int argc, char* argv[])
   rescalePhaseWriter->SetInput(rescalePhase->GetOutput());
   rescalePhaseWriter->Update();
 
-  RealFFTType::Pointer phaseFFT = RealFFTType::New();
-  phaseFFT->SetInput(phaseFilter->GetOutput());
+  PhaseToComplexFilterType::Pointer complexPhase = PhaseToComplexFilterType::New();
+  complexPhase->SetInput(phaseFilter->GetOutput());
+  complexPhase->Update();
+
+  FFTType::Pointer phaseFFT = FFTType::New();
+  phaseFFT->SetInput(complexPhase->GetOutput());
   phaseFFT->Update();
   
   ModulusFilterType::Pointer modulusPhaseFFT = ModulusFilterType::New();
@@ -141,6 +177,7 @@ int main(int argc, char* argv[])
   EarthRemovePhaseInterferogramFilterType::Pointer earthRemovePhaseInterferogram = EarthRemovePhaseInterferogramFilterType::New();
   earthRemovePhaseInterferogram->SetInput(interferogram->GetOutput());
   earthRemovePhaseInterferogram->GetFunctor().SetIndexFrequencyMax( index);
+  earthRemovePhaseInterferogram->GetFunctor().SetImageSize(modulusPhaseFFT->GetOutput()->GetLargestPossibleRegion().GetSize());
   earthRemovePhaseInterferogram->Update();
 
   WriterType::Pointer flatEarthRemoveWriterInterferogram = WriterType::New();
