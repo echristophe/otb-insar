@@ -8,6 +8,9 @@ TARGET_LINK_LIBRARIES(JustTheInterferogramComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(JustFlatEarthRemovalInterferogramComputation JustFlatEarthRemovalInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(JustFlatEarthRemovalInterferogramComputation OTBCommon OTBIO)
 
+ADD_EXECUTABLE(InterferogramHSVColorGeneration InterferogramHSVColorGeneration.cxx)
+TARGET_LINK_LIBRARIES(InterferogramHSVColorGeneration OTBCommon OTBIO)
+
 #ADD_EXECUTABLE(SARCoregistrationComputation SARCoregistrationComputation.cxx)
 #TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
 
