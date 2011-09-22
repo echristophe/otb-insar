@@ -37,7 +37,7 @@
 
 // Command line:
 
-// ./JustTheInterferogramComputation registered_master.tif registered_slave.tif interf.tif interf_pretty.png
+// ./InterferogramHSVColorGeneration registered_master.tif registered_slave.tif interf.tif interf_pretty.png
 
 
 template<class TInput1, class TInput2 = TInput1, class TInput3 = TInput1, class TOutput = TInput1>
