@@ -26,7 +26,7 @@
 #include "itkMinimumMaximumImageCalculator.h"
 #include "otbUnaryFunctorWithIndexImageFilter.h"
 #include "itkFFTRealToComplexConjugateImageFilter.h"
-
+#include "itkRescaleIntensityImageFilter.h"
 
 // Command line:
 
@@ -53,7 +53,7 @@ template< class TInput, class TOutput>
 	  {
 		double tmp_phase;
 		tmp_phase= otb::CONST_2PI*m_IndexFrequencyMax[0]*index[0];
-		TOutput phase(cos(tmp_phase), sin(tmp_phase));
+		TOutput phase(cos(tmp_phase), -sin(tmp_phase));
 	    result *= phase;
 	}
       return result;
@@ -89,7 +89,10 @@ template< class TInput, class TOutput>
   typedef otb::StreamingImageFileWriter<ImageType> WriterType;
   typedef otb::StreamingImageFileWriter<ScalarImageType> ScalarWriterType;
 
-
+  typedef unsigned char                     OutputPixelType;
+  typedef otb ::Image<OutputPixelType, 2>   OutputImageType;
+  typedef itk::RescaleIntensityImageFilter<ScalarImageType , OutputImageType > RescalerType;
+  typedef otb::StreamingImageFileWriter<OutputImageType > RescaleWriterType ;
 
 int main(int argc, char* argv[])
 {
@@ -107,10 +110,15 @@ int main(int argc, char* argv[])
   phaseFilter->SetInput(interferogram->GetOutput());
   phaseFilter->Update();
 
-  ScalarWriterType::Pointer modulusFFTWriter = ScalarWriterType::New();
-  modulusFFTWriter->SetFileName(argv[2]);
-  modulusFFTWriter->SetInput(phaseFilter->GetOutput());
-  modulusFFTWriter->Update();
+  RescalerType::Pointer rescalePhase = RescalerType::New();
+  rescalePhase->SetOutputMinimum(0);
+  rescalePhase->SetOutputMaximum(255);
+  rescalePhase->SetInput(phaseFilter->GetOutput());
+
+  RescaleWriterType::Pointer rescalePhaseWriter = RescaleWriterType::New();
+  rescalePhaseWriter->SetFileName(argv[2]);
+  rescalePhaseWriter->SetInput(rescalePhase->GetOutput());
+  rescalePhaseWriter->Update();
 
   RealFFTType::Pointer phaseFFT = RealFFTType::New();
   phaseFFT->SetInput(phaseFilter->GetOutput());
@@ -144,10 +152,15 @@ int main(int argc, char* argv[])
   cleanPhaseFilter->SetInput(earthRemovePhaseInterferogram->GetOutput());
   cleanPhaseFilter->Update();
 
-  ScalarWriterType::Pointer modulusCleanPhaseWriter = ScalarWriterType::New();
-  modulusCleanPhaseWriter->SetFileName(argv[4]);
-  modulusCleanPhaseWriter->SetInput(cleanPhaseFilter->GetOutput());
-  modulusCleanPhaseWriter->Update();
+  RescalerType::Pointer rescaleCleanPhase = RescalerType::New();
+  rescaleCleanPhase->SetOutputMinimum(0);
+  rescaleCleanPhase->SetOutputMaximum(255);
+  rescaleCleanPhase->SetInput(cleanPhaseFilter->GetOutput());
+
+  RescaleWriterType::Pointer rescaleCleanPhaseWriter = RescaleWriterType::New();
+  rescaleCleanPhaseWriter->SetFileName(argv[4]);
+  rescaleCleanPhaseWriter->SetInput(rescaleCleanPhase->GetOutput());
+  rescaleCleanPhaseWriter->Update();
 
   return EXIT_SUCCESS;
 }
