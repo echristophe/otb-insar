@@ -33,7 +33,7 @@
 
 // Command line:
 
-// ./JustFlatEarthRemovalInterferogramComputation interf.tif phase.tif remove_earth_interf.tif cleanphase.tif
+// ./JustFlatEarthRemovalInterferogramComputation interf.tif phase.tif remove_earth_interf.tif phase_clean.tif
 
   typedef double                           ScalarPixelType;
   typedef std::complex<ScalarPixelType>    PixelType;
