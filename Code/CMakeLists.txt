@@ -1,1 +1,1 @@
-SUBDIRS(Interpolation)
+SUBDIRS(Interpolation Coregistration InterferogramFormation)
