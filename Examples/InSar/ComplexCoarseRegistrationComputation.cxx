@@ -44,11 +44,18 @@
 #include "itkComplexToModulusImageFilter.h"
 #include "itkDivideImageFilter.h"
 
+#include "itkConstNeighborhoodIterator.h"
+
+#include "otbSubsampledImageRegionConstIterator.h"
+#include "itkAffineTransform.h"
+#include "otbStreamingWarpImageFilter.h"
+
 typedef std::complex< double >                                         PixelType;
 typedef otb::Image< PixelType,2 >                                      ImageType;
 typedef ImageType::SizeType                                            SizeType;
 typedef ImageType::IndexType                                           IndexType;
 typedef ImageType::RegionType                                          RegionType;
+typedef ImageType::SpacingType										   SpacingType;
 
 typedef itk::PointSet< PixelType, ImageType::ImageDimension >          PointSetType;
 typedef otb::GridIntersectionPointSetSource< PointSetType >            PointSetSourceType;
@@ -68,6 +75,7 @@ typedef itk::ConstantBoundaryCondition< ImageType >                    BoundaryC
 typedef PixelType::value_type                                          CoordRepType;
 typedef otb::ComplexInterpolateImageFunction< ImageType,FunctionType, 
                                  BoundaryConditionType, CoordRepType > InterpolatorType;
+typedef InterpolatorType::ContinuousIndexType            ContinuousIndexType;
 
 typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type, 
                                            ImageType::ImageDimension > FFTType;
@@ -85,6 +93,17 @@ typedef itk::MinimumMaximumImageCalculator<RealImageType>              MinMaxCal
 typedef otb::ImageFileWriter<FFTOutputImageType>                       FFTWriterType;
 //========================================================================================================
 typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >        ImageRegionIteratorType;
+typedef itk::ConstNeighborhoodIterator< ImageType >					   ImageConstNeighborhoodIteratorType;
+
+typedef otb::SubsampledImageRegionConstIterator< ImageType >		   SubsampledImageRegionConstIteratorType;
+typedef itk::Vector<double, 2>										   DeformationPixelType;
+typedef otb::Image<DeformationPixelType, 2>                            DeformationFieldType;
+typedef DeformationFieldType::RegionType							   DeformationRegionType;
+typedef itk::ImageRegionIterator< DeformationFieldType >			   DeformationImageRegionIteratorType;
+
+typedef EstimateFilterType::AffineTransformType						   AffineTransformType;
+typedef otb::StreamingWarpImageFilter< ImageType, ImageType, 
+	DeformationFieldType>											   WarpImageFilterType;
 
 class ComplexConjugateProduct
 {
@@ -100,9 +119,9 @@ typedef itk::BinaryFunctorImageFilter<FFTOutputImageType,FFTOutputImageType,FFTO
 int main(int argc, char* argv[])
 {
 
-  if (argc != 13)
+  if (argc != 16)
     {
-    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2 coherency_threshold";
+    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2 coherency_threshold subPixelAccuracy subSampleFactor windowSize";
     return EXIT_FAILURE;
     }
   ImageType::SizeType size;
@@ -120,6 +139,9 @@ int main(int argc, char* argv[])
   const char * outfname1 = argv[10];
   const char * outfname2 = argv[11];
   double coherency_threshold = atof(argv[12]);
+  double subPixelAccuracy = atof(argv[13]);
+  IndexType::IndexValueType subSampleFactor = atoi(argv[14]);
+  unsigned int windowSizePerDim = atoi(argv[15]);
 
   
   ReaderType::Pointer master = ReaderType::New();
@@ -165,7 +187,7 @@ int main(int argc, char* argv[])
   // Perform genericRSTransform here if needed
   transform->SetInputKeywordList(master->GetOutput()->GetImageKeywordlist());
   transform->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
-  transform->SetDEMDirectory(demdir);
+  //transform->SetDEMDirectory(demdir);
 
   transform->InstanciateTransform();
   ///////////////////////////////////////////////////
@@ -315,7 +337,7 @@ int main(int argc, char* argv[])
   writer->SetFileName(outfname1);
   writer->SetInput(extract->GetOutput());
 
-  otb::StandardWriterWatcher watcher1(writer,extract,"Extracting from master image.");
+  //otb::StandardWriterWatcher watcher1(writer,extract,"Extracting from master image.");
 
   writer->Update();
 
@@ -327,8 +349,201 @@ int main(int argc, char* argv[])
   writer->SetFileName(outfname2);
   writer->SetInput(extract->GetOutput());
 
-  otb::StandardWriterWatcher watcher2(writer,resample,"Extracting from registered slave image.");
+  //otb::StandardWriterWatcher watcher2(writer,resample,"Extracting from registered slave image.");
   writer->Update();
+
+  /** =================================================================================== */
+  /** Fine registration starts here ===================================================== */
+  //Get grid iterator for master image
+  /*
+  SubsampledImageRegionConstIteratorType gridIt(master->GetOutput(), master->GetOutput()->GetLargestPossibleRegion());
+  gridIt.SetSubsampleFactor(subSampleFactor);
+
+  DeformationRegionType deformationRegion = gridIt.GenerateOutputInformation(); 
+  */
+  DeformationRegionType::IndexType defIndex;
+  defIndex.Fill(0);
+  DeformationRegionType::SizeType defSize;
+  defSize[0] = (master->GetOutput()->GetLargestPossibleRegion().GetSize()[0] - (master->GetOutput()->GetLargestPossibleRegion().GetSize()[0] % subSampleFactor)) / subSampleFactor;
+  defSize[1] = (master->GetOutput()->GetLargestPossibleRegion().GetSize()[1] - (master->GetOutput()->GetLargestPossibleRegion().GetSize()[1] % subSampleFactor)) / subSampleFactor;
+
+  DeformationRegionType deformationRegion;
+  deformationRegion.SetIndex(defIndex);
+  deformationRegion.SetSize(defSize);
+
+  DeformationFieldType::Pointer deformationField = DeformationFieldType::New();
+  deformationField->SetRegions(deformationRegion);
+  deformationField->Allocate();
+
+  DeformationImageRegionIteratorType deformationIt(deformationField, deformationField->GetRequestedRegion());
+
+  AffineTransformType::Pointer affineTransformFilter = estimate->GetAffineTransform();
+
+  currentSize.Fill(windowSizePerDim);
+
+  IndexType mstIndex;
+  mstIndex.Fill(0);
+  //LOOP
+  deformationIt.GoToBegin();
+  while(!deformationIt.IsAtEnd())
+  {
+	  
+
+	//Get physical point from index
+
+	  PointType masterPoint;
+	  master->GetOutput()->TransformIndexToPhysicalPoint(mstIndex, masterPoint);
+
+	//Transform physical point in master to physical point in slave
+	  PointType slavePoint = affineTransformFilter->TransformPoint(masterPoint);
+
+	//Get slave index from physical point
+
+	  IndexType slvIndex;
+	  slave->GetOutput()->TransformPhysicalPointToIndex(slavePoint, slvIndex);
+
+	//Get region around point in master and slave
+
+	  IndexType tmpMstIndex;
+	  tmpMstIndex[0] = mstIndex[0] - (windowSizePerDim / 2);
+	  tmpMstIndex[1] = mstIndex[1] - (windowSizePerDim / 2);
+	  curMstRegion.SetIndex(tmpMstIndex);
+	  curMstRegion.SetSize(currentSize);
+
+	  slvIndex[0] = slvIndex[0] - (windowSizePerDim / 2);
+	  slvIndex[1] = slvIndex[1] - (windowSizePerDim / 2);
+	  curSlvRegion.SetIndex(slvIndex);
+	  curSlvRegion.SetSize(currentSize);
+
+	  if(!(slave->GetOutput()->GetLargestPossibleRegion().IsInside(curSlvRegion)) || !(master->GetOutput()->GetLargestPossibleRegion().IsInside(curMstRegion)))
+	  {
+		  DeformationPixelType deformationOffset;
+		  deformationOffset[0] = slvIndex[0] + (windowSizePerDim / 2);
+		  deformationOffset[1] = slvIndex[1] + (windowSizePerDim / 2);
+		  deformationIt.Set(deformationOffset);
+
+		  mstIndex[0] = mstIndex[0] + subSampleFactor;
+		  if(mstIndex[0] > master->GetOutput()->GetLargestPossibleRegion().GetSize()[0])
+		  {
+			  mstIndex[0] = 0;
+			  mstIndex[1] = mstIndex[1] + subSampleFactor;
+		  }
+
+		  ++deformationIt;
+		  continue;
+	  }
+	  mstExtract->SetExtractionRegion(curMstRegion);
+	  slvExtract->SetExtractionRegion(curSlvRegion);
+
+	//Pad region to x times original size to get 1/x pixel precision
+
+	  ImageType::SizeType paddsize;
+      paddsize.Fill(((windowSizePerDim/subPixelAccuracy) - windowSizePerDim) / 2);        
+
+      PadFilterType::Pointer pad1 = PadFilterType::New();
+      pad1->SetInput(mstExtract->GetOutput());
+      pad1->SetPadBound(paddsize);
+        
+      PadFilterType::Pointer pad2 = PadFilterType::New();
+      pad2->SetInput(slvExtract->GetOutput());
+      pad2->SetPadBound(paddsize);
+
+	//Perform fft on both image regions
+
+	  FFTType::Pointer fft = FFTType::New();
+      fft->SetInput(pad1->GetOutput());
+      fft->Update();
+
+      FFTOutputImageType::Pointer fft1 = fft->GetOutput();
+
+      fft = FFTType::New();
+      fft->SetInput(pad2->GetOutput());
+      fft->Update();
+
+      FFTOutputImageType::Pointer fft2 = fft->GetOutput();
+
+	//Calculate correlation (complex conjugate product)
+	
+	  ConjugateProductFilterType::Pointer conjProd = ConjugateProductFilterType::New();
+      conjProd->SetInput1(fft1);
+      conjProd->SetInput2(fft2);
+
+	//Normalize
+
+	  ModulusFilterType::Pointer conjProdMod = ModulusFilterType::New();
+      conjProdMod->SetInput(conjProd->GetOutput());
+
+      DivideFilterType::Pointer conjProdNorm = DivideFilterType::New();
+      conjProdNorm->SetInput1(conjProd->GetOutput());
+      conjProdNorm->SetInput2(conjProdMod->GetOutput());
+
+	//Get maximum value index
+
+	  fft = FFTType::New();
+      fft->SetInput(conjProdNorm->GetOutput());
+      fft->SetTransformDirection(FFTType::INVERSE);
+      fft->Update();
+  
+      FFTOutputImageType::Pointer ifft = fft->GetOutput();
+
+      ShiftFilterType::Pointer shifter = ShiftFilterType::New();
+      shifter->SetInput(ifft);
+
+      ModulusFilterType::Pointer modulus = ModulusFilterType::New();
+      modulus->SetInput(shifter->GetOutput());
+      modulus->Update();
+  
+      MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
+      minMax->SetImage(modulus->GetOutput());
+      minMax->ComputeMaximum();
+        
+      IndexType tmpIndex = minMax->GetIndexOfMaximum();
+
+	//Transform index to physical tie point
+
+	  DeformationPixelType deformationOffset;
+	  deformationOffset[0] = slavePoint[0] + tmpIndex[0] * subPixelAccuracy + windowSizePerDim / 2;
+	  deformationOffset[1] = slavePoint[1] + tmpIndex[1] * subPixelAccuracy + windowSizePerDim / 2;
+
+	//Add tie point to displacement map
+
+	  deformationIt.Set(deformationOffset);
+
+	  mstIndex[0] = mstIndex[0] + subSampleFactor;
+	  if(mstIndex[0] > master->GetOutput()->GetLargestPossibleRegion().GetSize()[0])
+	  {
+		  mstIndex[0] = 0;
+		  mstIndex[1] = mstIndex[1] + subSampleFactor;
+	  }
+/*
+	  std::cout << "Master: " << masterPoint[0] << ", " << masterPoint[1];
+	  std::cout << " - Slave: " << slavePoint[0] << ", " << slavePoint[1] << std::endl;
+	  std::cout << "Final offset: " << tmpIndex[0] * subPixelAccuracy + windowSizePerDim / 2 << ", " << tmpIndex[1] * subPixelAccuracy + windowSizePerDim / 2 << std::endl;
+      std::cout<<"Coherency: "<<minMax->GetMaximum()<<std::endl;
+*/
+	  ++deformationIt;
+  }
+
+  WarpImageFilterType::Pointer warp = WarpImageFilterType::New();
+
+  warp->SetInput(slave->GetOutput());
+  warp->SetDeformationField(deformationField);
+  warp->SetEdgePaddingValue(0.0);
+  warp->SetInterpolator(interpolator);
+
+  extract = ExtractFilterType::New();
+  extract->SetExtractionRegion(region);
+  extract->SetInput(warp->GetOutput());
+  
+  writer = WriterFixedType::New();
+  writer->SetFileName("fineSlaveRegistration.hdr");
+  writer->SetInput(extract->GetOutput());
+
+  writer->Update();
+
+
+	/** Fine registration ends here ======================================================= */
+	/** =================================================================================== */
 
   return EXIT_SUCCESS;
 }
