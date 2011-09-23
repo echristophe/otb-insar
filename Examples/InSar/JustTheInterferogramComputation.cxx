@@ -40,6 +40,7 @@
 #include "itkDiscreteGaussianImageFilter.h"
 #include "otbLeeImageFilter.h"
 
+#include "otbInterferogramFormationFunctor.h"
 #include "otbBinaryFunctorNeighborhoodImageFilter.h"
 #include "itkTernaryFunctorImageFilter.h"
 #include "otbAmplitudePhaseToRGBFunctor.h"
@@ -50,39 +51,6 @@
 // Command line:
 
 // ./JustTheInterferogramComputation registered_master.tif registered_slave.tif interf.tif interf_pretty.png
-
-/** Functor to compute the interferogram */
-template< class TInput1, class TInput2, class TOutput>
-    class SimpleInterferogramCalculator
-{
-  public:
-  // The constructor and destructor.
-    SimpleInterferogramCalculator() {};
-    ~SimpleInterferogramCalculator() {};
-  // Change detection operation
-    inline TOutput operator()( const TInput1 & itA,
-                            const TInput2 & itB)
-    {
-
-      TOutput result = itk::NumericTraits<TOutput>::Zero;
-      double normA = 0.0;
-      double normB = 0.0;
-      for (unsigned long pos = 0; pos< itA.Size(); ++pos)
-      {
-        //TODO: add multiplication by G(m,i) function
-        result += static_cast<TOutput>(itA.GetPixel(pos)* std::conj(itB.GetPixel(pos)));
-        normA += itA.GetPixel(pos).real()*itA.GetPixel(pos).real()
-            + itA.GetPixel(pos).imag()*itA.GetPixel(pos).imag();
-        normB += itB.GetPixel(pos).real()*itB.GetPixel(pos).real()
-            + itB.GetPixel(pos).imag()*itB.GetPixel(pos).imag();
-
-      }
-      if ((normA != 0) && (normB != 0))
-        return static_cast<TOutput>( result/ (vcl_sqrt(normA)*vcl_sqrt(normB)) );
-      else
-        return itk::NumericTraits<TOutput>::Zero;
-    }
-};
 
 int main(int argc, char* argv[])
 {
@@ -120,7 +88,7 @@ int main(int argc, char* argv[])
   std::cout << slave->GetOutput()->GetLargestPossibleRegion() << std::endl;
 
   /* Computation of the interferogram */
-  typedef SimpleInterferogramCalculator<
+  typedef otb::Functor::InterferogramFormationFunctor<
       itk::ConstNeighborhoodIterator<ImageType>,
       itk::ConstNeighborhoodIterator<ImageType>,
       ImageType::PixelType>  InterferogramCalculatorType;
