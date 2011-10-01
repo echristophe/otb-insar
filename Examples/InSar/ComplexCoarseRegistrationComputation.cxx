@@ -50,6 +50,8 @@
 #include "itkAffineTransform.h"
 #include "otbStreamingWarpImageFilter.h"
 
+#include "itkLinearInterpolateImageFunction.h"
+
 typedef std::complex< double >                                         PixelType;
 typedef otb::Image< PixelType,2 >                                      ImageType;
 typedef ImageType::SizeType                                            SizeType;
@@ -82,12 +84,15 @@ typedef itk::FFTComplexToComplexImageFilter< PixelType::value_type,
 typedef FFTType::OutputImageType                                       FFTOutputImageType;
 typedef FFTType::TransformDirectionType                                FFTDirectionType;
 
-typedef itk::FFTShiftImageFilter<FFTOutputImageType,FFTOutputImageType> ShiftFilterType;
-typedef itk::ConstantPadImageFilter<ImageType,ImageType>          PadFilterType;
-typedef otb::Image<double,2>                                           RealImageType;
-typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,RealImageType>      ModulusFilterType;
-typedef itk::DivideImageFilter<FFTOutputImageType,RealImageType,FFTOutputImageType> DivideFilterType;
-typedef itk::MinimumMaximumImageCalculator<RealImageType>              MinMaxCalculatorType;
+typedef itk::FFTShiftImageFilter<FFTOutputImageType,
+												   FFTOutputImageType> ShiftFilterType;
+typedef itk::ConstantPadImageFilter<ImageType,ImageType>			   PadFilterType;
+typedef otb::Image<double,2>										   RealImageType;
+typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,
+													RealImageType>	   ModulusFilterType;
+typedef itk::DivideImageFilter<FFTOutputImageType,RealImageType,
+												FFTOutputImageType>    DivideFilterType;
+typedef itk::MinimumMaximumImageCalculator<RealImageType>			   MinMaxCalculatorType;
 
 //==================================== FOR VALIDATION PURPOSES ===========================================
 typedef otb::ImageFileWriter<FFTOutputImageType>                       FFTWriterType;
@@ -96,14 +101,19 @@ typedef itk::ImageRegionIteratorWithIndex< FFTOutputImageType >        ImageRegi
 typedef itk::ConstNeighborhoodIterator< ImageType >					   ImageConstNeighborhoodIteratorType;
 
 typedef otb::SubsampledImageRegionConstIterator< ImageType >		   SubsampledImageRegionConstIteratorType;
-typedef itk::Vector<double, 2>										   DeformationPixelType;
-typedef otb::Image<DeformationPixelType, 2>                            DeformationFieldType;
+typedef itk::Vector<double, 2>										   DeformationOffsetPixelType;
+typedef otb::Image<DeformationOffsetPixelType, 2>                      DeformationFieldType;
 typedef DeformationFieldType::RegionType							   DeformationRegionType;
 typedef itk::ImageRegionIterator< DeformationFieldType >			   DeformationImageRegionIteratorType;
+typedef otb::StreamingImageFileWriter< DeformationFieldType >		   DeformationImageWriterType;
 
 typedef EstimateFilterType::AffineTransformType						   AffineTransformType;
 typedef otb::StreamingWarpImageFilter< ImageType, ImageType, 
 	DeformationFieldType>											   WarpImageFilterType;
+
+typedef otb::StreamingResampleImageFilter< DeformationFieldType, 
+											DeformationFieldType >     DeformationResampleFilterType;
+typedef itk::LinearInterpolateImageFunction< DeformationFieldType >    LinearInterpolateFilterType;
 
 class ComplexConjugateProduct
 {
@@ -119,9 +129,9 @@ typedef itk::BinaryFunctorImageFilter<FFTOutputImageType,FFTOutputImageType,FFTO
 int main(int argc, char* argv[])
 {
 
-  if (argc != 16)
+  if (argc != 18)
     {
-    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2 coherency_threshold subPixelAccuracy subSampleFactor windowSize";
+    std::cerr << "Usage: " << argv[0] << " masterImage slaveImage tiePointsPerDim patchSizePerDim dem startx starty sizex sizey outfname1 outfname2 coherency_threshold subPixelAccuracy subSampleFactor windowSize fine_threshold outfname3";
     return EXIT_FAILURE;
     }
   ImageType::SizeType size;
@@ -142,6 +152,8 @@ int main(int argc, char* argv[])
   double subPixelAccuracy = atof(argv[13]);
   IndexType::IndexValueType subSampleFactor = atoi(argv[14]);
   unsigned int windowSizePerDim = atoi(argv[15]);
+  double fine_threshold = atof(argv[16]);
+  const char * outfname3 = argv[17];
 
   
   ReaderType::Pointer master = ReaderType::New();
@@ -183,14 +195,13 @@ int main(int argc, char* argv[])
   PointSetSourceType::PointsContainerPointer
   points = pointSet->GetOutput()->GetPoints();
 
-  ///////////////////////////////////////////////////
-  // Perform genericRSTransform here if needed
+  // Prepare Generic RS Transform
   transform->SetInputKeywordList(master->GetOutput()->GetImageKeywordlist());
   transform->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
-  //transform->SetDEMDirectory(demdir);
+  transform->SetDEMDirectory(demdir);
 
   transform->InstanciateTransform();
-  ///////////////////////////////////////////////////
+  
 
   IndexType currentIndex;
   IndexType slvIndex;
@@ -213,7 +224,6 @@ int main(int argc, char* argv[])
 	curMstRegion.SetIndex(currentIndex);
 	curMstRegion.SetSize(currentSize);
 
-	//slvExtract->SetExtractionRegion(currentRegion); // Should take into account GenericRSTransform-calculated initial offset (if genericRS is used)
 	currentIndex[0] = slvPoint[0] - (patchSizePerDim / 2);
 	currentIndex[1] = slvPoint[1] - (patchSizePerDim / 2);
 	curSlvRegion.SetIndex(currentIndex);
@@ -337,7 +347,7 @@ int main(int argc, char* argv[])
   writer->SetFileName(outfname1);
   writer->SetInput(extract->GetOutput());
 
-  //otb::StandardWriterWatcher watcher1(writer,extract,"Extracting from master image.");
+  otb::StandardWriterWatcher watcher1(writer,extract,"Extracting from master image.");
 
   writer->Update();
 
@@ -349,18 +359,12 @@ int main(int argc, char* argv[])
   writer->SetFileName(outfname2);
   writer->SetInput(extract->GetOutput());
 
-  //otb::StandardWriterWatcher watcher2(writer,resample,"Extracting from registered slave image.");
+  otb::StandardWriterWatcher watcher2(writer,resample,"Extracting from registered slave image.");
   writer->Update();
 
   /** =================================================================================== */
   /** Fine registration starts here ===================================================== */
   //Get grid iterator for master image
-  /*
-  SubsampledImageRegionConstIteratorType gridIt(master->GetOutput(), master->GetOutput()->GetLargestPossibleRegion());
-  gridIt.SetSubsampleFactor(subSampleFactor);
-
-  DeformationRegionType deformationRegion = gridIt.GenerateOutputInformation(); 
-  */
   DeformationRegionType::IndexType defIndex;
   defIndex.Fill(0);
   DeformationRegionType::SizeType defSize;
@@ -373,6 +377,7 @@ int main(int argc, char* argv[])
 
   DeformationFieldType::Pointer deformationField = DeformationFieldType::New();
   deformationField->SetRegions(deformationRegion);
+  deformationField->SetSpacing(master->GetOutput()->GetSpacing() * subSampleFactor);
   deformationField->Allocate();
 
   DeformationImageRegionIteratorType deformationIt(deformationField, deformationField->GetRequestedRegion());
@@ -387,8 +392,6 @@ int main(int argc, char* argv[])
   deformationIt.GoToBegin();
   while(!deformationIt.IsAtEnd())
   {
-	  
-
 	//Get physical point from index
 
 	  PointType masterPoint;
@@ -401,6 +404,11 @@ int main(int argc, char* argv[])
 
 	  IndexType slvIndex;
 	  slave->GetOutput()->TransformPhysicalPointToIndex(slavePoint, slvIndex);
+
+	  DeformationOffsetPixelType deformationOffset;
+
+	  deformationOffset[0] = slavePoint[0] - masterPoint[0];
+	  deformationOffset[1] = slavePoint[1] - masterPoint[1];
 
 	//Get region around point in master and slave
 
@@ -417,9 +425,6 @@ int main(int argc, char* argv[])
 
 	  if(!(slave->GetOutput()->GetLargestPossibleRegion().IsInside(curSlvRegion)) || !(master->GetOutput()->GetLargestPossibleRegion().IsInside(curMstRegion)))
 	  {
-		  DeformationPixelType deformationOffset;
-		  deformationOffset[0] = slvIndex[0] + (windowSizePerDim / 2);
-		  deformationOffset[1] = slvIndex[1] + (windowSizePerDim / 2);
 		  deformationIt.Set(deformationOffset);
 
 		  mstIndex[0] = mstIndex[0] + subSampleFactor;
@@ -496,14 +501,16 @@ int main(int argc, char* argv[])
       MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
       minMax->SetImage(modulus->GetOutput());
       minMax->ComputeMaximum();
-        
-      IndexType tmpIndex = minMax->GetIndexOfMaximum();
+      
+	  if(minMax->GetMaximum() > fine_threshold)
+	  {
+		IndexType tmpIndex = minMax->GetIndexOfMaximum();
 
-	//Transform index to physical tie point
+		//Transform index to physical tie point
 
-	  DeformationPixelType deformationOffset;
-	  deformationOffset[0] = slavePoint[0] + tmpIndex[0] * subPixelAccuracy + windowSizePerDim / 2;
-	  deformationOffset[1] = slavePoint[1] + tmpIndex[1] * subPixelAccuracy + windowSizePerDim / 2;
+        deformationOffset[0] = deformationOffset[0] + (double(tmpIndex[0]) - windowSizePerDim / 2) * subPixelAccuracy;
+		deformationOffset[1] = deformationOffset[1] + (double(tmpIndex[1]) - windowSizePerDim / 2) * subPixelAccuracy;
+	  }
 
 	//Add tie point to displacement map
 
@@ -515,20 +522,44 @@ int main(int argc, char* argv[])
 		  mstIndex[0] = 0;
 		  mstIndex[1] = mstIndex[1] + subSampleFactor;
 	  }
-/*
+
 	  std::cout << "Master: " << masterPoint[0] << ", " << masterPoint[1];
 	  std::cout << " - Slave: " << slavePoint[0] << ", " << slavePoint[1] << std::endl;
-	  std::cout << "Final offset: " << tmpIndex[0] * subPixelAccuracy + windowSizePerDim / 2 << ", " << tmpIndex[1] * subPixelAccuracy + windowSizePerDim / 2 << std::endl;
+	  std::cout << "Final offset: " << deformationOffset[0] << ", " << deformationOffset[1] << std::endl;
       std::cout<<"Coherency: "<<minMax->GetMaximum()<<std::endl;
-*/
+
 	  ++deformationIt;
   }
 
+  DeformationResampleFilterType::Pointer resampleDefField = DeformationResampleFilterType::New();
+
+  resampleDefField->SetInput(deformationField);
+
+  LinearInterpolateFilterType::Pointer linearInterpolator = LinearInterpolateFilterType::New();
+
+  resampleDefField->SetInterpolator(linearInterpolator);
+  resampleDefField->SetOutputSize(slave->GetOutput()->GetLargestPossibleRegion().GetSize());
+  resampleDefField->SetOutputOrigin(slave->GetOutput()->GetOrigin());
+  resampleDefField->SetOutputSpacing(slave->GetOutput()->GetSpacing());
+/*
+  DeformationImageWriterType::Pointer writeDefField = DeformationImageWriterType::New();
+  writeDefField->SetInput(resampleDefField->GetOutput());
+  writeDefField->SetFileName("fineDefField.hdr");
+  writeDefField->SetNumberOfDivisionsTiledStreaming(1);
+  writeDefField->Update();
+*/
   WarpImageFilterType::Pointer warp = WarpImageFilterType::New();
 
   warp->SetInput(slave->GetOutput());
-  warp->SetDeformationField(deformationField);
+  //warp->SetDeformationField(deformationField);  // Not currently working if grid step is different from 1
+  warp->SetDeformationField(resampleDefField->GetOutput());
   warp->SetEdgePaddingValue(0.0);
+
+  DeformationOffsetPixelType maxDeformation;
+  maxDeformation[0] = estimate->GetAffineTransform()->GetTranslation()[0] - 10.0; // The minus is offset related... need a if statement!
+  maxDeformation[1] = estimate->GetAffineTransform()->GetTranslation()[1] - 10.0; // The minus is offset related... same as above!
+
+  warp->SetMaximumDeformation(maxDeformation);
   warp->SetInterpolator(interpolator);
 
   extract = ExtractFilterType::New();
@@ -536,8 +567,11 @@ int main(int argc, char* argv[])
   extract->SetInput(warp->GetOutput());
   
   writer = WriterFixedType::New();
-  writer->SetFileName("fineSlaveRegistration.hdr");
+  writer->SetFileName(outfname3);
   writer->SetInput(extract->GetOutput());
+  //writer->SetInput(warp->GetOutput());
+
+  otb::StandardWriterWatcher watcher3(writer,warp,"Extracting from fine registered slave image.");
 
   writer->Update();
 
