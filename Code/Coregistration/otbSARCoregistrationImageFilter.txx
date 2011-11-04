@@ -1,20 +1,3 @@
-/*=========================================================================
-
-  Program:   ORFEO Toolbox
-  Language:  C++
-  Date:      $Date$
-  Version:   $Revision$
-
-
-  Copyright (c) Centre National d'Etudes Spatiales. All rights reserved.
-  See OTBCopyright.txt for details.
-
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notices for more information.
-
-=========================================================================*/
 #ifndef __otbSARCoregistrationImageFilter_txx
 #define __otbSARCoregistrationImageFilter_txx
 
@@ -28,24 +11,29 @@
 
 namespace otb
 {
+
+/** SARCoregistrationImageFilter */
+
 /**
  * Constructor
  */
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::SARCoregistrationImageFilter()
  {
   this->SetNumberOfRequiredInputs( 2 );
-  this->SetNumberOfOutputs(2);
-  this->SetNthOutput(1, TOutputDeformationField::New());
+  this->SetNumberOfOutputs(1);
 
   // Default sizes
   m_TiePointsPerDim = 32;
   m_PatchSizePerDim = 128;
   m_SearchRadius.Fill(1);
 
+  // Perform fine registration
+  m_PerformFine = false;
+
   // Default sub-pixel precision
-  m_SubPixelAccuracy = 0.1;
+  m_SubPixelAccuracy = 0.125;
 
   // Flags
   m_UseSpacing = true;
@@ -57,80 +45,69 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelati
   m_GridStep.Fill(1);
 
   m_Transform = NULL;
+
+  m_UseDEM = false;
  }
 
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
 void
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
-::SetMasterInput( const TInputImage, TInterpolateFunction * image )
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
+::SetMasterInput( const TInputImage * image )
  {
   // Process object is not const-correct so the const casting is required.
-  this->SetNthInput(0, const_cast<TInputImage, TInterpolateFunction *>( image ));
+  this->SetNthInput(0, const_cast<TInputImage *>( image ));
  }
 
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
 void
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
-::SetSlaveInput( const TInputImage, TInterpolateFunction * image)
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
+::SetSlaveInput( const TInputImage * image)
  {
   // Process object is not const-correct so the const casting is required.
-  this->SetNthInput(1, const_cast<TInputImage, TInterpolateFunction *>( image ));
+  this->SetNthInput(1, const_cast<TInputImage *>( image ));
  }
 
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
-const TInputImage, TInterpolateFunction *
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
+const TInputImage *
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::GetMasterInput()
  {
   if (this->GetNumberOfInputs()<1)
     {
     return 0;
     }
-  return static_cast<const TInputImage, TInterpolateFunction *>(this->itk::ProcessObject::GetInput(0));
+  return static_cast<const TInputImage *>(this->itk::ProcessObject::GetInput(0));
  }
 
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
-const TInputImage, TInterpolateFunction *
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
+const TInputImage *
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::GetSlaveInput()
  {
   if (this->GetNumberOfInputs()<2)
     {
     return 0;
     }
-  return static_cast<const TInputImage, TInterpolateFunction *>(this->itk::ProcessObject::GetInput(1));
+  return static_cast<const TInputImage *>(this->itk::ProcessObject::GetInput(1));
  }
 
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
-TOutputDeformationField *
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, T0utputCorrelation, TOutputDeformationField>
-::GetOutputDeformationField()
- {
-  if (this->GetNumberOfOutputs()<2)
-    {
-    return 0;
-    }
-  return static_cast<TOutputDeformationField *>(this->itk::ProcessObject::GetOutput(1));
- }
-
-template <class TInputImage, class TInterpolateFunction, class TOutputCorrelation, class TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
 void
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelation, TOutputDeformationField>
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::GenerateOutputInformation()
  {
   // Call superclass implementation
   Superclass::GenerateOutputInformation();
 
   // Retrieve output pointers
-  TOutputCorrelation * outputPtr = this->GetOutput();
-  TOutputDeformationField *outputFieldPtr = this->GetOutputDeformationField();
-
+  TInputImage * outputPtr = this->GetOutput();
+  
   // Update size and spacing according to grid step
   InputImageRegionType largestRegion  = outputPtr->GetLargestPossibleRegion();
   SizeType outputSize       = largestRegion.GetSize();
   SpacingType outputSpacing = outputPtr->GetSpacing();
 
-  for(unsigned int dim = 0; dim < TOutputCorrelation::ImageDimension; ++dim)
+  for(unsigned int dim = 0; dim < TInputImage::ImageDimension; ++dim)
     {
     outputSize[dim] /= m_GridStep[dim];
     outputSpacing[dim] *= m_GridStep[dim];
@@ -138,34 +115,32 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelati
 
   // Set spacing
   outputPtr->SetSpacing(outputSpacing);
-  outputFieldPtr->SetSpacing(outputSpacing);
 
   // Set largest region size
   largestRegion.SetSize(outputSize);
   outputPtr->SetLargestPossibleRegion(largestRegion);
-  outputFieldPtr->SetLargestPossibleRegion(largestRegion);
  }
 
-template <class TInputImage, class TInterpolateFunction, class TOutputCorrelation, class TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
 void
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelation, TOutputDeformationField>
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::GenerateInputRequestedRegion()
  {
   // call the superclass' implementation of this method
   Superclass::GenerateInputRequestedRegion();
 
   // get pointers to the input and output
-  TInputImage, TInterpolateFunction * masterPtr  = const_cast< TInputImage, TInterpolateFunction * >( this->GetFixedInput());
-  TInputImage, TInterpolateFunction * slavePtr = const_cast< TInputImage, TInterpolateFunction * >( this->GetMovingInput());
+  TInputImage * masterPtr  = const_cast< TInputImage * >( this->GetMasterInput());
+  TInputImage * slavePtr = const_cast< TInputImage * >( this->GetSlaveInput());
 
-  TOutputCorrelation * outputPtr = this->GetOutput();
+  TInputImage * outputPtr = this->GetOutput();
 
   if ( !masterPtr || !slavePtr || !outputPtr )
     {
     return;
     }
 
-  // get a copy of the fixed requested region (should equal the output
+  // get a copy of the master requested region (should equal the output
   // requested region)
   InputImageRegionType masterRequestedRegion, slaveRequestedRegion;
   masterRequestedRegion = outputPtr->GetRequestedRegion();
@@ -174,7 +149,7 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelati
   SizeType masterRequestedSize = masterRequestedRegion.GetSize();
   IndexType masterRequestedIndex = masterRequestedRegion.GetIndex();
 
-  for(unsigned int dim = 0; dim < TOutputCorrelation::ImageDimension; ++dim)
+  for(unsigned int dim = 0; dim < TInputImage::ImageDimension; ++dim)
       {
       masterRequestedSize [dim] *= m_GridStep[dim];
       masterRequestedIndex[dim] *= m_GridStep[dim];
@@ -187,7 +162,7 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelati
   masterRequestedRegion.PadByRadius( m_PatchSizePerDim / 2 );
 
 
-  // get a copy of the moving requested region (should equal the output
+  // get a copy of the slave requested region (should equal the output
   // requested region)
   InputImageRegionType searchMasterRequestedRegion = masterRequestedRegion;
   searchMasterRequestedRegion.PadByRadius(m_SearchRadius);
@@ -197,7 +172,7 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelati
    IndexType ulIndex = searchMasterRequestedRegion.GetIndex();
 
    IndexType lrIndex;
-   for(unsigned int dim = 0; dim < TInputImage, TInterpolateFunction::ImageDimension; ++dim)
+   for(unsigned int dim = 0; dim < TInputImage::ImageDimension; ++dim)
      {
      lrIndex[dim]= searchMasterRequestedRegion.GetIndex()[dim]
                  + searchMasterRequestedRegion.GetSize()[dim]-1;
@@ -259,142 +234,235 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelati
   return;
  }
 
-template <class TInputImage, class TInterpolateFunction, class TOutputCorrelation, class TOutputDeformationField>
+template <class TInputImage, class TInterpolateFunction>
 void
-SARCoregistrationImageFilter<TInputImage, TInterpolateFunction, TOutputCorrelation, TOutputDeformationField>
+SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
 ::GenerateData()
  {
   // Allocate outputs
   this->AllocateOutputs();
 
   // Get the image pointers
-  const TInputImage, TInterpolateFunction * masterPtr = this->GetMasterInput();
-  const TInputImage, TInterpolateFunction * slavePtr = this->GetSlaveInput();
-  TOutputCorrelation * outputPtr = this->GetOutput();
-  TOutputDeformationField * outputDfPtr = this->GetOutputDeformationField();
-
-  // Wire currentMetric
-  m_Interpolator->SeInputImage(this->GetSlaveInput());
+  const TInputImage * masterPtr = this->GetMasterInput();
+  const TInputImage * slavePtr = this->GetSlaveInput();
+  //TInputImage * outputPtr = this->GetOutput();
   
-  /** Output iterators */
-  itk::ImageRegionIteratorWithIndex<TOutputCorrelation> outputIt(outputPtr, outputPtr->GetRequestedRegion());
-  itk::ImageRegionIterator<TOutputDeformationField> outputDfIt(outputDfPtr, outputPtr->GetRequestedRegion());
-  outputIt.GoToBegin();
-  outputDfIt.GoToBegin();
+  // Wire currentMetric
+  m_Interpolator->SetInputImage(this->GetSlaveInput());
+
+  // Prepare Generic RS Transform
+  m_Transform = TransformType::New();
+  m_Transform->SetInputKeywordList(masterPtr->GetImageKeywordlist());
+  m_Transform->SetOutputKeywordList(slavePtr->GetImageKeywordlist());
+  if( m_UseDEM == true)
+  {
+	  m_Transform->SetDEMDirectory(m_DEMDir);
+  }
+  m_Transform->InstanciateTransform();
+
+  // Define grid points from master image with requested number of Tie Points
+  SizeType masterSize = masterPtr->GetRequestedRegion().GetSize();
+
+  PointSetSourceType::Pointer pointSet = PointSetSourceType::New();
+  PointSetType::PointType minPoint, maxPoint;
+
+  SizeType patchSize;
+
+  for(unsigned int i = 0; i < TInputImage::ImageDimension; i++)
+  {
+	  maxPoint[i] = masterSize[i] - ((masterSize[i] - 1) % m_TiePointsPerDim) - 1;
+	  minPoint[i] = maxPoint[i] / m_TiePointsPerDim;
+	  
+	  // Set patch size for region	  
+	  patchSize[i] = m_PatchSizePerDim;  
+  }
+
+  pointSet->SetMinPoint(minPoint);
+  pointSet->SetMaxPoint(maxPoint);
+  pointSet->SetNumberOfPoints(m_TiePointsPerDim);
+  pointSet->Update();
+
+  // Get reference to points from grid
+  PointSetSourceType::PointsContainerPointer points;
+  points = pointSet->GetOutput()->GetPoints();
+
+  // Define estimator for affine transform
+  EstimateFilterType::Pointer estimate = EstimateFilterType::New();
 
   // support progress methods/callbacks
-  itk::ProgressReporter progress(this, 0, outputPtr->GetRequestedRegion().GetNumberOfPixels());
+  itk::ProgressReporter progress(this, 0, points->Size());
 
-  // GoToBegin
-  outputIt.GoToBegin();
-  outputDfIt.GoToBegin();
-
-  // Correl, max correl, maxPosition
-  double currentMetric, optMetric;
-
-  // Optimal translation parameters
-  typename TranslationType::ParametersType params(2), optParams(2), tmpOptParams(2);
-
-  // Final deformation value
-  DeformationValueType deformationValue;
-  deformationValue[0] = m_InitialOffset[0];
-  deformationValue[1] = m_InitialOffset[1];
-
-  // Local initial offset: enable the possibility of a different initial offset for each pixel
-  SpacingType localOffset = m_InitialOffset;
-
-  // Get fixed image spacing
-  SpacingType fixedSpacing = fixedPtr->GetSpacing();
-
-  // Walk the images
-  while (!outputIt.IsAtEnd() && !outputDfIt.IsAtEnd() )
+  // Walk the grid point by point
+  PointsContainerType::ConstIterator gridIt = points->Begin();
+  while (gridIt != points->End() )
     {
-    
-    
-    // Apply grid step
-    IndexType currentIndex = outputIt.GetIndex();
-    for(unsigned int dim = 0; dim < TInputImage, TInterpolateFunction::ImageDimension; ++dim)
-      {
-      currentIndex[dim] *= m_GridStep[dim];
-      }
-    
+		PointType masterPoint = gridIt.Value();
 
-    // Compute the local offset if required (and the transform was specified)
-    if (m_Transform.IsNotNull())
-      {
-      PointType inputPoint, outputPoint;
-      for(unsigned int dim = 0; dim < TInputImage, TInterpolateFunction::ImageDimension; ++dim)
-        {
-        inputPoint[dim] = currentIndex[dim];
-        }
-      outputPoint = m_Transform->TransformPoint(inputPoint);
-      for(unsigned int dim = 0; dim < TInputImage, TInterpolateFunction::ImageDimension; ++dim)
-        {
-        localOffset[dim] = outputPoint[dim] - inputPoint[dim]; //FIXME check the direction
-        }
-      }
+		PointType slavePoint = m_Transform->TransformPoint(masterPoint);
+		
+		IndexType masterIndex;
+		masterPtr->TransformPhysicalPointToIndex(masterPoint, masterIndex);
+		
+		TInputImage::PointType masterOrigin = masterPtr->GetOrigin();
+
+		IndexType slaveIndex;
+		slavePtr->TransformPhysicalPointToIndex(slavePoint, slaveIndex);
+
+		TInputImage::PointType slaveOrigin = slavePtr->GetOrigin();
+
+		IndexType currentMasterIndex;
+		IndexType currentSlaveIndex;
+
+		for(unsigned int i = 0; i < TInputImage::ImageDimension; i++)
+		{
+			currentMasterIndex[i] = masterIndex[i] - (m_PatchSizePerDim / 2) + (int)masterOrigin[i];
+			currentSlaveIndex[i] = slaveIndex[i] - (m_PatchSizePerDim / 2) + (int)slaveOrigin[i];
+		}
+
+		RegionType masterCurrentRegion;
+		masterCurrentRegion.SetIndex(currentMasterIndex);
+		masterCurrentRegion.SetSize(patchSize);
+
+		RegionType slaveCurrentRegion;
+		slaveCurrentRegion.SetIndex(currentSlaveIndex);
+		slaveCurrentRegion.SetSize(patchSize);
+
+		if( !(slavePtr->GetLargestPossibleRegion().IsInside(slaveCurrentRegion)) || !(masterPtr->GetLargestPossibleRegion().IsInside(masterCurrentRegion)))
+		{
+			++gridIt;
+			progress.CompletedPixel();
+
+			continue;
+		}
+
+		// COARSE registration
+
+		// Prepare extraction regions from images
+		ExtractFilterType::Pointer masterExtract = ExtractFilterType::New();
+		masterExtract->SetInput(masterPtr);
+		masterExtract->SetExtractionRegion(masterCurrentRegion);
+
+		ExtractFilterType::Pointer slaveExtract = ExtractFilterType::New();
+		slaveExtract->SetInput(slavePtr);
+		slaveExtract->SetExtractionRegion(slaveCurrentRegion);
+
+		// Pad extraction regions
+		SizeType padSize;
+		padSize.Fill(m_PatchSizePerDim/2);
+
+		PadFilterType::Pointer masterPad = PadFilterType::New();
+		masterPad->SetInput(masterExtract->GetOutput());
+		masterPad->SetPadBound(padSize);
+
+		PadFilterType::Pointer slavePad = PadFilterType::New();
+		slavePad->SetInput(slaveExtract->GetOutput());
+		slavePad->SetPadBound(padSize);
+
+		// Direct FFT on padded regions
+		FFTType::Pointer fft = FFTType::New();
+		fft->SetInput(masterPad->GetOutput());
+		fft->Update();
+
+		FFTOutputImageType::Pointer masterFFTImage = fft->GetOutput();
+
+		fft = FFTType::New();
+		fft->SetInput(slavePad->GetOutput());
+		fft->Update();
+
+		FFTOutputImageType::Pointer slaveFFTImage = fft->GetOutput();
+
+		// Calculate complex conjugate product
+		ConjugateProductFilterType::Pointer conjProduct = ConjugateProductFilterType::New();
+		conjProduct->SetInput1(masterFFTImage);
+		conjProduct->SetInput2(slaveFFTImage);
+
+		// Pseudo normalize
+		ModulusFilterType::Pointer conjProdModulus = ModulusFilterType::New();
+		conjProdModulus->SetInput(conjProduct->GetOutput());
+
+		DivideFilterType::Pointer conjProdNormalize = DivideFilterType::New();
+		conjProdNormalize->SetInput1(conjProduct->GetOutput());
+		conjProdNormalize->SetInput2(conjProdModulus->GetOutput());
+
+		// Inverse FFT on normalized coefficient
+		fft = FFTType::New();
+		fft->SetInput(conjProdNormalize->GetOutput());
+		fft->SetTransformDirection(FFTType::INVERSE);
+		fft->Update();
+
+		FFTOutputImageType::Pointer invFFT = fft->GetOutput();
+
+		// Shift 
+		ShiftFilterType::Pointer shift = ShiftFilterType::New();
+		shift->SetInput(invFFT);
+
+		// Get modulus (real valued coefficient)
+		ModulusFilterType::Pointer modulus = ModulusFilterType::New();
+		modulus->SetInput(shift->GetOutput());
+		modulus->Update();
+
+		// Get position of maximum correlation
+		MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
+		minMax->SetImage(modulus->GetOutput());
+		minMax->ComputeMaximum();
+
+		if( minMax->GetMaximum() > m_CorrelationThreshold)
+		{
+			IndexType maximumIndex = minMax->GetIndexOfMaximum();
+
+			for(unsigned int i = 0; i < TInputImage::ImageDimension; i++)
+			{
+				slaveIndex[i] = slaveIndex[i] - maximumIndex[i] + (m_PatchSizePerDim / 2);
+			}
+
+			slavePtr->TransformIndexToPhysicalPoint(slaveIndex, slavePoint);
+
+			estimate->AddTiePoints(masterPoint, slavePoint);
+		}
 
    
 
-    // Dichotomic sub-pixel
-    SpacingType subPixelSpacing = fixedSpacing;
-    while(subPixelSpacing[0] > m_SubPixelAccuracy || subPixelSpacing[1] > m_SubPixelAccuracy)
-      {
-      // Perform 1 step of dichotomic search
-      subPixelSpacing /= 2.;
+		// FINE registration
+		if( m_PerformFine == true)
+		{
+			// Is this really needed?
 
-      // Store last opt params
-      tmpOptParams = optParams;
+		}
 
-      for(int i = -1; i <= 1; i+=2)
-        {
-        for(int j = -1; j <= 1; j+=2)
-          {
-          params = tmpOptParams;
-          params[0] += static_cast<double>(i*subPixelSpacing[0]);
-          params[1] += static_cast<double>(j*subPixelSpacing[1]);
 
-          try
-          {
-            // compute currentMetric
-            currentMetric = m_Metric->GetValue(params);
 
-            // Check for maximum
-            if((m_Minimize && (currentMetric < optMetric)) || (!m_Minimize && (currentMetric > optMetric)))
-              {
-              optMetric = currentMetric;
-              optParams = params;
-              }
-          }
-          catch(itk::ExceptionObject& err)
-          {
-            itkWarningMacro(<<err.GetDescription());
+    // Store the offset
 
-          }
-          }
-        }
-      }
-
-    // Store the offset and the correlation value
-    outputIt.Set(optMetric);
-    if(m_UseSpacing)
-      {
-      deformationValue[0] = optParams[0];
-      deformationValue[1] = optParams[1];
-      }
-    else
-      {
-      deformationValue[0] = optParams[0]/fixedSpacing[0];
-      deformationValue[1] = optParams[1]/fixedSpacing[1];
-      }
-    outputDfIt.Set(deformationValue);
-    // Update iterators
-    ++outputIt;
-    ++outputDfIt;
+    // Update iterator
+    ++gridIt;
 
     // Update progress
     progress.CompletedPixel();
     }
+
+	if( estimate->GetTiePointsContainer().size() != 0 )
+	{
+		estimate->Compute();
+
+		NormalizeZeroFrequencyType::Pointer normalizeZeroFrequency = NormalizeZeroFrequencyType::New();
+		normalizeZeroFrequency->SetImage(masterPtr);
+		normalizeZeroFrequency->Compute();
+
+		m_Interpolator->SetInputImage(slavePtr);
+		m_Interpolator->SetRadius(3);
+		m_Interpolator->SetNormalizeZeroFrequency(normalizeZeroFrequency->GetNormalizeZeroFrequency());
+
+		ResampleFilterType::Pointer resample = ResampleFilterType::New();
+		resample->SetTransform(estimate->GetAffineTransform());
+		resample->SetInterpolator(m_Interpolator);
+		resample->SetInput(slavePtr);
+		resample->SetOutputSize(masterSize);
+		resample->SetOutputOrigin(masterPtr->GetOrigin());
+		resample->SetOutputSpacing(masterPtr->GetSpacing());
+		resample->Update();
+
+		this->GraftOutput(resample->GetOutput());
+	}
  }
 } // end namespace otb
 
