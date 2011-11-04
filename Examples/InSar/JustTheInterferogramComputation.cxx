@@ -50,15 +50,15 @@
 
 // Command line:
 
-// ./JustTheInterferogramComputation registered_master.tif registered_slave.tif interf.tif interf_pretty.png
+// ./JustTheInterferogramComputation registered_master.tif registered_slave.tif interf.tif interf_pretty.png 2 3
 
 int main(int argc, char* argv[])
 {
 
-  if (argc != 5)
+  if (argc != 7)
     {
     std::cerr << "Usage: " << argv[0] << " masterImageFile slaveImageFile";
-    std::cerr << " interferogram colorInterferogram" << std::endl;
+    std::cerr << " interferogram colorInterferogram radiusX radiusY" << std::endl;
     return EXIT_FAILURE;
     }
 
@@ -100,8 +100,8 @@ int main(int argc, char* argv[])
   interferogram->SetInput2( slave->GetOutput() );
 
   ImageType::SizeType radius;
-  radius[0] = 2;
-  radius[1] = 3;
+  radius[0] = atoi(argv[5]);
+  radius[1] = atoi(argv[6]);
   interferogram->SetRadius(radius);
 
 

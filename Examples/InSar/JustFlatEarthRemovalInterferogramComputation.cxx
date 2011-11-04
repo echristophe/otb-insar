@@ -57,9 +57,8 @@ int main(int argc, char* argv[])
   typedef FFTType::TransformDirectionType                                FFTDirectionType;
 
   typedef itk::ComplexToModulusImageFilter<FFTType::OutputImageType,ScalarImageType>      ModulusFilterType;
-  typedef itk::AccumulateImageFilter<ModulusFilterType::OutputImageType,
-									 ModulusFilterType::OutputImageType>                  AccumulateImageFilterType;
-  typedef itk::MinimumMaximumImageCalculator<AccumulateImageFilterType::OutputImageType>  MinMaxCalculatorType;
+  typedef itk::ComplexToPhaseImageFilter<ImageType, ScalarImageType>		  FFTPhaseFilterType;
+  typedef itk::MinimumMaximumImageCalculator<ScalarImageType>  MinMaxCalculatorType;
 
   typedef otb::Functor::FlatEarthRemovalFunctor<PixelType, PixelType> InterferogramCalculatorType;
   typedef otb::UnaryFunctorWithIndexImageFilter<ImageType,ImageType,InterferogramCalculatorType> EarthRemovePhaseInterferogramFilterType;
@@ -89,23 +88,26 @@ int main(int argc, char* argv[])
   modulusFFT->SetInput( fft->GetOutput() );
   modulusFFT->Update();
 
-  AccumulateImageFilterType::Pointer averageModulusFilter = AccumulateImageFilterType::New();
-  averageModulusFilter->SetInput(modulusFFT->GetOutput());
-  averageModulusFilter->SetAverage(true);
-  averageModulusFilter->SetAccumulateDimension(0);
+  FFTPhaseFilterType::Pointer phaseFFT = FFTPhaseFilterType::New();
+  phaseFFT->SetInput( interferogram->GetOutput() );
+  phaseFFT->Update();
 
   MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
-  minMax->SetImage(averageModulusFilter->GetOutput());
+  minMax->SetImage(modulusFFT->GetOutput());
   minMax->ComputeMaximum();
   
   IndexType index;
   index = minMax->GetIndexOfMaximum();
 
+  double phaseValue = phaseFFT->GetOutput()->GetPixel(index);
+
   std::cout << "Frequency max evaluation : " << index[0] << " , " << index[1] << std::endl;
 
   EarthRemovePhaseInterferogramFilterType::Pointer earthRemovePhaseInterferogram = EarthRemovePhaseInterferogramFilterType::New();
   earthRemovePhaseInterferogram->SetInput(interferogram->GetOutput());
-  earthRemovePhaseInterferogram->GetFunctor().SetRangeFrequency(index[1]);
+  earthRemovePhaseInterferogram->GetFunctor().SetRangeFrequency(index[0]);
+  earthRemovePhaseInterferogram->GetFunctor().SetAzimuthFrequency(index[1]);
+  earthRemovePhaseInterferogram->GetFunctor().SetPhaseAtMaxFreq(phaseValue);
   earthRemovePhaseInterferogram->Update();
 
 
