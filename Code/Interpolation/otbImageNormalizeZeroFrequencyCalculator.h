@@ -23,6 +23,7 @@
 #include "otbMacro.h"
 #include "otbImage.h"
 #include "itkNumericTraits.h"
+#include "itkVariableLengthVector.h"
 
 namespace otb
 {
@@ -61,7 +62,8 @@ public:
   typedef double                       ScalarType;
 
   /** Standard vector type within this class. */
-  typedef itk::Vector<ScalarType,itkGetStaticConstMacro(ImageDimension)> VectorType;
+  //typedef itk::Vector<ScalarType,itkGetStaticConstMacro(ImageDimension)> VectorType;
+  typedef itk::VariableLengthVector<double>	VariableLengthVectorType;
 
   /** Standard image type within this class. */
   typedef TImage ImageType;
@@ -96,7 +98,7 @@ public:
   void Compute( void );
 
   /** Return the Normalize Zero Frequency. */
-  VectorType GetNormalizeZeroFrequency() const;
+  VariableLengthVectorType GetNormalizeZeroFrequency() const;
 
 protected:
   ImageNormalizeZeroFrequencyCalculator();
@@ -108,7 +110,7 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   bool       m_Valid;                     // Have Normalize Zero Frequency been computed yet?
-  VectorType m_NormalizeZeroFrequency;    // Normalize Zero Frequency
+  VariableLengthVectorType m_NormalizeZeroFrequency;    // Normalize Zero Frequency
 
   ImageConstPointer         m_Image;
 
