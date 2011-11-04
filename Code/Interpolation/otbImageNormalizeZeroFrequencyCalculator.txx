@@ -36,12 +36,12 @@ public:
   /**
    * Constructor. Needed to ensure the exception object can be copied.
    */
-  InvalidImageMomentsError(const char *file, unsigned int lineNumber) : ExceptionObject(file, lineNumber) { this->SetDescription("No valid image moments are availble.");}
+  InvalidImageMomentsError(const char *file, unsigned int lineNumber) : ExceptionObject(file, lineNumber) { this->SetDescription("No valid image moments are available.");}
 
   /**
    * Constructor. Needed to ensure the exception object can be copied.
    */
-  InvalidImageMomentsError(const std::string& file, unsigned int lineNumber) : ExceptionObject(file, lineNumber) { this->SetDescription("No valid image moments are availble.");}  
+  InvalidImageMomentsError(const std::string& file, unsigned int lineNumber) : ExceptionObject(file, lineNumber) { this->SetDescription("No valid image moments are available.");}  
   
   itkTypeMacro(InvalidImageMomentsError, ExceptionObject);
 };
@@ -54,7 +54,8 @@ ImageNormalizeZeroFrequencyCalculator<TImage>::ImageNormalizeZeroFrequencyCalcul
 {
   m_Valid = false;
   m_Image = NULL;
-  m_NormalizeZeroFrequency.Fill(itk::NumericTraits<ITK_TYPENAME VectorType::ValueType>::Zero);
+  m_NormalizeZeroFrequency.SetSize(ImageDimension);
+  m_NormalizeZeroFrequency.Fill(0.0);
 }
 
 //----------------------------------------------------------------------
@@ -83,7 +84,7 @@ void
 ImageNormalizeZeroFrequencyCalculator<TImage>::
 Compute()
 {
-  m_NormalizeZeroFrequency = itk::NumericTraits<ScalarType>::Zero;
+  m_NormalizeZeroFrequency.Fill(0.0);
   typedef typename ImageType::IndexType IndexType;
 
   if( !m_Image ) 
@@ -177,7 +178,7 @@ Compute()
 //---------------------------------------------------------------------
 // Get Normalize Zero Frequency
 template<class TImage>
-typename ImageNormalizeZeroFrequencyCalculator<TImage>::VectorType
+typename ImageNormalizeZeroFrequencyCalculator<TImage>::VariableLengthVectorType
 ImageNormalizeZeroFrequencyCalculator<TImage>::
 GetNormalizeZeroFrequency() const
 {
