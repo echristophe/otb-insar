@@ -2,10 +2,16 @@
 #define __otbSARCoregistrationImageFilter_h
 
 #include "itkImageToImageFilter.h"
-#include "otbComplexInterpolateImageFunction.h"
 #include "itkContinuousIndex.h"
+#include "otbExtractROI.h"
 
 #include "otbGenericRSTransform.h"
+#include "otbLeastSquareAffineTransformEstimator.h"
+
+#include "otbComplexInterpolateImageFunction.h"
+#include "otbImageNormalizeZeroFrequencyCalculator.h"
+
+#include "otbStreamingResampleImageFilter.h"
 
 #include "itkPointSet.h"
 #include "otbGridIntersectionPointSetSource.h"
@@ -18,31 +24,32 @@
 #include "itkComplexToModulusImageFilter.h"
 #include "itkDivideImageFilter.h"
 
+//#include "itkLinearInterpolateImageFunction.h"
+//#include "otbBSplinesInterpolateDeformationFieldGenerator.h"
+
 namespace otb
 {
 
+/** Complex conjugate product functor class */
+class ComplexConjugateProduct
+{
+public:
+	typedef std::complex< double > ValueType;
+  inline ValueType operator()(const ValueType & a, const ValueType & b) const
+  {
+    return a * vcl_conj(b);
+  }
+};
+
 /** \class SARCoregistrationImageFilter
- * \brief Computes local offsets between master and slave images by applying GenericRSTransform.
+ * \brief Computes local offsets between master and slave images by applying GenericRSTransform
+ * and coarse cross-correlation with affinetransform.
  *
- * This filter tries to find at each location of the fixed image the corresponding best matching
- * patch of radius set by SetRadius() method in the moving image within a search windows whose radius
- * is defined by SetSearchRadius() method.
- *
- * Once a coarse (pixel wise) offset has been found, this match is further refined using dichotomic search
- * until sub-pixel accuracy given by the SetSubPixelAccuracy() is reached.
- *
- * The filter proposes two outputs: GetOutput() return the image of the correlation maximum at each location, and
- * the GetOutputDeformationField() method returns the corresponding offset.
- *
- * If the UseSpacingOn() flag is used, the output deformation field takes the input image spacing into account.
- * otherwise, the deformation field is expressed in pixels (default is On).
+ * This filter tries to find at each grid location of the master image the corresponding best matching
+ * patch in the slave image.
  *
  * This filter accepts master and slave images with different sizes and spacing. Metric and search windows radius
  * are expressed in terms of number of pixels in the master image.
- *
- * It is possible to generate an output correlation map and deformation field at a coarser resolution by setting
- * grid step to value higher than 1 (grid step is expressed in terms of number of fixed image pixels).
- * Default value is 1.
  *
  *
  * \example pending/SARCoregistrationImageFilterExample.cxx
@@ -50,15 +57,15 @@ namespace otb
  * \sa      
  * \ingroup IntensityImageFilters, Streamed
  */
-template <class TInputImage, class TInterpolateFunction, class T0utputCorrelation, class TOutputDeformationField>
-class ITK_EXPORT SARCoregistrationImageFilter : public itk::ImageToImageFilter<TInputImage, T0utputCorrelation>
+template <class TInputImage, class TInterpolateFunction>
+class ITK_EXPORT SARCoregistrationImageFilter : public itk::ImageToImageFilter<TInputImage, TInputImage>
 {
 public:
   /** Standard class typedefs. */
-  typedef SARCoregistrationImageFilter                             Self;
-  typedef itk::ImageToImageFilter<TInputImage, T0utputCorrelation> Superclass;
-  typedef itk::SmartPointer<Self>                                 Pointer;
-  typedef itk::SmartPointer<const Self>                           ConstPointer;
+  typedef SARCoregistrationImageFilter                          Self;
+  typedef itk::ImageToImageFilter<TInputImage, TInputImage>		Superclass;
+  typedef itk::SmartPointer<Self>                               Pointer;
+  typedef itk::SmartPointer<const Self>                         ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -67,44 +74,65 @@ public:
   itkTypeMacro(SARCoregistrationImageFilter, ImageToImageFilter);
 
   /** Some convenient typedefs. */
-  typedef typename T0utputCorrelation::RegionType                 OutputImageRegionType;
-  typedef typename TOutputDeformationField::PixelType             DeformationValueType;
   typedef typename TInputImage::Pointer                           InputImagePointerType;
   typedef typename TInputImage::RegionType                        InputImageRegionType;
   typedef typename TInputImage::SizeType                          SizeType;
   typedef typename TInputImage::IndexType                         IndexType;
   typedef typename TInputImage::SpacingType                       SpacingType;
-  typedef typename TInputImage::PointType                         PointType;
+  typedef typename TInputImage::RegionType						  RegionType;
   typedef typename TInputImage::OffsetType                        OffsetType;
   typedef typename TInputImage::PixelType						  PixelType;
-  typedef itk::ConstantBoundaryCondition< TInputImage >           BoundaryConditionType;
-  typedef otb::ComplexInterpolateImageFunction<TInputImage, 
-		TInterpolateFunction, BoundaryConditionType, double>      InterpolatorType;
-  typedef typename InterpolatorType::Pointer                      InterpolatorPointerType;
-  typedef itk::ContinuousIndex<double, 2>                         ContinuousIndexType;
-  typedef typename itk::Transform<double, 2, 2>                   TransformType;
-  typedef typename TransformType::Pointer                         TransformPointerType;
+  typedef itk::ContinuousIndex<double, 
+									TInputImage::ImageDimension>  ContinuousIndexType;
+  
+  typedef typename otb::ExtractROI< PixelType, PixelType >        ExtractFilterType;
 
-  typedef itk::PointSet< PixelType, TInputImage::ImageDimension > PointSetType;
-  typedef otb::GridIntersectionPointSetSource< PointSetType >     PointSetSourceType;
-  typedef PointSetType::PointsContainer                           PointsContainerType;
-  typedef PointSetType::PointType                                 PointType;
+  typedef typename itk::PointSet< PixelType, 
+									TInputImage::ImageDimension > PointSetType;
+  typedef typename otb::GridIntersectionPointSetSource< 
+												PointSetType >    PointSetSourceType;
+  typedef typename PointSetType::PointsContainer                  PointsContainerType;
+  typedef typename PointSetType::PointType                        PointType;
 
-  typedef itk::FFTComplexToComplexImageFilter< 
-	  PixelType::value_type, ImageType::ImageDimension >		  FFTType;
-  typedef FFTType::OutputImageType                                FFTOutputImageType;
-  typedef itk::FFTShiftImageFilter<FFTOutputImageType,FFTOutputImageType> ShiftFilterType;
-  typedef itk::ConstantPadImageFilter<TInputImage, TInputImage>   PadFilterType;
-  typedef otb::Image<double,2>                                    RealImageType;
-  typedef itk::ComplexToModulusImageFilter<FFTOutputImageType,
-	  RealImageType>											  ModulusFilterType;
-  typedef itk::DivideImageFilter<FFTOutputImageType,
-	  RealImageType,FFTOutputImageType>							  DivideFilterType;
-  typedef itk::MinimumMaximumImageCalculator<RealImageType>       MinMaxCalculatorType;
+  typedef typename otb::GenericRSTransform<  >					  TransformType;
+  typedef typename TransformType::Pointer						  TransformPointerType;
+  typedef typename itk::Point< typename PixelType::value_type, 
+									TInputImage::ImageDimension > LSQPointType;
+  typedef typename otb::LeastSquareAffineTransformEstimator< 
+												LSQPointType >    EstimateFilterType;
+  typedef typename TInterpolateFunction							  FunctionType;
+  typedef typename itk::ConstantBoundaryCondition< TInputImage >  BoundaryConditionType;
+  typedef typename PixelType::value_type						  CoordRepType;
+  typedef typename otb::ComplexInterpolateImageFunction< 
+				TInputImage, FunctionType, BoundaryConditionType, 
+												CoordRepType >	  InterpolateType;
+  typedef typename InterpolateType::Pointer						  InterpolatePointerType;
+  typedef typename otb::ImageNormalizeZeroFrequencyCalculator<
+													TInputImage > NormalizeZeroFrequencyType;
+
+  typedef typename itk::FFTComplexToComplexImageFilter< typename
+	  PixelType::value_type, TInputImage::ImageDimension >		  FFTType;
+  typedef typename FFTType::OutputImageType                       FFTOutputImageType;
+  typedef typename itk::FFTShiftImageFilter< FFTOutputImageType,
+											FFTOutputImageType >  ShiftFilterType;
+  typedef typename itk::ConstantPadImageFilter< TInputImage, 
+													TInputImage > PadFilterType;
+  typedef typename otb::Image<double,2>                           RealImageType;
+  typedef typename itk::ComplexToModulusImageFilter< 
+							FFTOutputImageType,	RealImageType >	  ModulusFilterType;
+  typedef typename itk::DivideImageFilter< FFTOutputImageType,
+							RealImageType,FFTOutputImageType >	  DivideFilterType;
+  typedef typename itk::MinimumMaximumImageCalculator<
+												RealImageType >   MinMaxCalculatorType;
+
+  typedef typename otb::StreamingResampleImageFilter< 
+									TInputImage, TInputImage >    ResampleFilterType;
+
+  typedef itk::BinaryFunctorImageFilter<FFTOutputImageType,FFTOutputImageType,FFTOutputImageType,ComplexConjugateProduct> ConjugateProductFilterType;
 
   /** Set/Get the interpolator used to interpolate moving image at non-grid positions */
-  itkSetObjectMacro(Interpolator, InterpolatorType);
-  itkGetObjectMacro(Interpolator, InterpolatorType);
+  itkSetObjectMacro(Interpolator, InterpolateType);
+  itkGetObjectMacro(Interpolator, InterpolateType);
 
   /** Connect one of the operands for registration */
   void SetMasterInput( const TInputImage * image);
@@ -115,17 +143,18 @@ public:
   /** Get the inputs */
   const TInputImage * GetMasterInput();
   const TInputImage * GetSlaveInput();
-
-  /** Get the output deformation field */
-  TOutputDeformationField * GetOutputDeformationField();
  
+  /** Set the coarse cross-correlation threshold */
+  itkSetMacro(CorrelationThreshold, typename PixelType::value_type);
+  itkGetMacro(CorrelationThreshold, typename PixelType::value_type);
+
   /** Set the number of desired initial tie points in each dimension */
   itkSetMacro(TiePointsPerDim, unsigned int);
   itkGetMacro(TiePointsPerDim, unsigned int);
 
   /** Set the size of the area on which correlation is computed */
-  itkSetMacro(PatchSizePerDim, SizeType);
-  itkGetMacro(PatchSizePerDim, SizeType);
+  itkSetMacro(PatchSizePerDim, unsigned int);
+  itkGetMacro(PatchSizePerDim, unsigned int);
 
   /** Set the searh radius for fine registration */
   itkSetMacro(SearchRadius, SizeType);
@@ -134,6 +163,26 @@ public:
   /** Set/Get subpixel accuracy */
   itkSetMacro(SubPixelAccuracy, double);
   itkGetMacro(SubPixelAccuracy, double);
+
+  /** Set/Get Perform fine registration flag */
+  itkSetMacro(PerformFine, bool);
+  itkGetConstMacro(PerformFine, bool);
+
+  /** Set/Get fine coherency threshold */
+  itkSetMacro(CoherencyThreshold, typename PixelType::value_type);
+  itkGetMacro(CoherencyThreshold, typename PixelType::value_type);
+
+  /** Set/Get fine window size */
+  itkSetMacro(CoherencyWindowSizePerDim, unsigned int);
+  itkGetMacro(CoherencyWindowSizePerDim, unsigned int);
+
+  /** Set/Get dem directory */
+  itkSetMacro(DEMDir, char *);
+  itkGetMacro(DEMDir, const char *);
+
+  /** Set/Get Use DEM flag */
+  itkSetMacro(UseDEM, bool);
+  itkGetConstMacro(UseDEM, bool);
 
   /** True if deformation field takes spacing into account. False otherwise */
   itkSetMacro(UseSpacing, bool);
@@ -155,10 +204,6 @@ public:
     m_GridStep.Fill(step);
   }
 
-  /** Set/Get the transform for the initial offset */
-  itkSetObjectMacro(Transform, TransformType);
-  itkGetConstObjectMacro(Transform, TransformType);
-
 protected:
   /** Constructor */
   SARCoregistrationImageFilter();
@@ -179,34 +224,45 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   /** Coarse correlation threshold */
-  PixelType						m_CorrelationThreshold;
+  typename PixelType::value_type	m_CorrelationThreshold;
 
   /** The number of tie points */
-  unsigned int					m_TiePointsPerDim;
+  unsigned int						m_TiePointsPerDim;
 
   /** The size for correlation */
-  SizeType                      m_PatchSizePerDim;
+  unsigned int						m_PatchSizePerDim;
 
   /** The search radius */
-  SizeType                      m_SearchRadius;
+  SizeType							m_SearchRadius;
 
   /** If true, deformation field uses spacing. Otherwise, uses pixel grid */
-  bool                          m_UseSpacing;
+  bool								m_UseSpacing;
 
   /** Search step */
-  double                        m_SubPixelAccuracy;
+  double							m_SubPixelAccuracy;
+
+  /** Fine correlation threshold */
+  typename PixelType::value_type	m_CoherencyThreshold;
+
+  /** Fine coherency window size */
+  unsigned int						m_CoherencyWindowSizePerDim;
+
+  /** Perform fine registration flag */
+  bool								m_PerformFine;
 
   /** The interpolator */
-  InterpolatorPointerType       m_Interpolator;
-
-  /** The translation */
-  TranslationPointerType        m_Translation;
+  InterpolatePointerType			m_Interpolator;
 
   /** Grid step */
-  OffsetType                    m_GridStep;
+  OffsetType						m_GridStep;
 
   /** Transform for initial offset */
-  TransformPointerType          m_Transform;
+  TransformPointerType				m_Transform;
+
+  /** DEM directory for transform */
+  const char *							m_DEMDir;
+
+  bool								m_UseDEM;
 
 };
 
