@@ -23,8 +23,8 @@ TARGET_LINK_LIBRARIES(FFTConvolutionTest OTBCommon OTBIO Interpolation)
 ADD_EXECUTABLE(CoherenceComputation CoherenceComputation.cxx)
 TARGET_LINK_LIBRARIES(CoherenceComputation OTBCommon OTBIO)
 
-ADD_EXECUTABLE(ComplexCoarseFineStepTest ComplexCoarseFineStepTest.cxx)
-TARGET_LINK_LIBRARIES(ComplexCoarseFineStepTest OTBCommon OTBIO Interpolation)
+#ADD_EXECUTABLE(ComplexCoarseFineStepTest ComplexCoarseFineStepTest.cxx)
+#TARGET_LINK_LIBRARIES(ComplexCoarseFineStepTest OTBCommon OTBIO Interpolation)
 
 ADD_EXECUTABLE(InterferometricChain InterferometricChain.cxx)
 TARGET_LINK_LIBRARIES(InterferometricChain OTBCommon OTBIO Coregistration Interpolation InterferogramFormation)
