@@ -2,6 +2,10 @@
 ADD_EXECUTABLE(BasicInterferogramComputation BasicInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
 
+ADD_EXECUTABLE(BaselineComputation BaselineComputation.cxx)
+TARGET_LINK_LIBRARIES(BaselineComputation OTBCommon OTBIO)
+
+
 ADD_EXECUTABLE(JustTheInterferogramComputation JustTheInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(JustTheInterferogramComputation OTBCommon OTBIO InterferogramFormation)
 
@@ -29,8 +33,8 @@ TARGET_LINK_LIBRARIES(CoherenceComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(InterferometricChain InterferometricChain.cxx)
 TARGET_LINK_LIBRARIES(InterferometricChain OTBCommon OTBIO Coregistration Interpolation InterferogramFormation)
 
-ADD_EXECUTABLE(FlatEarthRemovalFFT FlatEarthRemovalFFT.cxx)
-TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation)
+#ADD_EXECUTABLE(FlatEarthRemovalFFT FlatEarthRemovalFFT.cxx)
+#TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation)
 
 ADD_EXECUTABLE(InterferogramHSVColorGeneration InterferogramHSVColorGeneration.cxx)
 TARGET_LINK_LIBRARIES(InterferogramHSVColorGeneration OTBCommon OTBIO)
