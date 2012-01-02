@@ -33,8 +33,8 @@ TARGET_LINK_LIBRARIES(CoherenceComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(InterferometricChain InterferometricChain.cxx)
 TARGET_LINK_LIBRARIES(InterferometricChain OTBCommon OTBIO Coregistration Interpolation InterferogramFormation)
 
-#ADD_EXECUTABLE(FlatEarthRemovalFFT FlatEarthRemovalFFT.cxx)
-#TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation)
+ADD_EXECUTABLE(FlatEarthRemovalFFT FlatEarthRemovalFFT.cxx)
+TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation)
 
 ADD_EXECUTABLE(InterferogramHSVColorGeneration InterferogramHSVColorGeneration.cxx)
 TARGET_LINK_LIBRARIES(InterferogramHSVColorGeneration OTBCommon OTBIO)
