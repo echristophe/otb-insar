@@ -138,53 +138,53 @@ FlatEarthRemovalImageFilter<TInputImage, TOutputImage>
 		currentRegion.Crop(inputPtr->GetRequestedRegion());
 		
 		// Prepare extraction region from image
-		ExtractFilterType::Pointer extract = ExtractFilterType::New();
+		typename ExtractFilterType::Pointer extract = ExtractFilterType::New();
 		extract->SetInput(inputPtr);
 		extract->SetExtractionRegion(currentRegion);
 		extract->Update();
 
-		TInputImage::Pointer extractImage = extract->GetOutput();
+		typename TInputImage::Pointer extractImage = extract->GetOutput();
 
 		typedef typename otb::ImageFileWriter<TInputImage> InputWriterType;
-		InputWriterType::Pointer extractWriter = InputWriterType::New();
+		typename InputWriterType::Pointer extractWriter = InputWriterType::New();
 		extractWriter->SetInput(extract->GetOutput());
 		extractWriter->SetFileName("flattests/RS2extract.tif");
 		//extractWriter->Update();
 
-		TInputImage::SizeType paddsize;
+		typename TInputImage::SizeType paddsize;
         paddsize.Fill(m_PatchSizePerDim/2);
 
-		PadFilterType::Pointer pad = PadFilterType::New();
+		typename PadFilterType::Pointer pad = PadFilterType::New();
 		pad->SetInput(extract->GetOutput());
 		pad->SetPadBound(paddsize);
 		pad->SetConstant(0.0);
 
 		// Direct FFT on padded regions
-		FFTType::Pointer fft = FFTType::New();
+		typename FFTType::Pointer fft = FFTType::New();
 		//fft->SetInput(extract->GetOutput());
 		fft->SetInput(pad->GetOutput());
 		fft->Update();
 
-		FFTOutputImageType::Pointer fftImage = fft->GetOutput();
+		typename FFTOutputImageType::Pointer fftImage = fft->GetOutput();
 
 		// Get modulus
-		ModulusFilterType::Pointer modulus = ModulusFilterType::New();
+		typename ModulusFilterType::Pointer modulus = ModulusFilterType::New();
 		modulus->SetInput(fftImage);
 		modulus->Update();
 
 		// Get position of peak
-		MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
+		typename MinMaxCalculatorType::Pointer minMax = MinMaxCalculatorType::New();
 		minMax->SetImage(modulus->GetOutput());
 		minMax->ComputeMaximum();
 
 		IndexType maximumIndex = minMax->GetIndexOfMaximum();
 
 		// Get original phase image for block
-		PhaseFilterType::Pointer phase = PhaseFilterType::New();
+		typename PhaseFilterType::Pointer phase = PhaseFilterType::New();
 		phase->SetInput(extract->GetOutput());
 		phase->Update();
 
-		TOutputImage::Pointer originalPhaseImage = phase->GetOutput();
+		typename TOutputImage::Pointer originalPhaseImage = phase->GetOutput();
 
 		double preciseIndex[2];
 
@@ -194,23 +194,23 @@ FlatEarthRemovalImageFilter<TInputImage, TOutputImage>
 			maximumIndex[i] = (typename IndexType::IndexValueType)((maximumIndex[i] + m_PadSizePerDim/2) / 2);			
 		}
 
-		TOutputImage::PixelType phasePeakValue = originalPhaseImage->GetPixel(maximumIndex);
+		typename TOutputImage::PixelType phasePeakValue = originalPhaseImage->GetPixel(maximumIndex);
 
-		FlatEarthPhaseCalculationType::Pointer flatEarthPhaseCalculate = FlatEarthPhaseCalculationType::New();
+		typename FlatEarthPhaseCalculationType::Pointer flatEarthPhaseCalculate = FlatEarthPhaseCalculationType::New();
 		flatEarthPhaseCalculate->SetInput(originalPhaseImage);
 		flatEarthPhaseCalculate->GetFunctor().SetFringePhase(phasePeakValue);
 		flatEarthPhaseCalculate->GetFunctor().SetRangeRate(preciseIndex[0]);
 		flatEarthPhaseCalculate->GetFunctor().SetAzimuthRate(preciseIndex[1]);
 		flatEarthPhaseCalculate->Update();
 
-		TInputImage::Pointer estimatedPhaseImage = flatEarthPhaseCalculate->GetOutput();
+		typename TInputImage::Pointer estimatedPhaseImage = flatEarthPhaseCalculate->GetOutput();
 
-		MultiplyFilterType::Pointer multiply = MultiplyFilterType::New();
+		typename MultiplyFilterType::Pointer multiply = MultiplyFilterType::New();
 		multiply->SetInput1(extract->GetOutput());
 		multiply->SetInput2(estimatedPhaseImage);
 		multiply->Update();
 
-		TInputImage::Pointer flatRemovedImage = multiply->GetOutput();
+		typename TInputImage::Pointer flatRemovedImage = multiply->GetOutput();
 		OutRegionIteratorType outIt(outputPtr, currentRegion);
 		InRegionIteratorType flIt(flatRemovedImage, flatRemovedImage->GetRequestedRegion());
 
