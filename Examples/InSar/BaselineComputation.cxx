@@ -29,6 +29,11 @@
 #include "otbPlatformPositionAdapter.h"
 #include "otbGenericRSTransform.h"
 
+#include <vnl/vnl_vector.h>
+#include <vnl/vnl_sparse_matrix.h>
+#include <vnl/algo/vnl_lsqr.h>
+#include <vnl/vnl_sparse_matrix_linear_system.h>
+#include <vnl/vnl_least_squares_function.h>
 
 int main(int argc, char* argv[])
 {
@@ -39,8 +44,11 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
     }
 
+  const unsigned int Dimension = 2 ;
+
+
   typedef std::complex<double> PixelType;
-  typedef otb::Image<PixelType,2> ImageType;
+  typedef otb::Image<PixelType,Dimension> ImageType;
 
   typedef otb::ImageFileReader<ImageType> ReaderType;
 
@@ -98,44 +106,113 @@ int main(int argc, char* argv[])
   slavePosition.resize(3);
   slaveSpeed.resize(3);
   
-  unsigned int numberOfLine  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
+  unsigned int numberOfRow  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
+  unsigned int numberOfCol  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
 
+  std::vector<ImageType::PointType> pointImage;
+  pointImage.clear();
+  std::vector<double> baselineImage;
+  baselineImage.clear();
 
-  for(unsigned int i=0 ; i< numberOfLine ; i+=100)
-  {
-	  ImageType::PointType MasterImgPoint, estimatedMasterGeoPoint, estimatedSlaveImgPoint;
-
-    // References
-    MasterImgPoint[0] = i;
-    MasterImgPoint[1] = 0;
-
-	// Estimations Slave image point
-    estimatedMasterGeoPoint = masterImg2wgs->TransformPoint(MasterImgPoint);
-    estimatedSlaveImgPoint = wgs2SlaveImg->TransformPoint(estimatedMasterGeoPoint);
-
-
-	if(estimatedSlaveImgPoint[0] <0)
+  for(unsigned int i=0 ; i< numberOfRow ; i+=500)
 	{
-		std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
-		std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
-		std::cout<<" -> No Baseline "<<std::endl;
+	for(unsigned int j=0 ; j< numberOfCol ; j+=500)
+		{
+		ImageType::PointType MasterImgPoint, estimatedMasterGeoPoint, estimatedSlaveImgPoint;
+
+		// References
+		MasterImgPoint[0] = i;
+		MasterImgPoint[1] = j;
+
+		// Estimations Slave image point
+		estimatedMasterGeoPoint = masterImg2wgs->TransformPoint(MasterImgPoint);
+		estimatedSlaveImgPoint = wgs2SlaveImg->TransformPoint(estimatedMasterGeoPoint);
+
+		if(estimatedSlaveImgPoint[0] <0 || estimatedSlaveImgPoint[1] <0)
+			{
+			//std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
+			//std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
+			//std::cout<<" -> No Baseline "<<std::endl;
+			}
+		else
+			{
+			masterPlatform->GetPlatformPosition(MasterImgPoint[0], masterPosition, masterSpeed);
+			slavePlatform->GetPlatformPosition(estimatedSlaveImgPoint[0], slavePosition, slaveSpeed);
+
+			std::cout << std::setprecision(15);
+
+			double baselineLength = vcl_sqrt(
+					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
+					(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
+					(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
+
+			//std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
+			//std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
+			//std::cout<<" -> Baseline : " << baselineLength << " m "<<std::endl;
+			pointImage.push_back(MasterImgPoint);
+			baselineImage.push_back(baselineLength);
+			}
+		} 
 	}
-	else
+
+
+  std::cout<<"number of points : " << pointImage.size()<<std::endl;
+
+  unsigned int nbPoints = pointImage.size();
+
+  // Convenient typedefs
+  typedef vnl_sparse_matrix<double> VnlMatrixType;
+  typedef vnl_vector<double>        VnlVectorType;
+
+  /****************************************************************
+    // 	Ax = b
+    // Balesine(row,col) = a00 + 
+    //                     a10*row  + a01*col  +
+    //                     a11*row*col +
+    //                     a20*row^2 + a02*col^2
+   ****************************************************************/
+
+	vnl_sparse_matrix<double> A(nbPoints,6);
+	vnl_vector<double> b(nbPoints,0);
+	for(unsigned int pId = 0 ; pId < nbPoints ;pId++ )
 	{
-		masterPlatform->GetPlatformPosition(MasterImgPoint[0], masterPosition, masterSpeed);
-		slavePlatform->GetPlatformPosition(estimatedSlaveImgPoint[0], slavePosition, slaveSpeed);
+		A(pId,0) = 1.0;
+		A(pId,1) = pointImage.at(pId)[0];
+		A(pId,2) = pointImage.at(pId)[1];
+		A(pId,3) = pointImage.at(pId)[0] * pointImage.at(pId)[1];
+		A(pId,4) = pointImage.at(pId)[0] * pointImage.at(pId)[0];
+		A(pId,5) = pointImage.at(pId)[1] * pointImage.at(pId)[1];
 
-		std::cout << std::setprecision(15);
+		b[pId] = baselineImage[pId];
 
-	double baselineLength = vcl_sqrt(
-			(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
-			(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
-			(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
-
-	std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
-	std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
-	std::cout<<" -> Baseline : " << baselineLength << " m "<<std::endl;
 	}
-  }
+    // Declare a linear system
+    vnl_sparse_matrix_linear_system<double> linearSystem(A, b);
+
+    // A vector where the solution will be stored
+    vnl_vector<double> solution(6);
+
+    // Declare the solver
+    vnl_lsqr linearSystemSolver(linearSystem);
+
+    // And solve it
+    linearSystemSolver.minimize(solution);
+
+	std::cout << "Balesine(row,col) : " << solution[0] 
+	          << " + " << solution[1] << " * row"
+	          << " + " << solution[2] << " * col"
+	          << " + " << solution[3] << " * row*col"
+	          << " + " << solution[4] << " * row*row"
+	          << " + " << solution[5] << " * col*col"
+			  << std::endl;
+
+    double row = 1000;
+	double col = 100;
+    double base =	solution[0] + solution[1]*row + solution[2]*col
+					+ solution[3] * row*col
+					+ solution[4] * row*row
+					+ solution[5] * col*col;    
+
+	std::cout << "(row,col) : " << row << ", " << col << " -> Baseline : " << base << std::endl;
 
 }
