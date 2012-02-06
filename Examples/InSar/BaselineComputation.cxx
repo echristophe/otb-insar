@@ -27,7 +27,6 @@
 #include "otbImage.h"
 #include "otbImageFileReader.h"
 #include "otbPlatformPositionAdapter.h"
-#include "otbGenericRSTransform.h"
 
 #include <vnl/vnl_vector.h>
 #include <vnl/vnl_sparse_matrix.h>
@@ -38,9 +37,9 @@
 int main(int argc, char* argv[])
 {
 
-  if (argc != 3)
+  if (argc != 2)
     {
-    std::cerr << "Usage: " << argv[0] << " masterImageFile slaveImageFile demDir" << std::endl;
+    std::cerr << "Usage: " << argv[0] << " masterImageFile slaveImageFile" << std::endl;
     return EXIT_FAILURE;
     }
 
@@ -61,40 +60,9 @@ int main(int argc, char* argv[])
   master->UpdateOutputInformation();
   slave->UpdateOutputInformation();
   
-//  std::string demDir    = argv[3];
-
-  // Build wgs ref
-  OGRSpatialReference oSRS;
-  oSRS.SetWellKnownGeogCS("WGS84");
-  char * wgsRef = NULL;
-  oSRS.exportToWkt(&wgsRef);
-
-  typedef otb::GenericRSTransform<>         TransformType;
-
-  // Instantiate MasterImage->WGS transform
-  TransformType::Pointer masterImg2wgs = TransformType::New();
-  masterImg2wgs->SetInputProjectionRef(master->GetOutput()->GetProjectionRef());
-  masterImg2wgs->SetInputKeywordList(master->GetOutput()->GetImageKeywordlist());
-  masterImg2wgs->SetOutputProjectionRef(wgsRef);
-//  masterImg2wgs->SetDEMDirectory(demDir);
-  masterImg2wgs->InstanciateTransform();
-
-  // Instantiate WGS->Image transform
-  TransformType::Pointer wgs2SlaveImg = TransformType::New();
-  wgs2SlaveImg->SetInputProjectionRef(wgsRef);
-  wgs2SlaveImg->SetOutputProjectionRef(slave->GetOutput()->GetProjectionRef());
-  wgs2SlaveImg->SetOutputKeywordList(slave->GetOutput()->GetImageKeywordlist());
-//  wgs2SlaveImg->SetDEMDirectory(demDir);
-  wgs2SlaveImg->InstanciateTransform();
-
-
-
   typedef otb::PlatformPositionAdapter PlatformType;
   PlatformType::Pointer masterPlatform = PlatformType::New();
   PlatformType::Pointer slavePlatform = PlatformType::New();
-
-  masterPlatform->CreateSensorModel(master->GetOutput()->GetImageKeywordlist());
-  slavePlatform->CreateSensorModel(slave->GetOutput()->GetImageKeywordlist());
 
   std::vector<double> masterPosition;
   std::vector<double> masterSpeed;
@@ -107,7 +75,7 @@ int main(int argc, char* argv[])
   slaveSpeed.resize(3);
   
   unsigned int numberOfRow  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
-  unsigned int numberOfCol  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
+  unsigned int numberOfCol  = master->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
 
   std::vector<ImageType::PointType> pointImage;
   pointImage.clear();
@@ -118,40 +86,27 @@ int main(int argc, char* argv[])
 	{
 	for(unsigned int j=0 ; j< numberOfCol ; j+=500)
 		{
-		ImageType::PointType MasterImgPoint, estimatedMasterGeoPoint, estimatedSlaveImgPoint;
+		ImageType::PointType ImgPoint;
 
 		// References
-		MasterImgPoint[0] = i;
-		MasterImgPoint[1] = j;
+		ImgPoint[0] = i;
+		ImgPoint[1] = j;
 
-		// Estimations Slave image point
-		estimatedMasterGeoPoint = masterImg2wgs->TransformPoint(MasterImgPoint);
-		estimatedSlaveImgPoint = wgs2SlaveImg->TransformPoint(estimatedMasterGeoPoint);
+		masterPlatform->GetPlatformPosition(ImgPoint[0], masterPosition, masterSpeed);
+		slavePlatform->GetPlatformPosition(ImgPoint[0], slavePosition, slaveSpeed);
 
-		if(estimatedSlaveImgPoint[0] <0 || estimatedSlaveImgPoint[1] <0)
-			{
-			//std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
-			//std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
-			//std::cout<<" -> No Baseline "<<std::endl;
-			}
-		else
-			{
-			masterPlatform->GetPlatformPosition(MasterImgPoint[0], masterPosition, masterSpeed);
-			slavePlatform->GetPlatformPosition(estimatedSlaveImgPoint[0], slavePosition, slaveSpeed);
+		std::cout << std::setprecision(15);
 
-			std::cout << std::setprecision(15);
-
-			double baselineLength = vcl_sqrt(
+		double baselineLength = vcl_sqrt(
 					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
 					(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
 					(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
 
-			//std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
-			//std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
-			//std::cout<<" -> Baseline : " << baselineLength << " m "<<std::endl;
-			pointImage.push_back(MasterImgPoint);
-			baselineImage.push_back(baselineLength);
-			}
+		//std::cout<<"MasterImgPoint #"<<i<<": ["<<MasterImgPoint[0]<<","<<MasterImgPoint[1]<<"]";
+		//std::cout<<" -> estimatedSlaveImgPoint: "<<" ["<<estimatedSlaveImgPoint[0]<<","<<estimatedSlaveImgPoint[1]<<"]";
+		//std::cout<<" -> Baseline : " << baselineLength << " m "<<std::endl;
+		pointImage.push_back(ImgPoint);
+		baselineImage.push_back(baselineLength);
 		} 
 	}
 
@@ -206,13 +161,23 @@ int main(int argc, char* argv[])
 	          << " + " << solution[5] << " * col*col"
 			  << std::endl;
 
-    double row = 1000;
-	double col = 100;
+    double row = 0;
+	double col = 0;
     double base =	solution[0] + solution[1]*row + solution[2]*col
 					+ solution[3] * row*col
 					+ solution[4] * row*row
 					+ solution[5] * col*col;    
 
 	std::cout << "(row,col) : " << row << ", " << col << " -> Baseline : " << base << std::endl;
+
+    row = numberOfRow;
+	col = numberOfCol;
+    base =	solution[0] + solution[1]*row + solution[2]*col
+					+ solution[3] * row*col
+					+ solution[4] * row*row
+					+ solution[5] * col*col;    
+
+	std::cout << "(row,col) : " << row << ", " << col << " -> Baseline : " << base << std::endl;
+
 
 }
