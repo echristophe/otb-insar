@@ -22,6 +22,7 @@
 #include "otbBaseline.h"
 #include "otbPlatformPositionAdapter.h"
 #include <map>
+#include <vnl/vnl_cross.h>
 
 namespace otb
 { 
@@ -53,7 +54,18 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 	slavePosition.resize(3);
 
 	this->EvaluateMasterAndSlavePosition(line,line, masterPosition, slavePosition);
-	m_Baseline = m_Functor(masterPosition,slavePosition);
+
+	std::vector<double> masterSpeed;
+	std::vector<double> slaveSpeed;
+	masterSpeed.resize(3);
+	slaveSpeed.resize(3);
+
+	this->EvaluateMasterAndSlaveSpeed(line,line, masterSpeed, slaveSpeed);
+
+	vnl_vector<double> baselineVector(3);
+
+	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
+	m_Baseline = m_Functor(baselineVector);
 }
 
 
@@ -82,6 +94,29 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 }
 
 /**
+ * Compute Master plateform position
+ */
+template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+std::vector<double>
+Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+::GetMasterPlateformSpeed(double line)
+{
+	typedef otb::PlatformPositionAdapter PlatformType;
+	PlatformType::Pointer platform = PlatformType::New();
+	
+	platform->CreateSensorModel(m_MasterImage->GetImageKeywordlist());
+
+    std::vector<double> position;
+	std::vector<double> speed;
+	position.resize(3);
+	speed.resize(3);
+
+	platform->GetPlatformPosition(line, position, speed);
+
+	return speed;
+}
+
+/**
  * Compute Slave plateform position
  */
 template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
@@ -104,6 +139,28 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 	return position;
 }
 
+/**
+ * Compute Slave plateform speed
+ */
+template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+std::vector<double>
+Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+::GetSlavePlateformSpeed(double line)
+{
+	typedef otb::PlatformPositionAdapter PlatformType;
+	PlatformType::Pointer platform = PlatformType::New();
+	
+	platform->CreateSensorModel(m_SlaveImage->GetImageKeywordlist());
+
+	std::vector<double> position;
+	std::vector<double> speed;
+	position.resize(3);
+	speed.resize(3);
+
+	platform->GetPlatformPosition(line, position, speed);
+
+	return speed;
+}
 
 /**
  * Evaluate Master and Slave plateform position
@@ -119,6 +176,68 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
     masterPosition = this->GetMasterPlateformPosition(masterLine);
     slavePosition  = this->GetSlavePlateformPosition(slaveLine);
 }
+
+/**
+ * Evaluate Master and Slave plateform speed
+ */
+template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+void 
+Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+::EvaluateMasterAndSlaveSpeed(
+				double masterLine, double slaveLine,
+				std::vector<double> & masterSpeed,
+				std::vector<double> & slaveSpeed)
+{
+    masterSpeed = this->GetMasterPlateformSpeed(masterLine);
+    slaveSpeed  = this->GetSlavePlateformSpeed(slaveLine);
+}
+
+
+/**
+ * Evaluate Baseline in RTN (Radial Tangential Normal) System coordinate 
+ */
+template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+vnl_vector<double>
+Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+::BaselineInRTNSystem(
+				std::vector<double> & masterPosition,
+				std::vector<double> & slavePosition,
+				std::vector<double> & masterSpeed)
+{
+	vnl_vector<double> baselineRTN(3);
+
+	/** Define the Radial vector */
+	vnl_vector<double> radialVector(3);
+	radialVector(0) = masterPosition[0];
+	radialVector(1) = masterPosition[1];
+	radialVector(2) = masterPosition[2];
+	radialVector.normalize();
+
+    /** Define the Tagential vector */
+	vnl_vector<double> tangentialVector(3);
+	tangentialVector(0) = masterSpeed[0];
+	tangentialVector(1) = masterSpeed[1];
+	tangentialVector(2) = masterSpeed[2];
+	tangentialVector.normalize();
+
+    /** Define the Normal vector */
+	vnl_vector<double> normalVector(3);
+	normalVector = vnl_cross_3d(radialVector,tangentialVector);
+
+	vnl_vector<double> baselineXYZ(3);
+
+	baselineXYZ(0) = masterPosition[0] - slavePosition[0];
+	baselineXYZ(1) = masterPosition[1] - slavePosition[1];
+	baselineXYZ(2) = masterPosition[2] - slavePosition[2];
+
+	//baselineRTN
+	baselineRTN[0] = dot_product(baselineXYZ,radialVector); 
+	baselineRTN[1] = dot_product(baselineXYZ,tangentialVector); 
+	baselineRTN[2] = dot_product(baselineXYZ,normalVector); 
+
+	return baselineRTN;
+}
+
 
 
 template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
