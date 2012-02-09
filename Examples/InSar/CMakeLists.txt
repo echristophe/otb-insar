@@ -3,7 +3,7 @@ ADD_EXECUTABLE(BasicInterferogramComputation BasicInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
 
 ADD_EXECUTABLE(BaselineComputation BaselineComputation.cxx)
-TARGET_LINK_LIBRARIES(BaselineComputation OTBCommon OTBIO)
+TARGET_LINK_LIBRARIES(BaselineComputation OTBCommon OTBIO Baseline)
 
 
 ADD_EXECUTABLE(JustTheInterferogramComputation JustTheInterferogramComputation.cxx)
@@ -12,8 +12,8 @@ TARGET_LINK_LIBRARIES(JustTheInterferogramComputation OTBCommon OTBIO Interferog
 ADD_EXECUTABLE(JustFlatEarthRemovalInterferogramComputation JustFlatEarthRemovalInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(JustFlatEarthRemovalInterferogramComputation OTBCommon OTBIO InterferogramFormation)
 
-ADD_EXECUTABLE(SARCoregistrationComputation SARCoregistrationComputation.cxx)
-TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
+#ADD_EXECUTABLE(SARCoregistrationComputation SARCoregistrationComputation.cxx)
+#TARGET_LINK_LIBRARIES(SARCoregistrationComputation OTBCommon OTBIO)
 
 ADD_EXECUTABLE(SensorModelRegistration SensorModelRegistration.cxx)
 TARGET_LINK_LIBRARIES(SensorModelRegistration OTBCommon OTBIO Interpolation)
