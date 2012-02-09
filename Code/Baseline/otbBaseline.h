@@ -66,24 +66,8 @@ public:
   {
     MapType out;
 	out.clear();
-/*
-	double masterRange = vcl_sqrt(	masterPosition[0] * masterPosition[0] +
-									masterPosition[1] * masterPosition[1] +
-									masterPosition[2] * masterPosition[2]);
-	double vertivalBaseline =	(masterPosition[0] - slavePosition[0]) * masterPosition[0] +
-								(masterPosition[1] - slavePosition[1]) * masterPosition[1] +
-								(masterPosition[2] - slavePosition[2]) * masterPosition[2];
-	vertivalBaseline /= masterRange;
-*/
+	/** TODO*/
 
-	/*
-	double baselineLength = vcl_sqrt(
-					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
-					(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
-					(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
-
-  	out.insert(std::pair<std::string,double>("Baseline",baselineLength) );	
-    */
 	return out;
   }
 };
@@ -100,14 +84,8 @@ public:
   {
     MapType out;
 	out.clear();
-	/*
-	double baselineLength = vcl_sqrt(
-					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
-					(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
-					(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
-
-  	out.insert(std::pair<std::string,double>("Baseline",baselineLength) );	
-    */
+  	out.insert(std::pair<std::string,double>("Horizontal",baselineRTN(2)) );	
+  	out.insert(std::pair<std::string,double>("Vertical",baselineRTN(1)) );	
 	return out;
   }
 };
