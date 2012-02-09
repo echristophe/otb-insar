@@ -22,7 +22,7 @@
 #include "itkObject.h"
 #include "itkObjectFactory.h"
 #include "otbMacro.h"
-
+#include <vnl/vnl_vector.h>
 
 namespace otb
 {
@@ -37,19 +37,19 @@ public:
   LengthOrientationBaseline() {}
   virtual ~LengthOrientationBaseline() {}
 
-  inline MapType operator ()(const std::vector<double> & masterPosition,
-							 const std::vector<double> & slavePosition	)
+  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
   {
     MapType out;
 	out.clear();
 
-	double baselineLength = vcl_sqrt(
-					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
-					(masterPosition[1] - slavePosition[1]) * (masterPosition[1] - slavePosition[1]) +
-					(masterPosition[2] - slavePosition[2]) * (masterPosition[2] - slavePosition[2]));
-    //TODO 
+	double baselineLength = baselineRTN.two_norm(); 
   	out.insert(std::pair<std::string,double>("Length",baselineLength) );	
-    return out;
+	vnl_vector<double> normalComponent(3);
+	normalComponent.fill(0.0);
+	normalComponent(2) = 1.0;
+	double angle = acos(dot_product(baselineRTN,normalComponent) / baselineLength) * CONST_180_PI; 
+  	out.insert(std::pair<std::string,double>("Angle",angle) );	
+	return out;
   }
 };
 
@@ -61,11 +61,21 @@ public:
   ParallelPerpendicularBaseline() {}
   virtual ~ParallelPerpendicularBaseline() {}
 
-  inline MapType operator ()(const std::vector<double> & masterPosition,
-							 const std::vector<double> & slavePosition	)
+
+  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
   {
     MapType out;
 	out.clear();
+/*
+	double masterRange = vcl_sqrt(	masterPosition[0] * masterPosition[0] +
+									masterPosition[1] * masterPosition[1] +
+									masterPosition[2] * masterPosition[2]);
+	double vertivalBaseline =	(masterPosition[0] - slavePosition[0]) * masterPosition[0] +
+								(masterPosition[1] - slavePosition[1]) * masterPosition[1] +
+								(masterPosition[2] - slavePosition[2]) * masterPosition[2];
+	vertivalBaseline /= masterRange;
+*/
+
 	/*
 	double baselineLength = vcl_sqrt(
 					(masterPosition[0] - slavePosition[0]) * (masterPosition[0] - slavePosition[0]) +
@@ -86,8 +96,7 @@ public:
   HorizontalVerticalBaseline() {}
   virtual ~HorizontalVerticalBaseline() {}
 
-  inline MapType operator ()(const std::vector<double> & masterPosition,
-							 const std::vector<double> & slavePosition	)
+  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
   {
     MapType out;
 	out.clear();
@@ -154,14 +163,26 @@ public:
   /** Get Master plateform position*/
   std::vector<double> GetMasterPlateformPosition(double line);
 
+  /** Get Master plateform speed*/
+  std::vector<double> GetMasterPlateformSpeed(double line);
+
   /** Get Slave plateform position*/
   std::vector<double> GetSlavePlateformPosition(double line);
+
+  /** Get Slave plateform position*/
+  std::vector<double> GetSlavePlateformSpeed(double line);
 
   /** Compute the Baseline value. */
   void EvaluateMasterAndSlavePosition(
 	            double masterLine, double slaveLine,
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition);
+
+  /** Compute the Baseline value. */
+  void EvaluateMasterAndSlaveSpeed(
+	            double masterLine, double slaveLine,
+				std::vector<double> & masterSpeed,
+				std::vector<double> & slaveSpeed);
 
   double GetBaselineValue(std::string name)
 		{	
@@ -177,6 +198,10 @@ public:
 	  return m_Baseline;
   }
 
+vnl_vector<double> BaselineInRTNSystem(
+				std::vector<double> & masterPosition,
+				std::vector<double> & slavePosition,
+				std::vector<double> & masterSpeed);
 
 protected:
   Baseline();

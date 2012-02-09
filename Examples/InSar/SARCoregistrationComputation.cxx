@@ -38,6 +38,9 @@
 #include "itkComplexToPhaseImageFilter.h"
 #include "otbComplexToIntensityImageFilter.h"
 
+#include "itkImageRegionConstIteratorWithIndex.h"
+#include "itkNumericTraits.h"
+
 // Command line:
 
 // ./SARCoregistrationComputation ...
@@ -51,6 +54,210 @@ int roundValue(double value)
      : std::ceil( std::abs(value) -0.5 )
          );
 }
+
+template <class TFixedImage, class TMovingImage> 
+class AbsNormalizedCorrelationImageToImageMetric :
+	public itk::NormalizedCorrelationImageToImageMetric< TFixedImage, TMovingImage >
+{
+
+/**
+ * Get the Derivative Measure
+ */
+void GetDerivative( const TransformParametersType & parameters,
+					DerivativeType & derivative ) const
+{
+
+  if( !this->GetGradientImage() )
+    {
+    itkExceptionMacro(<<"The gradient image is null, maybe you forgot to call Initialize()");
+    }
+
+  FixedImageConstPointer fixedImage = this->m_FixedImage;
+
+  if( !fixedImage ) 
+    {
+    itkExceptionMacro( << "Fixed image has not been assigned" );
+    }
+
+  const unsigned int dimension = FixedImageType::ImageDimension;
+
+  typedef  itk::ImageRegionConstIteratorWithIndex<FixedImageType> FixedIteratorType;
+
+  FixedIteratorType ti( fixedImage, this->GetFixedImageRegion() );
+
+  typename FixedImageType::IndexType index;
+
+  this->m_NumberOfPixelsCounted = 0;
+
+  this->SetTransformParameters( parameters );
+
+  typedef  typename itk::NumericTraits< MeasureType >::AccumulateType AccumulateType;
+  typedef  typename itk::NumericTraits< std::complex<double> >::AccumulateType ComplexAccumulateType;
+
+  /** TODO change value to complex and not MeasureType who returns a double value type */
+  ComplexAccumulateType sff  = itk::NumericTraits< ComplexAccumulateType >::Zero;
+  ComplexAccumulateType smm  = itk::NumericTraits< ComplexAccumulateType >::Zero;
+  ComplexAccumulateType sfm = itk::NumericTraits< ComplexAccumulateType >::Zero;
+  ComplexAccumulateType sf  = itk::NumericTraits< ComplexAccumulateType >::Zero;
+  ComplexAccumulateType sm  = itk::NumericTraits< ComplexAccumulateType >::Zero;
+
+  const unsigned int ParametersDimension = this->GetNumberOfParameters();
+  derivative = DerivativeType( ParametersDimension );
+  derivative.Fill( itk::NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+
+  DerivativeType derivativeF = DerivativeType( ParametersDimension );
+  derivativeF.Fill( itk::NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+
+  DerivativeType derivativeM = DerivativeType( ParametersDimension );
+  derivativeM.Fill( itk::NumericTraits<ITK_TYPENAME DerivativeType::ValueType>::Zero );
+
+  ti.GoToBegin();
+  // First compute the sums
+  while(!ti.IsAtEnd())
+    {
+
+    index = ti.GetIndex();
+    
+    InputPointType inputPoint;
+    fixedImage->TransformIndexToPhysicalPoint( index, inputPoint );
+
+    if( this->m_FixedImageMask && !this->m_FixedImageMask->IsInside( inputPoint ) )
+      {
+      ++ti;
+      continue;
+      }
+
+    OutputPointType transformedPoint = this->m_Transform->TransformPoint( inputPoint );
+
+    if( this->m_MovingImageMask && !this->m_MovingImageMask->IsInside( transformedPoint ) )
+      {
+      ++ti;
+      continue;
+      }
+
+    if( this->m_Interpolator->IsInsideBuffer( transformedPoint ) )
+      {
+      const RealType movingValue  = this->m_Interpolator->Evaluate( transformedPoint );
+      const RealType fixedValue   = ti.Get();
+	  sff += fixedValue  * std::conj(fixedValue);
+      smm += movingValue * std::conj(movingValue);
+      sfm += fixedValue  * std::conj(movingValue);
+      if ( this->GetSubtractMean() )
+        {
+        sf += fixedValue;
+        sm += movingValue;
+        }
+      this->m_NumberOfPixelsCounted++;
+      }
+
+    ++ti;
+    }
+
+  // Compute contributions to derivatives
+  ti.GoToBegin();
+  while(!ti.IsAtEnd())
+    {
+
+    index = ti.GetIndex();
+    
+    InputPointType inputPoint;
+    fixedImage->TransformIndexToPhysicalPoint( index, inputPoint );
+
+    if ( this->m_FixedImageMask && !this->m_FixedImageMask->IsInside( inputPoint ) )
+      {
+      ++ti;
+      continue;
+      }
+
+    OutputPointType transformedPoint = this->m_Transform->TransformPoint( inputPoint );
+
+    if ( this->m_MovingImageMask && !this->m_MovingImageMask->IsInside( transformedPoint ) )
+      {
+      ++ti;
+      continue;
+      }
+
+    if( this->m_Interpolator->IsInsideBuffer( transformedPoint ) )
+      {
+      const RealType movingValue  = this->m_Interpolator->Evaluate( transformedPoint );
+      const RealType fixedValue     = ti.Get();
+
+      const TransformJacobianType & jacobian =
+        this->m_Transform->GetJacobian( inputPoint ); 
+
+      // Get the gradient by NearestNeighboorInterpolation: 
+      // which is equivalent to round up the point components.
+      typedef typename OutputPointType::CoordRepType CoordRepType;
+      typedef itk::ContinuousIndex<CoordRepType,MovingImageType::ImageDimension>
+        MovingImageContinuousIndexType;
+
+      MovingImageContinuousIndexType tempIndex;
+      this->m_MovingImage->TransformPhysicalPointToContinuousIndex( transformedPoint, tempIndex );
+
+      typename MovingImageType::IndexType mappedIndex; 
+      mappedIndex.CopyWithRound( tempIndex );
+      
+      const GradientPixelType gradient = 
+        this->GetGradientImage()->GetPixel( mappedIndex );
+
+      for(unsigned int par=0; par<ParametersDimension; par++)
+        {
+        RealType sumF = itk::NumericTraits< RealType >::Zero;
+        RealType sumM = itk::NumericTraits< RealType >::Zero;
+        for(unsigned int dim=0; dim<dimension; dim++)
+          {
+          const RealType differential = jacobian( dim, par ) * gradient[dim];
+          sumF += fixedValue  * differential;
+          sumM += movingValue * differential;
+          if ( this->GetSubtractMean() && this->m_NumberOfPixelsCounted > 0 )
+            {
+				/*
+				sumF -= differential * sf / this->m_NumberOfPixelsCounted;
+            sumM -= differential * sm / this->m_NumberOfPixelsCounted;
+			*/
+			}
+          }
+		/*
+        derivativeF[par] += sumF;
+        derivativeM[par] += sumM;
+		*/
+		}
+      }
+
+    ++ti;
+    }
+
+  if ( this->GetSubtractMean() && this->m_NumberOfPixelsCounted > 0 )
+    {
+		/*
+		sff -= ( sf * sf / this->m_NumberOfPixelsCounted );
+    smm -= ( sm * sm / this->m_NumberOfPixelsCounted );
+    sfm -= ( sf * sm / this->m_NumberOfPixelsCounted );
+	*/
+	}
+
+  const RealType denom = -1.0 * vcl_sqrt(sff * smm );
+
+  if( this->m_NumberOfPixelsCounted > 0 && denom != 0.0)
+    {
+    for(unsigned int i=0; i<ParametersDimension; i++)
+      {
+      /*
+		  derivative[i] = ( derivativeF[i] - (sfm/smm)* derivativeM[i] ) / denom;
+	*/
+	  }
+    }
+  else
+    {
+    for(unsigned int i=0; i<ParametersDimension; i++)
+      {
+      derivative[i] = itk::NumericTraits< MeasureType >::Zero;
+      }
+    }
+
+}
+
+};
 
 int main(int argc, char* argv[])
 {
@@ -86,7 +293,7 @@ int main(int argc, char* argv[])
   /* Set up registration framework */
   typedef otb::GenericRSTransform< double, 2 >										TransformType;
   typedef itk::GradientDescentOptimizer												OptimizerType;
-  typedef itk::NormalizedCorrelationImageToImageMetric< ImageType, ImageType >		MetricType;
+  typedef AbsNormalizedCorrelationImageToImageMetric< ImageType, ImageType >		MetricType;
 
   typedef otb::Function::BlackmanWindowFunction<double>			FunctionType;
   typedef itk::ConstantBoundaryCondition<ImageType>				BoundaryConditionType;
