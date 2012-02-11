@@ -79,8 +79,8 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
   unsigned int numberOfCol  = m_MasterImage->GetLargestPossibleRegion().GetSize()[1];
 
   BaselineType::Pointer baselineCalculator = BaselineType::New();
-  baselineCalculator->SetMasterImage(m_MasterImage);
-  baselineCalculator->SetSlaveImage(m_SlaveImage);
+  baselineCalculator->SetMasterPlateform(m_MasterImage->GetImageKeywordlist());
+  baselineCalculator->SetSlavePlateform(m_SlaveImage->GetImageKeywordlist());
 
   std::vector<double> lengthBaselineImage;
   lengthBaselineImage.clear();

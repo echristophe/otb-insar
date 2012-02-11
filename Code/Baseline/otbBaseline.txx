@@ -34,8 +34,8 @@ template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::Baseline()
 {
-  m_MasterImage = TMasterInputImage::New();
-  m_SlaveImage = TSlaveInputImage::New();
+  m_MasterPlateform = PlatformType::New();
+  m_SlavePlateform  = PlatformType::New();
   m_Baseline.clear();
 }
 
@@ -78,17 +78,12 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetMasterPlateformPosition(double line)
 {
-	typedef otb::PlatformPositionAdapter PlatformType;
-	PlatformType::Pointer platform = PlatformType::New();
-	
-	platform->CreateSensorModel(m_MasterImage->GetImageKeywordlist());
-
     std::vector<double> position;
 	std::vector<double> speed;
 	position.resize(3);
 	speed.resize(3);
 
-	platform->GetPlatformPosition(line, position, speed);
+	m_MasterPlateform->GetPlatformPosition(line, position, speed);
 
 	return position;
 }
@@ -101,17 +96,12 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetMasterPlateformSpeed(double line)
 {
-	typedef otb::PlatformPositionAdapter PlatformType;
-	PlatformType::Pointer platform = PlatformType::New();
-	
-	platform->CreateSensorModel(m_MasterImage->GetImageKeywordlist());
-
     std::vector<double> position;
 	std::vector<double> speed;
 	position.resize(3);
 	speed.resize(3);
 
-	platform->GetPlatformPosition(line, position, speed);
+	m_MasterPlateform->GetPlatformPosition(line, position, speed);
 
 	return speed;
 }
@@ -124,17 +114,12 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetSlavePlateformPosition(double line)
 {
-	typedef otb::PlatformPositionAdapter PlatformType;
-	PlatformType::Pointer platform = PlatformType::New();
-	
-	platform->CreateSensorModel(m_SlaveImage->GetImageKeywordlist());
-
 	std::vector<double> position;
 	std::vector<double> speed;
 	position.resize(3);
 	speed.resize(3);
 
-	platform->GetPlatformPosition(line, position, speed);
+	m_SlavePlateform->GetPlatformPosition(line, position, speed);
 
 	return position;
 }
@@ -147,17 +132,12 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetSlavePlateformSpeed(double line)
 {
-	typedef otb::PlatformPositionAdapter PlatformType;
-	PlatformType::Pointer platform = PlatformType::New();
-	
-	platform->CreateSensorModel(m_SlaveImage->GetImageKeywordlist());
-
 	std::vector<double> position;
 	std::vector<double> speed;
 	position.resize(3);
 	speed.resize(3);
 
-	platform->GetPlatformPosition(line, position, speed);
+	m_SlavePlateform->GetPlatformPosition(line, position, speed);
 
 	return speed;
 }
@@ -247,10 +227,10 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 {
   Superclass::PrintSelf(os,indent);
 
-  os << indent << "MasterImage: " << std::endl;
-  m_MasterImage->Print(os, indent.GetNextIndent());
-  os << indent << "SlaveImage: " << std::endl;
-  m_SlaveImage->Print(os, indent.GetNextIndent());
+  os << indent << "MasterPlateform: " << std::endl;
+  m_MasterPlateform->Print(os, indent.GetNextIndent());
+  os << indent << "m_SlavePlateform: " << std::endl;
+  m_SlavePlateform->Print(os, indent.GetNextIndent());
 
 }
 
