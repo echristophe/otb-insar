@@ -48,17 +48,13 @@ void
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::Compute(double line) 
 {
-	std::vector<double> masterPosition;
-	std::vector<double> slavePosition;
-	masterPosition.resize(3);
-	slavePosition.resize(3);
+	std::vector<double> masterPosition(3);
+	std::vector<double> slavePosition(3);
 
 	this->EvaluateMasterAndSlavePosition(line,line, masterPosition, slavePosition);
 
-	std::vector<double> masterSpeed;
-	std::vector<double> slaveSpeed;
-	masterSpeed.resize(3);
-	slaveSpeed.resize(3);
+	std::vector<double> masterSpeed(3);
+	std::vector<double> slaveSpeed(3);
 
 	this->EvaluateMasterAndSlaveSpeed(line,line, masterSpeed, slaveSpeed);
 
@@ -78,10 +74,8 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetMasterPlateformPosition(double line)
 {
-    std::vector<double> position;
-	std::vector<double> speed;
-	position.resize(3);
-	speed.resize(3);
+    std::vector<double> position(3);
+	std::vector<double> speed(3);
 
 	m_MasterPlateform->GetPlatformPosition(line, position, speed);
 
@@ -96,10 +90,8 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetMasterPlateformSpeed(double line)
 {
-    std::vector<double> position;
-	std::vector<double> speed;
-	position.resize(3);
-	speed.resize(3);
+    std::vector<double> position(3);
+	std::vector<double> speed(3);
 
 	m_MasterPlateform->GetPlatformPosition(line, position, speed);
 
@@ -114,10 +106,8 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetSlavePlateformPosition(double line)
 {
-	std::vector<double> position;
-	std::vector<double> speed;
-	position.resize(3);
-	speed.resize(3);
+	std::vector<double> position(3);
+	std::vector<double> speed(3);
 
 	m_SlavePlateform->GetPlatformPosition(line, position, speed);
 
@@ -132,10 +122,8 @@ std::vector<double>
 Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::GetSlavePlateformSpeed(double line)
 {
-	std::vector<double> position;
-	std::vector<double> speed;
-	position.resize(3);
-	speed.resize(3);
+	std::vector<double> position(3);
+	std::vector<double> speed(3);
 
 	m_SlavePlateform->GetPlatformPosition(line, position, speed);
 
