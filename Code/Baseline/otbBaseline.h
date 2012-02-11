@@ -23,6 +23,7 @@
 #include "itkObjectFactory.h"
 #include "otbMacro.h"
 #include <vnl/vnl_vector.h>
+#include "otbPlatformPositionAdapter.h"
 
 namespace otb
 {
@@ -130,9 +131,18 @@ public:
 
   typedef std::map<std::string,double> MapType;
   /** Set the input image. */
-  itkSetConstObjectMacro(MasterImage,MasterImageType);
-  itkSetConstObjectMacro(SlaveImage,SlaveImageType);
+  void SetMasterPlateform(const ImageKeywordlist& image_kwl)
+  {
+	  	m_MasterPlateform->CreateSensorModel(image_kwl);
+  }
 
+  void SetSlavePlateform(const ImageKeywordlist& image_kwl)
+  {
+	  	m_SlavePlateform->CreateSensorModel(image_kwl); 
+  }
+
+  typedef otb::PlatformPositionAdapter     PlatformType;
+  typedef typename PlatformType::Pointer   PlateformPointer;
 
 
   /** Compute the Baseline value. */
@@ -190,11 +200,10 @@ private:
   Baseline(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  MasterImageConstPointer      m_MasterImage;
-  SlaveImageConstPointer       m_SlaveImage;
   MapType                      m_Baseline;
   FunctorType                  m_Functor;
-
+  PlateformPointer             m_MasterPlateform;
+  PlateformPointer             m_SlavePlateform;
 };
 
 } // end namespace otb
