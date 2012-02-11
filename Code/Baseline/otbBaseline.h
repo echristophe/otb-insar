@@ -99,8 +99,7 @@ public:
  *
  * \ingroup Operators
  */
-template <class TMasterInputImage,class TSlaveInputImage, 
-          class TBaselineFunctor= Functor::LengthOrientationBaseline>
+template <class TBaselineFunctor= Functor::LengthOrientationBaseline>
 class ITK_EXPORT Baseline : public itk::Object 
 {
 public:
@@ -116,18 +115,12 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(Baseline, itk::Object);
 
-  /** Type definition for the input image. */
-  typedef TMasterInputImage  MasterImageType;
-  typedef TSlaveInputImage   SlaveImageType;
+  /** Type definition for the baseline functor. */
   typedef TBaselineFunctor   FunctorType;
 
-  /** Pointer type for the image. */
-  typedef typename TMasterInputImage::Pointer  MasterImagePointer;
-  typedef typename TSlaveInputImage::Pointer   SlaveImagePointer;
-  
-  /** Const Pointer type for the image. */
-  typedef typename TMasterInputImage::ConstPointer MasterImageConstPointer;
-  typedef typename TSlaveInputImage::ConstPointer SlaveImageConstPointer;
+  /** Type definition for Plateform Position adapter. */
+  typedef otb::PlatformPositionAdapter     PlatformType;
+  typedef typename PlatformType::Pointer   PlateformPointer;
 
   typedef std::map<std::string,double> MapType;
   /** Set the input image. */
@@ -141,36 +134,10 @@ public:
 	  	m_SlavePlateform->CreateSensorModel(image_kwl); 
   }
 
-  typedef otb::PlatformPositionAdapter     PlatformType;
-  typedef typename PlatformType::Pointer   PlateformPointer;
 
 
   /** Compute the Baseline value. */
   virtual void Compute(double line);
-
-  /** Get Master plateform position*/
-  std::vector<double> GetMasterPlateformPosition(double line);
-
-  /** Get Master plateform speed*/
-  std::vector<double> GetMasterPlateformSpeed(double line);
-
-  /** Get Slave plateform position*/
-  std::vector<double> GetSlavePlateformPosition(double line);
-
-  /** Get Slave plateform position*/
-  std::vector<double> GetSlavePlateformSpeed(double line);
-
-  /** Compute the Baseline value. */
-  void EvaluateMasterAndSlavePosition(
-	            double masterLine, double slaveLine,
-				std::vector<double> & masterPosition,
-				std::vector<double> & slavePosition);
-
-  /** Compute the Baseline value. */
-  void EvaluateMasterAndSlaveSpeed(
-	            double masterLine, double slaveLine,
-				std::vector<double> & masterSpeed,
-				std::vector<double> & slaveSpeed);
 
   double GetBaselineValue(std::string name)
 		{	

@@ -30,8 +30,8 @@ namespace otb
 /**
  * Constructor
  */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+template <class TBaselineFunctor>
+Baseline<TBaselineFunctor>
 ::Baseline()
 {
   m_MasterPlateform = PlatformType::New();
@@ -43,20 +43,18 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 /**
  * Compute Min and Max of m_Image
  */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+template <class TBaselineFunctor>
 void
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+Baseline<TBaselineFunctor>
 ::Compute(double line) 
 {
 	std::vector<double> masterPosition(3);
 	std::vector<double> slavePosition(3);
-
-	this->EvaluateMasterAndSlavePosition(line,line, masterPosition, slavePosition);
-
 	std::vector<double> masterSpeed(3);
 	std::vector<double> slaveSpeed(3);
 
-	this->EvaluateMasterAndSlaveSpeed(line,line, masterSpeed, slaveSpeed);
+	m_MasterPlateform->GetPlatformPosition(line, masterPosition, masterSpeed);
+	m_SlavePlateform->GetPlatformPosition(line, slavePosition, slaveSpeed);
 
 	vnl_vector<double> baselineVector(3);
 
@@ -66,107 +64,13 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 
 
 
-/**
- * Compute Master plateform position
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-std::vector<double>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::GetMasterPlateformPosition(double line)
-{
-    std::vector<double> position(3);
-	std::vector<double> speed(3);
-
-	m_MasterPlateform->GetPlatformPosition(line, position, speed);
-
-	return position;
-}
-
-/**
- * Compute Master plateform position
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-std::vector<double>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::GetMasterPlateformSpeed(double line)
-{
-    std::vector<double> position(3);
-	std::vector<double> speed(3);
-
-	m_MasterPlateform->GetPlatformPosition(line, position, speed);
-
-	return speed;
-}
-
-/**
- * Compute Slave plateform position
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-std::vector<double>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::GetSlavePlateformPosition(double line)
-{
-	std::vector<double> position(3);
-	std::vector<double> speed(3);
-
-	m_SlavePlateform->GetPlatformPosition(line, position, speed);
-
-	return position;
-}
-
-/**
- * Compute Slave plateform speed
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-std::vector<double>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::GetSlavePlateformSpeed(double line)
-{
-	std::vector<double> position(3);
-	std::vector<double> speed(3);
-
-	m_SlavePlateform->GetPlatformPosition(line, position, speed);
-
-	return speed;
-}
-
-/**
- * Evaluate Master and Slave plateform position
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-void 
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::EvaluateMasterAndSlavePosition(
-				double masterLine, double slaveLine,
-				std::vector<double> & masterPosition,
-				std::vector<double> & slavePosition)
-{
-    masterPosition = this->GetMasterPlateformPosition(masterLine);
-    slavePosition  = this->GetSlavePlateformPosition(slaveLine);
-}
-
-/**
- * Evaluate Master and Slave plateform speed
- */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
-void 
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::EvaluateMasterAndSlaveSpeed(
-				double masterLine, double slaveLine,
-				std::vector<double> & masterSpeed,
-				std::vector<double> & slaveSpeed)
-{
-    masterSpeed = this->GetMasterPlateformSpeed(masterLine);
-    slaveSpeed  = this->GetSlavePlateformSpeed(slaveLine);
-}
-
 
 /**
  * Evaluate Baseline in RTN (Radial Tangential Normal) System coordinate 
  */
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+template <class TBaselineFunctor>
 vnl_vector<double>
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+Baseline<TBaselineFunctor>
 ::BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition,
@@ -208,9 +112,9 @@ Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 
 
 
-template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
+template <class TBaselineFunctor>
 void
-Baseline<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
+Baseline<TBaselineFunctor>
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
