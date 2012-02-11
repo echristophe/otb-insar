@@ -68,7 +68,7 @@ public:
   itkSetConstObjectMacro(MasterImage,MasterImageType);
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
-  typedef otb::Baseline<MasterImageType,SlaveImageType,FunctorType> BaselineType;
+  typedef otb::Baseline<FunctorType> BaselineType;
   typedef typename BaselineType::ConstPointer BaselineConstPointer;
 
   /** Compute the Baseline value. */
@@ -94,7 +94,7 @@ private:
 
   MasterImageConstPointer      m_MasterImage;
   SlaveImageConstPointer       m_SlaveImage;
-  CoefMapType                      m_BaselineCoefficient;
+  CoefMapType                  m_BaselineCoefficient;
 };
 
 } // end namespace otb
