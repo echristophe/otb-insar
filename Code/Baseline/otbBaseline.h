@@ -24,74 +24,10 @@
 #include "otbMacro.h"
 #include <vnl/vnl_vector.h>
 #include "otbPlatformPositionAdapter.h"
+#include "otbLengthOrientationBaselineFunctor.h"
 
 namespace otb
 {
-
-namespace Functor {
-
-class LengthOrientationBaseline
-{
-public:
-  typedef std::vector<double> PositionType;
-  typedef std::map<std::string,double> MapType;
-  LengthOrientationBaseline() {}
-  virtual ~LengthOrientationBaseline() {}
-
-  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
-  {
-    MapType out;
-	out.clear();
-
-	double baselineLength = baselineRTN.two_norm(); 
-  	out.insert(std::pair<std::string,double>("Length",baselineLength) );	
-	vnl_vector<double> normalComponent(3);
-	normalComponent.fill(0.0);
-	normalComponent(2) = 1.0;
-	double angle = acos(dot_product(baselineRTN,normalComponent) / baselineLength) * CONST_180_PI; 
-  	out.insert(std::pair<std::string,double>("Angle",angle) );	
-	return out;
-  }
-};
-
-class ParallelPerpendicularBaseline
-{
-public:
-  typedef std::vector<double> PositionType;
-  typedef std::map<std::string,double> MapType;
-  ParallelPerpendicularBaseline() {}
-  virtual ~ParallelPerpendicularBaseline() {}
-
-
-  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
-  {
-    MapType out;
-	out.clear();
-	/** TODO*/
-
-	return out;
-  }
-};
-
-class HorizontalVerticalBaseline
-{
-public:
-  typedef std::vector<double> PositionType;
-  typedef std::map<std::string,double> MapType;
-  HorizontalVerticalBaseline() {}
-  virtual ~HorizontalVerticalBaseline() {}
-
-  inline MapType operator ()(const vnl_vector<double> & baselineRTN)
-  {
-    MapType out;
-	out.clear();
-  	out.insert(std::pair<std::string,double>("Horizontal",baselineRTN(2)) );	
-  	out.insert(std::pair<std::string,double>("Vertical",baselineRTN(1)) );	
-	return out;
-  }
-};
-
-} // end namespace otb::Functor
 
 
 /** \class otbBaseline
@@ -104,7 +40,7 @@ class ITK_EXPORT Baseline : public itk::Object
 {
 public:
   /** Standard class typedefs. */
-  typedef Baseline                       Self;
+  typedef Baseline                           Self;
   typedef itk::Object                        Superclass;
   typedef itk::SmartPointer<Self>            Pointer;
   typedef itk::SmartPointer<const Self>      ConstPointer;
@@ -116,7 +52,8 @@ public:
   itkTypeMacro(Baseline, itk::Object);
 
   /** Type definition for the baseline functor. */
-  typedef TBaselineFunctor   FunctorType;
+  typedef TBaselineFunctor               FunctorType;
+  typedef typename FunctorType::Pointer  FunctorPointer;
 
   /** Type definition for Plateform Position adapter. */
   typedef otb::PlatformPositionAdapter     PlatformType;
@@ -168,7 +105,7 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   MapType                      m_Baseline;
-  FunctorType                  m_Functor;
+  FunctorPointer               m_Functor;
   PlateformPointer             m_MasterPlateform;
   PlateformPointer             m_SlavePlateform;
 };
