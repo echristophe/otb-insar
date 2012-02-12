@@ -36,6 +36,7 @@ Baseline<TBaselineFunctor>
 {
   m_MasterPlateform = PlatformType::New();
   m_SlavePlateform  = PlatformType::New();
+  m_Functor = FunctorType::New();
   m_Baseline.clear();
 }
 
@@ -59,7 +60,7 @@ Baseline<TBaselineFunctor>
 	vnl_vector<double> baselineVector(3);
 
 	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
-	m_Baseline = m_Functor(baselineVector);
+	m_Baseline = m_Functor->operator()(baselineVector);
 }
 
 

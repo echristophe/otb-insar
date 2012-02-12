@@ -33,7 +33,7 @@ namespace otb
  * \ingroup Operators
  */
 template <class TMasterInputImage,class TSlaveInputImage, 
-          class TBaselineFunctor= Functor::LengthOrientationBaseline>
+          class TBaselineFunctor= Functor::LengthOrientationBaselineFunctor>
 class ITK_EXPORT BaselineCalculator : public itk::Object 
 {
 public:
