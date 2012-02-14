@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,31 +28,25 @@ namespace otb
 namespace Functor {
 
 
-  
-LengthOrientationBaselineFunctor::MapType 
+LengthOrientationBaselineFunctor::OutputType
 LengthOrientationBaselineFunctor
-::operator ()(const VectorPositionType & baselineRTN) const
+::GetLengthBaseline() const
 {
-    MapType out;
-	out.clear();
+	double baselineLength = this->GetRTNBaseline().two_norm(); 
+	return baselineLength;
+}
 
-	double baselineLength = baselineRTN.two_norm(); 
-  	out.insert(std::pair<std::string,double>("Length",baselineLength) );	
+LengthOrientationBaselineFunctor::OutputType
+LengthOrientationBaselineFunctor
+::GetOrientationBaseline() const
+{
 	vnl_vector<double> normalComponent(3);
 	normalComponent.fill(0.0);
 	normalComponent(2) = 1.0;
-	double angle = acos(dot_product(baselineRTN,normalComponent) / baselineLength) * CONST_180_PI; 
-  	out.insert(std::pair<std::string,double>("Angle",angle) );	
-	return out;
+	double baselineLength = this->GetHorizontalBaseline();
+	double angle = acos(dot_product(this->GetRTNBaseline(),normalComponent) / baselineLength) * CONST_180_PI; 
+	return angle;
 }
-
-LengthOrientationBaselineFunctor::MapType 
-LengthOrientationBaselineFunctor
-::operator ()(const vnl_vector<double> & val1,const vnl_vector<double> & val2) const
-{
-	itkExceptionMacro("Only one argument to operator()");
-}
-
 
 void
 LengthOrientationBaselineFunctor
