@@ -21,6 +21,7 @@
 
 #include "itkLightObject.h"
 #include <vnl/vnl_vector.h>
+#include "itkObject.h"
 
 namespace otb
 {
