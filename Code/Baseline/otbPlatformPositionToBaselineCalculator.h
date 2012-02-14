@@ -51,13 +51,14 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(PlatformPositionToBaselineCalculator, itk::Object);
 
-  /** Type definition for the baseline functor. */
-  typedef TBaselineFunctor               FunctorType;
-  typedef typename FunctorType::Pointer  FunctorPointer;
-
   /** Type definition for Plateform Position adapter. */
   typedef otb::PlatformPositionAdapter     PlatformType;
   typedef typename PlatformType::Pointer   PlateformPointer;
+
+  /** Type definition for Baseline Functor. */
+  typedef Functor::BaselineFunctorBase   BaselineFunctorType;
+  typedef typename BaselineFunctorType::Pointer BaselineFunctorPointer;
+
 
   typedef std::map<std::string,double> MapType;
   /** Set the input image. */
@@ -71,6 +72,20 @@ public:
 	  	m_SlavePlateform->CreateSensorModel(image_kwl); 
   }
 
+
+  /**
+   * Set/Get the BaselineFunctor object.
+   */
+  BaselineFunctorPointer GetBaselineFunctor() { return m_BaselineFunctor; }
+
+  void SetBaselineFunctor( BaselineFunctorPointer baselineFunctor )
+    {
+    if ( m_BaselineFunctor != baselineFunctor )
+      {
+      m_BaselineFunctor = baselineFunctor;
+      this->Modified();
+      }
+    }
 
 
   /** Compute the Baseline value. */
@@ -104,10 +119,10 @@ private:
   PlatformPositionToBaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  MapType                      m_Baseline;
-  FunctorPointer               m_Functor;
-  PlateformPointer             m_MasterPlateform;
-  PlateformPointer             m_SlavePlateform;
+  MapType                          m_Baseline;
+  typename BaselineFunctorPointer  m_BaselineFunctor;
+  PlateformPointer                 m_MasterPlateform;
+  PlateformPointer                 m_SlavePlateform;
 };
 
 } // end namespace otb
