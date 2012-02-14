@@ -20,7 +20,7 @@
 #define __otbBaselineCalculator_txx
 
 #include "otbBaselineCalculator.h"
-#include "otbBaseline.h"
+#include "otbPlatformPositionToBaselineCalculator.h"
 #include "otbImage.h"
 
 #include <vnl/vnl_sparse_matrix.h>

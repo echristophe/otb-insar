@@ -16,10 +16,10 @@
    limitations under the License.
 
 =========================================================================*/
-#ifndef __otbBaseline_txx
-#define __otbBaseline_txx
+#ifndef __otbPlatformPositionToBaselineCalculator_txx
+#define __otbPlatformPositionToBaselineCalculator_txx
 
-#include "otbBaseline.h"
+#include "otbPlatformPositionToBaselineCalculator.h"
 #include "otbPlatformPositionAdapter.h"
 #include <map>
 #include <vnl/vnl_cross.h>
@@ -31,8 +31,8 @@ namespace otb
  * Constructor
  */
 template <class TBaselineFunctor>
-Baseline<TBaselineFunctor>
-::Baseline()
+PlatformPositionToBaselineCalculator<TBaselineFunctor>
+::PlatformPositionToBaselineCalculator()
 {
   m_MasterPlateform = PlatformType::New();
   m_SlavePlateform  = PlatformType::New();
@@ -46,7 +46,7 @@ Baseline<TBaselineFunctor>
  */
 template <class TBaselineFunctor>
 void
-Baseline<TBaselineFunctor>
+PlatformPositionToBaselineCalculator<TBaselineFunctor>
 ::Compute(double line) 
 {
 	std::vector<double> masterPosition(3);
@@ -71,7 +71,7 @@ Baseline<TBaselineFunctor>
  */
 template <class TBaselineFunctor>
 vnl_vector<double>
-Baseline<TBaselineFunctor>
+PlatformPositionToBaselineCalculator<TBaselineFunctor>
 ::BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition,
@@ -115,7 +115,7 @@ Baseline<TBaselineFunctor>
 
 template <class TBaselineFunctor>
 void
-Baseline<TBaselineFunctor>
+PlatformPositionToBaselineCalculator<TBaselineFunctor>
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
