@@ -27,49 +27,49 @@ namespace otb
 namespace Functor {
 
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetHorizontalBaseline() const
 {
 	itkExceptionMacro("GetHorizontalBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetVerticalBaseline() const
 {
 	itkExceptionMacro("GetVerticalBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetParallelBaseline() const
 {
 	itkExceptionMacro("GetParallelBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetPerpendicularBaseline() const
 {
 	itkExceptionMacro("GetPerpendicularBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetLengthBaseline() const
 {
 	itkExceptionMacro("GetLengthBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetOrientationBaseline() const
 {
 	itkExceptionMacro("GetOrientationBaseline() not implemented");
 }
 
-double 
+BaselineFunctorBase::OutputType 
 BaselineFunctorBase
 ::GetBaseline(BaselineCalculusEnumType map)
 {
