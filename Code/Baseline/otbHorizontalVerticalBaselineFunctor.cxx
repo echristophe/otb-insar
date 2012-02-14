@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,24 +26,19 @@ namespace otb
 
 namespace Functor {
 
-
-  
-HorizontalVerticalBaselineFunctor::MapType 
+HorizontalVerticalBaselineFunctor::OutputType
 HorizontalVerticalBaselineFunctor
-::operator ()(const VectorPositionType & baselineRTN) const
+::GetHorizontalBaseline() const;
 {
-    MapType out;
-	out.clear();
-  	out.insert(std::pair<std::string,double>("Horizontal",baselineRTN(2)) );	
-  	out.insert(std::pair<std::string,double>("Vertical",baselineRTN(1)) );	
-	return out;
+	return this->GetRTNBaseline()[2];
 }
 
-HorizontalVerticalBaselineFunctor::MapType 
+
+HorizontalVerticalBaselineFunctor::OutputType
 HorizontalVerticalBaselineFunctor
-::operator ()(const vnl_vector<double> & val1,const vnl_vector<double> & val2) const
+::GetVerticalBaseline() const;
 {
-	itkExceptionMacro("Only one argument to operator()");
+	return this->GetRTNBaseline()[1];
 }
 
 
