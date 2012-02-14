@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,7 +33,7 @@ class ITK_EXPORT HorizontalVerticalBaselineFunctor : public BaselineFunctorBase
 {
 public:
 
-  typedef HorizontalVerticalBaselineFunctor          Self;
+  typedef HorizontalVerticalBaselineFunctor             Self;
   typedef BaselineFunctorBase                           Superclass;
   typedef itk::SmartPointer<Self>                       Pointer;
   typedef itk::SmartPointer<const Self>                 ConstPointer;
@@ -44,11 +44,10 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(HorizontalVerticalBaselineFunctor, BaselineFunctorBase);
 
-  typedef BaselineFunctorBase::VectorPositionType  VectorPositionType;
-  typedef BaselineFunctorBase::MapType             MapType;
+  typedef Superclass::VectorType  VectorType;
 
-  virtual MapType operator()( const VectorPositionType & ) const;
-  virtual MapType operator()( const VectorPositionType &, const  VectorPositionType &) const;
+  virtual OutputType GetHorizontalBaseline() const;
+  virtual OutputType GetVerticalBaseline() const;
 
 protected:
   HorizontalVerticalBaselineFunctor() {};
