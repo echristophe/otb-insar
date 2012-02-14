@@ -21,7 +21,7 @@
 
 #include "itkObject.h"
 #include "itkObjectFactory.h"
-#include "otbBaseline.h"
+#include "otbPlatformPositionToBaselineCalculator.h"
 #include <vnl/vnl_vector.h>
 
 namespace otb
@@ -68,7 +68,7 @@ public:
   itkSetConstObjectMacro(MasterImage,MasterImageType);
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
-  typedef otb::Baseline<FunctorType> BaselineType;
+  typedef otb::PlatformPositionToBaselineCalculator<FunctorType> BaselineType;
   typedef typename BaselineType::ConstPointer BaselineConstPointer;
 
   /** Compute the Baseline value. */

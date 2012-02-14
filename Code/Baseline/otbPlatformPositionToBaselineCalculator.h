@@ -16,8 +16,8 @@
    limitations under the License.
 
 =========================================================================*/
-#ifndef __otbBaseline_h
-#define __otbBaseline_h
+#ifndef __otbPlatformPositionToBaselineCalculator_h
+#define __otbPlatformPositionToBaselineCalculator_h
 
 #include "itkObject.h"
 #include "itkObjectFactory.h"
@@ -30,26 +30,26 @@ namespace otb
 {
 
 
-/** \class otbBaseline
+/** \class otbPlatformPositionToBaselineCalculator
  * Baseline is an abstract class for the baseline calculation
  *
  * \ingroup Operators
  */
 template <class TBaselineFunctor= Functor::LengthOrientationBaseline>
-class ITK_EXPORT Baseline : public itk::Object 
+class ITK_EXPORT PlatformPositionToBaselineCalculator : public itk::Object 
 {
 public:
   /** Standard class typedefs. */
-  typedef Baseline                           Self;
-  typedef itk::Object                        Superclass;
-  typedef itk::SmartPointer<Self>            Pointer;
-  typedef itk::SmartPointer<const Self>      ConstPointer;
+  typedef PlatformPositionToBaselineCalculator  Self;
+  typedef itk::Object                           Superclass;
+  typedef itk::SmartPointer<Self>               Pointer;
+  typedef itk::SmartPointer<const Self>         ConstPointer;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(Baseline, itk::Object);
+  itkTypeMacro(PlatformPositionToBaselineCalculator, itk::Object);
 
   /** Type definition for the baseline functor. */
   typedef TBaselineFunctor               FunctorType;
@@ -96,12 +96,12 @@ vnl_vector<double> BaselineInRTNSystem(
 				std::vector<double> & masterSpeed);
 
 protected:
-  Baseline();
-  virtual ~Baseline() {};
+  PlatformPositionToBaselineCalculator();
+  virtual ~PlatformPositionToBaselineCalculator() {};
   void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
 private:
-  Baseline(const Self&); //purposely not implemented
+  PlatformPositionToBaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
   MapType                      m_Baseline;
@@ -114,7 +114,7 @@ private:
 
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "otbBaseline.txx"
+#include "otbPlatformPositionToBaselineCalculator.txx"
 #endif
 
 #endif /* __otbBaseline_h */

@@ -26,7 +26,6 @@
 
 #include "otbImage.h"
 #include "otbImageFileReader.h"
-#include "otbBaseline.h"
 #include "otbBaselineCalculator.h"
 
 int main(int argc, char* argv[])
