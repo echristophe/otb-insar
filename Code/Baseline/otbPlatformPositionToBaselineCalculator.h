@@ -28,14 +28,11 @@
 
 namespace otb
 {
-
-
 /** \class otbPlatformPositionToBaselineCalculator
  * Baseline is an abstract class for the baseline calculation
  *
  * \ingroup Operators
  */
-template <class TBaselineFunctor= Functor::LengthOrientationBaseline>
 class ITK_EXPORT PlatformPositionToBaselineCalculator : public itk::Object 
 {
 public:
@@ -53,11 +50,11 @@ public:
 
   /** Type definition for Plateform Position adapter. */
   typedef otb::PlatformPositionAdapter     PlatformType;
-  typedef typename PlatformType::Pointer   PlateformPointer;
+  typedef PlatformType::Pointer            PlateformPointer;
 
   /** Type definition for Baseline Functor. */
   typedef Functor::BaselineFunctorBase   BaselineFunctorType;
-  typedef typename BaselineFunctorType::Pointer BaselineFunctorPointer;
+  typedef BaselineFunctorType::Pointer   BaselineFunctorPointer;
 
 
   typedef std::map<std::string,double> MapType;
@@ -78,7 +75,7 @@ public:
    */
   BaselineFunctorPointer GetBaselineFunctor() { return m_BaselineFunctor; }
 
-  void SetBaselineFunctor( BaselineFunctorPointer baselineFunctor )
+  void SetBaselineFunctor( BaselineFunctorType * baselineFunctor )
     {
     if ( m_BaselineFunctor != baselineFunctor )
       {
@@ -86,6 +83,14 @@ public:
       this->Modified();
       }
     }
+
+  /**
+   * Enum type that provides for an easy interface to existing BaselineFunctor.
+   */
+  typedef enum {	HorizontalVertical, ParallelPerpendicular, 
+					LengthOrientation } BaselineFunctorEnumType;
+
+  void SetBaselineFunctor( BaselineFunctorEnumType );
 
 
   /** Compute the Baseline value. */
@@ -120,7 +125,7 @@ private:
   void operator=(const Self&); //purposely not implemented
 
   MapType                          m_Baseline;
-  typename BaselineFunctorPointer  m_BaselineFunctor;
+  BaselineFunctorPointer           m_BaselineFunctor;
   PlateformPointer                 m_MasterPlateform;
   PlateformPointer                 m_SlavePlateform;
 };
@@ -129,7 +134,7 @@ private:
 
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "otbPlatformPositionToBaselineCalculator.txx"
+#include "otbPlatformPositionToBaselineCalculator.cxx"
 #endif
 
 #endif /* __otbBaseline_h */

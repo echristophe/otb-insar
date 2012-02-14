@@ -68,7 +68,7 @@ public:
   itkSetConstObjectMacro(MasterImage,MasterImageType);
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
-  typedef otb::PlatformPositionToBaselineCalculator<FunctorType> BaselineType;
+  typedef otb::PlatformPositionToBaselineCalculator BaselineType;
   typedef typename BaselineType::ConstPointer BaselineConstPointer;
 
   /** Compute the Baseline value. */

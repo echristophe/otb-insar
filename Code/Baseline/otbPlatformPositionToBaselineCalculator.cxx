@@ -16,13 +16,16 @@
    limitations under the License.
 
 =========================================================================*/
-#ifndef __otbPlatformPositionToBaselineCalculator_txx
-#define __otbPlatformPositionToBaselineCalculator_txx
+#ifndef __otbPlatformPositionToBaselineCalculator_cxx
+#define __otbPlatformPositionToBaselineCalculator_cxx
 
 #include "otbPlatformPositionToBaselineCalculator.h"
 #include "otbPlatformPositionAdapter.h"
 #include <map>
 #include <vnl/vnl_cross.h>
+#include "otbHorizontalVerticalBaselineFunctor.h"
+#include "otbParallelPerpendicularBaselineFunctor.h"
+#include "otbLengthOrientationBaselineFunctor.h"
 
 namespace otb
 { 
@@ -30,8 +33,7 @@ namespace otb
 /**
  * Constructor
  */
-template <class TBaselineFunctor>
-PlatformPositionToBaselineCalculator<TBaselineFunctor>
+PlatformPositionToBaselineCalculator
 ::PlatformPositionToBaselineCalculator()
 {
   m_MasterPlateform = PlatformType::New();
@@ -44,9 +46,8 @@ PlatformPositionToBaselineCalculator<TBaselineFunctor>
 /**
  * Compute Min and Max of m_Image
  */
-template <class TBaselineFunctor>
 void
-PlatformPositionToBaselineCalculator<TBaselineFunctor>
+PlatformPositionToBaselineCalculator
 ::Compute(double line) 
 {
 	std::vector<double> masterPosition(3);
@@ -69,9 +70,8 @@ PlatformPositionToBaselineCalculator<TBaselineFunctor>
 /**
  * Evaluate Baseline in RTN (Radial Tangential Normal) System coordinate 
  */
-template <class TBaselineFunctor>
 vnl_vector<double>
-PlatformPositionToBaselineCalculator<TBaselineFunctor>
+PlatformPositionToBaselineCalculator
 ::BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition,
@@ -111,11 +111,39 @@ PlatformPositionToBaselineCalculator<TBaselineFunctor>
 	return baselineRTN;
 }
 
-
-
-template <class TBaselineFunctor>
 void
-PlatformPositionToBaselineCalculator<TBaselineFunctor>
+PlatformPositionToBaselineCalculator
+::SetBaselineFunctor( BaselineFunctorEnumType map)
+{
+  switch( map )
+    {
+    case HorizontalVertical:
+      {
+      typedef Functor::HorizontalVerticalBaselineFunctor SpecificBaselineFunctorType;
+      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
+      this->SetBaselineFunctor( baselineFunctor );
+      break;
+      }
+    case ParallelPerpendicular:
+      {
+      typedef Functor::ParallelPerpendicularBaselineFunctor SpecificBaselineFunctorType;
+      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
+      this->SetBaselineFunctor( baselineFunctor );
+      break;
+      }
+    case LengthOrientation: default:
+      {
+      typedef Functor::LengthOrientationBaselineFunctor SpecificBaselineFunctorType;
+      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
+      this->SetBaselineFunctor( baselineFunctor );
+      break;
+      }
+    }
+}
+
+
+void
+PlatformPositionToBaselineCalculator
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
