@@ -40,33 +40,46 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(BaselineFunctorBase, itk::Object);
 
-  typedef vnl_vector<double> VectorPositionType;
-  typedef std::map<std::string,double> MapType;
+  typedef vnl_vector<double> VectorType;
 
-  virtual MapType operator()( const VectorPositionType & ) const = 0;
-  virtual MapType operator()( const VectorPositionType &, const  VectorPositionType &) const = 0;
+  typedef enum {Horizontal, Vertical, Parallel, Perpendicular, 
+					Length, Orientation } BaselineCalculusEnumType;
+
+  virtual double GetHorizontalBaseline() const;
+  virtual double GetVerticalBaseline() const;
+  virtual double GetParallelBaseline() const;
+  virtual double GetPerpendicularBaseline() const;
+  virtual double GetLengthBaseline() const;
+  virtual double GetOrientationBaseline() const;
+
+  double GetBaseline(BaselineCalculusEnumType);
+
+  void SetRTNBaseline(VectorType & RTNBaseline)
+  {
+	m_RTNBaseline = RTNBaseline;
+  }
 
 protected:
   BaselineFunctorBase() {};
-
   ~BaselineFunctorBase() {};
 
-
-  void PrintSelf(std::ostream& os, itk::Indent indent) const
-    {
-    Superclass::PrintSelf(os, indent);
-    }
+  void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
 private:
   BaselineFunctorBase(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
-};
 
-	
+  VectorType m_RTNBaseline;
+};
 	
 } // end namespace functor
 
 } // end namespace otb
+
+
+#ifndef ITK_MANUAL_INSTANTIATION
+#include "otbBaselineFunctorBase.cxx"
+#endif
 
 
 #endif /* __otbBaselineFunctorBase_h */
