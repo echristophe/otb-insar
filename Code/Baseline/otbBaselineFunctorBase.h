@@ -40,19 +40,20 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(BaselineFunctorBase, itk::Object);
 
-  typedef vnl_vector<double> VectorType;
+  typedef vnl_vector<double>   VectorType;
+  typedef double               OutputType;
 
   typedef enum {Horizontal, Vertical, Parallel, Perpendicular, 
 					Length, Orientation } BaselineCalculusEnumType;
 
-  virtual double GetHorizontalBaseline() const;
-  virtual double GetVerticalBaseline() const;
-  virtual double GetParallelBaseline() const;
-  virtual double GetPerpendicularBaseline() const;
-  virtual double GetLengthBaseline() const;
-  virtual double GetOrientationBaseline() const;
+  virtual OutputType GetHorizontalBaseline() const;
+  virtual OutputType GetVerticalBaseline() const;
+  virtual OutputType GetParallelBaseline() const;
+  virtual OutputType GetPerpendicularBaseline() const;
+  virtual OutputType GetLengthBaseline() const;
+  virtual OutputType GetOrientationBaseline() const;
 
-  double GetBaseline(BaselineCalculusEnumType);
+  OutputType GetBaseline(BaselineCalculusEnumType);
 
   void SetRTNBaseline(VectorType & RTNBaseline)
   {
