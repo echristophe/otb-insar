@@ -20,6 +20,7 @@
 #define __otbLengthOrientationBaselineFunctor_cxx
 
 #include "otbLengthOrientationBaselineFunctor.h"
+#include "otbMath.h"
 
 namespace otb
 { 

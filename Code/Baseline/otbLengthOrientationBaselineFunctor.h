@@ -19,6 +19,7 @@
 #ifndef __otbLengthOrientationBaselineFunctor_h
 #define __otbLengthOrientationBaselineFunctor_h
 
+#include "itkObjectFactory.h"
 #include "itkLightObject.h"
 #include "otbBaselineFunctorBase.h"
 #include <vnl/vnl_vector.h>

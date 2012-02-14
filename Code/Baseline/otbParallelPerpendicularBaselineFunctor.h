@@ -19,6 +19,7 @@
 #ifndef __otbParallelPerpendicularBaselineFunctor_h
 #define __otbParallelPerpendicularBaselineFunctor_h
 
+#include "itkObjectFactory.h"
 #include "itkLightObject.h"
 #include "otbBaselineFunctorBase.h"
 #include <vnl/vnl_vector.h>
