@@ -24,7 +24,7 @@
 #include "otbMacro.h"
 #include <vnl/vnl_vector.h>
 #include "otbPlatformPositionAdapter.h"
-#include "otbLengthOrientationBaselineFunctor.h"
+#include "otbBaselineFunctorBase.h"
 
 namespace otb
 {
