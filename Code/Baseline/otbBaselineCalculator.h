@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -62,20 +62,22 @@ public:
   typedef typename TMasterInputImage::ConstPointer MasterImageConstPointer;
   typedef typename TSlaveInputImage::ConstPointer SlaveImageConstPointer;
 
-  typedef std::map<std::string,std::vector<double> > MapType;
-  typedef std::map<std::string,vnl_vector<double> > CoefMapType;
   /** Set the input image. */
   itkSetConstObjectMacro(MasterImage,MasterImageType);
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
-  typedef otb::PlatformPositionToBaselineCalculator BaselineType;
-  typedef typename BaselineType::ConstPointer BaselineConstPointer;
+  typedef otb::PlatformPositionToBaselineCalculator           BaselineType;
+  typedef typename BaselineType::ConstPointer                 BaselineConstPointer;
+  typedef typename BaselineType::BaselineFunctorOutputType    OutputBaselineType;
+  typedef typename BaselineType::BaselineCalculusEnumType     BaselineCalculusEnumType;
 
+  /** Typedef for Coefficient */
+  typedef vnl_vector<double>            CoefficientType;        
   /** Compute the Baseline value. */
-  void Compute(void);
+  void Compute(BaselineCalculusEnumType map);
 
   void ExtractBaseline(std::vector<typename MasterImageType::PointType> & pointImage,
-				  std::map<std::string,std::vector<double> > & baselineImage);
+				       std::vector<double> & baselineImage);
 
   vnl_vector<double> BaselineLinearSolve(
 						std::vector<typename MasterImageType::PointType> & pointImage,
@@ -94,7 +96,7 @@ private:
 
   MasterImageConstPointer      m_MasterImage;
   SlaveImageConstPointer       m_SlaveImage;
-  CoefMapType                  m_BaselineCoefficient;
+  CoefficientType              m_BaselineCoefficient;
 };
 
 } // end namespace otb

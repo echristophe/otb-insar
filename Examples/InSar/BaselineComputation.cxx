@@ -27,6 +27,8 @@
 #include "otbImage.h"
 #include "otbImageFileReader.h"
 #include "otbBaselineCalculator.h"
+#include "otbBaselineFunctorBase.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -59,7 +61,8 @@ int main(int argc, char* argv[])
   baselineCalculator->SetMasterImage(master->GetOutput());
   baselineCalculator->SetSlaveImage(slave->GetOutput());
 
-  baselineCalculator->Compute();
+  baselineCalculator->Compute(otb::Functor::BaselineFunctorBase::Horizontal);
+
   double row = 0;
   double col = 0;
   std::cout << "(row,col) : " << row << ", " << col << " -> Baseline : ";
