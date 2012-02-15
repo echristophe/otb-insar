@@ -39,6 +39,7 @@ PlatformPositionToBaselineCalculator
 {
   m_MasterPlateform = PlatformType::New();
   m_SlavePlateform  = PlatformType::New();
+  m_BaselineFunctor = BaselineFunctorType::New();
 }
 
 
@@ -60,8 +61,8 @@ PlatformPositionToBaselineCalculator
 	vnl_vector<double> baselineVector(3);
 
 	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
-	//m_Baseline = m_BaselineFunctor->operator()(baselineVector);
-	return 0;/*TODO*/
+	m_BaselineFunctor->SetRTNBaseline(baselineVector);
+	return m_BaselineFunctor->GetBaseline(map);
 }
 
 
