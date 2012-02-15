@@ -56,6 +56,7 @@ public:
   typedef Functor::BaselineFunctorBase    BaselineFunctorType;
   typedef BaselineFunctorType::Pointer    BaselineFunctorPointer;
   typedef BaselineFunctorType::OutputType BaselineFunctorOutputType;
+  typedef BaselineFunctorType::BaselineCalculusEnumType BaselineCalculusEnumType;
 
 
   /** Set the input image. */
@@ -94,7 +95,8 @@ public:
 
 
   /** Compute the Baseline value. */
-  virtual BaselineFunctorOutputType Evaluate(double line);
+  virtual BaselineFunctorOutputType Evaluate(double line,
+				BaselineCalculusEnumType map);
 
   vnl_vector<double> BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
