@@ -95,7 +95,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		baselineCalculator->Compute(ImgPoint[0]);
+		baselineCalculator->Evaluate(ImgPoint[0]);
 		//double baselineLength = baselineCalculator->GetBaselineValue("Length"); 
 		//lengthBaselineImage.push_back(baselineLength);
 		pointImage.push_back(ImgPoint);
