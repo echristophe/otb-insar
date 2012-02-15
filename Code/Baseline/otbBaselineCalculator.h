@@ -67,14 +67,25 @@ public:
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
   typedef otb::PlatformPositionToBaselineCalculator           BaselineType;
+  typedef typename BaselineType::Pointer                      BaselinePointer;
   typedef typename BaselineType::ConstPointer                 BaselineConstPointer;
   typedef typename BaselineType::BaselineFunctorOutputType    OutputBaselineType;
   typedef typename BaselineType::BaselineCalculusEnumType     BaselineCalculusEnumType;
 
   /** Typedef for Coefficient */
   typedef vnl_vector<double>            CoefficientType;        
+
   /** Compute the Baseline value. */
   void Compute(BaselineCalculusEnumType map);
+
+  double EvaluateBaseline(double row,double col);
+
+  itkGetObjectMacro(PlateformPositionToBaselineCalculator,BaselineType);
+
+protected:
+  BaselineCalculator();
+  virtual ~BaselineCalculator() {};
+  void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
   void ExtractBaseline(std::vector<typename MasterImageType::PointType> & pointImage,
 				       std::vector<double> & baselineImage);
@@ -83,13 +94,6 @@ public:
 						std::vector<typename MasterImageType::PointType> & pointImage,
 						std::vector<double> & baselineImage);
 
-  double EvaluateBaseline(double row,double col);
-
-protected:
-  BaselineCalculator();
-  virtual ~BaselineCalculator() {};
-  void PrintSelf(std::ostream& os, itk::Indent indent) const;
-
 private:
   BaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
@@ -97,6 +101,7 @@ private:
   MasterImageConstPointer      m_MasterImage;
   SlaveImageConstPointer       m_SlaveImage;
   CoefficientType              m_BaselineCoefficient;
+  BaselinePointer              m_PlateformPositionToBaselineCalculator;
 };
 
 } // end namespace otb
