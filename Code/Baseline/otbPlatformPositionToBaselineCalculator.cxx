@@ -26,6 +26,7 @@
 #include "otbHorizontalVerticalBaselineFunctor.h"
 #include "otbParallelPerpendicularBaselineFunctor.h"
 #include "otbLengthOrientationBaselineFunctor.h"
+#include "otbBaselineFunctorBase.h"
 
 namespace otb
 { 
@@ -46,7 +47,7 @@ PlatformPositionToBaselineCalculator
  */
 PlatformPositionToBaselineCalculator::BaselineFunctorOutputType
 PlatformPositionToBaselineCalculator
-::Evaluate(double line) 
+::Evaluate(double line,BaselineCalculusEnumType map) 
 {
 	std::vector<double> masterPosition(3);
 	std::vector<double> slavePosition(3);

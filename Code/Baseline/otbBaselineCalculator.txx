@@ -22,6 +22,7 @@
 #include "otbBaselineCalculator.h"
 #include "otbPlatformPositionToBaselineCalculator.h"
 #include "otbImage.h"
+#include "otbBaselineFunctorBase.h"
 
 #include <vnl/vnl_sparse_matrix.h>
 #include <vnl/algo/vnl_lsqr.h>
@@ -95,7 +96,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		baselineCalculator->Evaluate(ImgPoint[0]);
+		baselineCalculator->Evaluate(ImgPoint[0],Functor::BaselineFunctorBase::Horizontal);
 		//double baselineLength = baselineCalculator->GetBaselineValue("Length"); 
 		//lengthBaselineImage.push_back(baselineLength);
 		pointImage.push_back(ImgPoint);
