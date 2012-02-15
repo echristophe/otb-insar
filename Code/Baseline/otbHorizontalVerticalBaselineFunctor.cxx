@@ -20,6 +20,7 @@
 #define __otbHorizontalVerticalBaselineFunctor_cxx
 
 #include "otbHorizontalVerticalBaselineFunctor.h"
+#include "otbBaselineFunctorBase.h"
 
 namespace otb
 { 
@@ -28,17 +29,21 @@ namespace Functor {
 
 HorizontalVerticalBaselineFunctor::OutputType
 HorizontalVerticalBaselineFunctor
-::GetHorizontalBaseline() const;
+::GetHorizontalBaseline() const
 {
-	return this->GetRTNBaseline()[2];
+	OutputType horizontalBaseline;
+	horizontalBaseline = this->GetRTNBaseline().get(2);
+	return horizontalBaseline;
 }
 
 
 HorizontalVerticalBaselineFunctor::OutputType
 HorizontalVerticalBaselineFunctor
-::GetVerticalBaseline() const;
+::GetVerticalBaseline() const
 {
-	return this->GetRTNBaseline()[1];
+	OutputType verticalBaseline;
+	verticalBaseline = this->GetRTNBaseline().get(1);
+	return verticalBaseline;
 }
 
 
