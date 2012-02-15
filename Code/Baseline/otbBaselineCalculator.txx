@@ -51,22 +51,16 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
 void
 BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
-::Compute(void) 
+::Compute(BaselineCalculusEnumType map) 
 {
   std::vector<MasterImageType::PointType> pointImage;
   pointImage.clear();
-  std::map<std::string,std::vector<double> > baselineImage;
+  std::vector<double> baselineImage;
   baselineImage.clear();
 
   this->ExtractBaseline( pointImage, baselineImage);
 
-  std::map<std::string,std::vector<double> >::const_iterator it;
-  it = baselineImage.find("Length");
-  std::vector<double> value = it->second; 
-
-  vnl_vector<double> coefLength;
-  coefLength = this->BaselineLinearSolve(pointImage,value);
-  m_BaselineCoefficient["Length"]= coefLength;
+  m_BaselineCoefficient = this->BaselineLinearSolve(pointImage,baselineImage);
 }
 
 
@@ -74,7 +68,7 @@ template <class TMasterInputImage,class TSlaveInputImage,class TBaselineFunctor>
 void
 BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::ExtractBaseline(std::vector<typename MasterImageType::PointType> & pointImage,
-				  std::map<std::string,std::vector<double> > & baselineImage) 
+				  std::vector<double> & baselineImage) 
 {
   unsigned int numberOfRow  = m_MasterImage->GetLargestPossibleRegion().GetSize()[0];
   unsigned int numberOfCol  = m_MasterImage->GetLargestPossibleRegion().GetSize()[1];
@@ -96,14 +90,11 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		baselineCalculator->Evaluate(ImgPoint[0],Functor::BaselineFunctorBase::Horizontal);
-		//double baselineLength = baselineCalculator->GetBaselineValue("Length"); 
-		//lengthBaselineImage.push_back(baselineLength);
+		double baselineLength = baselineCalculator->Evaluate(ImgPoint[0],Functor::BaselineFunctorBase::Horizontal);
 		pointImage.push_back(ImgPoint);
-		//baselineImage.push_back(baselineLength);
+		baselineImage.push_back(baselineLength);
 		}
 	}
-  baselineImage["Length"] = lengthBaselineImage;
 
   std::cout<<"number of points : " << pointImage.size()<<std::endl;
 
@@ -164,21 +155,14 @@ double
 BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 ::EvaluateBaseline(double row,double col)
 {
-    vnl_vector<double> solution(6);
-	CoefMapType::const_iterator it;
-
 	double result = 0;
-	for(it = m_BaselineCoefficient.begin(); it != m_BaselineCoefficient.end(); ++it)
-	{
-	std::cout << "Key: " << (*it).first; //<< " Value: " << (*itr).second;
-	//it = m_BaselineCoefficient.find("Length");
-	solution = it->second; 
+	result =	  m_BaselineCoefficient.get(0) 
+				+ m_BaselineCoefficient.get(1) * row 
+				+ m_BaselineCoefficient.get(2) * col
+				+ m_BaselineCoefficient.get(3) * row*col
+				+ m_BaselineCoefficient.get(4) * row*row
+				+ m_BaselineCoefficient.get(5) * col*col;   
 
-	result =	solution[0] + solution[1]*row + solution[2]*col
-					+ solution[3] * row*col
-					+ solution[4] * row*row
-					+ solution[5] * col*col;   
-	}
 	return result;
 }
 
