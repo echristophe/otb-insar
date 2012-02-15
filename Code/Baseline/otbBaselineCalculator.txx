@@ -19,9 +19,9 @@
 #ifndef __otbBaselineCalculator_txx
 #define __otbBaselineCalculator_txx
 
+#include "otbImage.h"
 #include "otbBaselineCalculator.h"
 #include "otbPlatformPositionToBaselineCalculator.h"
-#include "otbImage.h"
 #include "otbBaselineFunctorBase.h"
 
 #include <vnl/vnl_sparse_matrix.h>
@@ -41,6 +41,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
 {
   m_MasterImage = TMasterInputImage::New();
   m_SlaveImage = TSlaveInputImage::New();
+  m_PlateformPositionToBaselineCalculator = BaselineType::New();
   m_BaselineCoefficient.clear();
 }
 
@@ -178,6 +179,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage,TBaselineFunctor>
   m_MasterImage->Print(os, indent.GetNextIndent());
   os << indent << "SlaveImage: " << std::endl;
   m_SlaveImage->Print(os, indent.GetNextIndent());
+  os << indent << "SlaveImage: " << m_BaselineCoefficient << std::endl;
 
 }
 
