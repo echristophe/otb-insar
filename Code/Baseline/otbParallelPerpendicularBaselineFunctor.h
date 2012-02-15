@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,11 +44,21 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(ParallelPerpendicularBaselineFunctor, BaselineFunctorBase);
 
-  typedef BaselineFunctorBase::VectorPositionType  VectorPositionType;
-  typedef BaselineFunctorBase::MapType             MapType;
+  typedef Superclass::VectorType     VectorType;
 
-  virtual MapType operator()( const VectorPositionType & ) const;
-  virtual MapType operator()( const VectorPositionType &, const  VectorPositionType &) const;
+  virtual OutputType GetParallelBaseline() const;
+  virtual OutputType GetPerpendicularBaseline() const;
+
+  void SetRefPoint(VectorType & refPoint)
+  {
+	m_RefPoint = refPoint;
+  }
+
+  VectorType GetRefPoint()
+  {
+	return m_RefPoint;
+  }
+
 
 protected:
   ParallelPerpendicularBaselineFunctor() {};
@@ -59,6 +69,9 @@ protected:
 private:
   ParallelPerpendicularBaselineFunctor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
+
+  VectorType m_RefPoint;
+
 };
 
 		

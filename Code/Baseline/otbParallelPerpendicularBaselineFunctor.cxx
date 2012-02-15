@@ -27,19 +27,18 @@ namespace otb
 namespace Functor {
 
 
-  
-ParallelPerpendicularBaselineFunctor::MapType 
+ParallelPerpendicularBaselineFunctor::OutputType
 ParallelPerpendicularBaselineFunctor
-::operator ()(const VectorPositionType & baselineRTN) const
+::GetParallelBaseline() const
 {
-	itkExceptionMacro("Only one argument to operator()");
+	itkExceptionMacro("GetParallelBaseline() not implemented");
 }
 
-ParallelPerpendicularBaselineFunctor::MapType 
+ParallelPerpendicularBaselineFunctor::OutputType
 ParallelPerpendicularBaselineFunctor
-::operator ()(const vnl_vector<double> & val1,const vnl_vector<double> & val2) const
+::GetPerpendicularBaseline() const
 {
-	itkExceptionMacro("Only one argument to operator()");
+	itkExceptionMacro("GetParallelBaseline() not implemented");
 }
 
 
@@ -48,6 +47,7 @@ ParallelPerpendicularBaselineFunctor
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
+  os << indent << "RefPoint : " << m_RefPoint << std::endl;
 }
 
 
