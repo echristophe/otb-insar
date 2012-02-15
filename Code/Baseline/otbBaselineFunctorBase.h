@@ -19,9 +19,9 @@
 #ifndef __otbBaselineFunctorBase_h
 #define __otbBaselineFunctorBase_h
 
+#include "itkObject.h"
 #include "itkLightObject.h"
 #include <vnl/vnl_vector.h>
-#include "itkObject.h"
 
 namespace otb
 {
@@ -36,6 +36,9 @@ public:
   typedef itk::Object                                   Superclass;
   typedef itk::SmartPointer<Self>                       Pointer;
   typedef itk::SmartPointer<const Self>                 ConstPointer;
+
+  /** Method for creation through the object factory. */
+  itkNewMacro( Self );
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(BaselineFunctorBase, itk::Object);
@@ -60,7 +63,7 @@ public:
 	m_RTNBaseline = RTNBaseline;
   }
 
-  VectorType GetRTNBaseline()
+  VectorType GetRTNBaseline() const
   {
 	return m_RTNBaseline;
   }
