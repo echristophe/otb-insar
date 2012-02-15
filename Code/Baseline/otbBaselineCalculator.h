@@ -32,8 +32,7 @@ namespace otb
  *
  * \ingroup Operators
  */
-template <class TMasterInputImage,class TSlaveInputImage, 
-          class TBaselineFunctor= Functor::LengthOrientationBaselineFunctor>
+template <class TMasterInputImage,class TSlaveInputImage>
 class ITK_EXPORT BaselineCalculator : public itk::Object 
 {
 public:
@@ -52,7 +51,6 @@ public:
   /** Type definition for the input image. */
   typedef TMasterInputImage  MasterImageType;
   typedef TSlaveInputImage   SlaveImageType;
-  typedef TBaselineFunctor   FunctorType;
 
   /** Pointer type for the image. */
   typedef typename TMasterInputImage::Pointer  MasterImagePointer;
@@ -87,8 +85,9 @@ protected:
   virtual ~BaselineCalculator() {};
   void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
-  void ExtractBaseline(std::vector<typename MasterImageType::PointType> & pointImage,
-				       std::vector<double> & baselineImage);
+  void ExtractBaseline(	BaselineCalculusEnumType map,
+						std::vector<typename MasterImageType::PointType> & pointImage,
+						std::vector<double> & baselineImage);
 
   vnl_vector<double> BaselineLinearSolve(
 						std::vector<typename MasterImageType::PointType> & pointImage,
