@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,17 +38,15 @@ PlatformPositionToBaselineCalculator
 {
   m_MasterPlateform = PlatformType::New();
   m_SlavePlateform  = PlatformType::New();
-  //m_BaselineFunctor = BaselineFunctorType::New();
-  m_Baseline.clear();
 }
 
 
 /**
  * Compute Min and Max of m_Image
  */
-void
+PlatformPositionToBaselineCalculator::BaselineFunctorOutputType
 PlatformPositionToBaselineCalculator
-::Compute(double line) 
+::Evaluate(double line) 
 {
 	std::vector<double> masterPosition(3);
 	std::vector<double> slavePosition(3);
@@ -61,7 +59,8 @@ PlatformPositionToBaselineCalculator
 	vnl_vector<double> baselineVector(3);
 
 	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
-	m_Baseline = m_BaselineFunctor->operator()(baselineVector);
+	//m_Baseline = m_BaselineFunctor->operator()(baselineVector);
+	return 0;/*TODO*/
 }
 
 
@@ -113,7 +112,7 @@ PlatformPositionToBaselineCalculator
 
 void
 PlatformPositionToBaselineCalculator
-::SetBaselineFunctor( BaselineFunctorEnumType map)
+::SetBaselineFunctor(BaselineFunctorEnumType map)
 {
   switch( map )
     {

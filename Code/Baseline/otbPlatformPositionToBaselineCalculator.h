@@ -1,6 +1,6 @@
 /*=========================================================================
 
-   Copyright 2011 Patrick IMBO
+   Copyright 2012 Patrick IMBO
    Contributed to ORFEO Toolbox under license Apache 2
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,11 +53,11 @@ public:
   typedef PlatformType::Pointer            PlateformPointer;
 
   /** Type definition for Baseline Functor. */
-  typedef Functor::BaselineFunctorBase   BaselineFunctorType;
-  typedef BaselineFunctorType::Pointer   BaselineFunctorPointer;
+  typedef Functor::BaselineFunctorBase    BaselineFunctorType;
+  typedef BaselineFunctorType::Pointer    BaselineFunctorPointer;
+  typedef BaselineFunctorType::OutputType BaselineFunctorOutputType;
 
 
-  typedef std::map<std::string,double> MapType;
   /** Set the input image. */
   void SetMasterPlateform(const ImageKeywordlist& image_kwl)
   {
@@ -94,23 +94,9 @@ public:
 
 
   /** Compute the Baseline value. */
-  virtual void Compute(double line);
+  virtual BaselineFunctorOutputType Evaluate(double line);
 
-  double GetBaselineValue(std::string name)
-		{	
-			MapType::const_iterator it;
-
-			it = m_Baseline.find(name);
-			double value = it->second; 
-			return value;
-		}
-
-  MapType GetBaseline()
-  {
-	  return m_Baseline;
-  }
-
-vnl_vector<double> BaselineInRTNSystem(
+  vnl_vector<double> BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition,
 				std::vector<double> & masterSpeed);
@@ -124,7 +110,6 @@ private:
   PlatformPositionToBaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  MapType                          m_Baseline;
   BaselineFunctorPointer           m_BaselineFunctor;
   PlateformPointer                 m_MasterPlateform;
   PlateformPointer                 m_SlavePlateform;
