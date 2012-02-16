@@ -46,8 +46,13 @@ public:
 
   typedef Superclass::VectorType  VectorType;
 
+  typedef enum {Horizontal, Vertical} BaselineCalculusEnumType;
+
+
   virtual OutputType GetHorizontalBaseline() const;
   virtual OutputType GetVerticalBaseline() const;
+
+  OutputType GetBaseline(BaselineCalculusEnumType);
 
 protected:
   HorizontalVerticalBaselineFunctor() {};

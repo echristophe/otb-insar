@@ -46,6 +46,10 @@ public:
 
   typedef Superclass::VectorType     VectorType;
 
+  typedef enum {Length, Orientation } BaselineCalculusEnumType;
+
+  OutputType GetBaseline(BaselineCalculusEnumType);
+
   virtual OutputType GetLengthBaseline() const;
   virtual OutputType GetOrientationBaseline() const;
 

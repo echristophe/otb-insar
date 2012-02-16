@@ -34,7 +34,8 @@ namespace otb
 /**
  * Constructor
  */
-PlatformPositionToBaselineCalculator
+template <class TFunctor>
+PlatformPositionToBaselineCalculator<TFunctor>
 ::PlatformPositionToBaselineCalculator()
 {
   m_MasterPlateform = PlatformType::New();
@@ -46,8 +47,9 @@ PlatformPositionToBaselineCalculator
 /**
  * Compute Min and Max of m_Image
  */
-PlatformPositionToBaselineCalculator::BaselineFunctorOutputType
-PlatformPositionToBaselineCalculator
+template <class TFunctor>
+typename PlatformPositionToBaselineCalculator<TFunctor>::BaselineFunctorOutputType
+PlatformPositionToBaselineCalculator<TFunctor>
 ::Evaluate(double line,BaselineCalculusEnumType map) 
 {
 	std::vector<double> masterPosition(3);
@@ -62,7 +64,7 @@ PlatformPositionToBaselineCalculator
 
 	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
 	m_BaselineFunctor->SetRTNBaseline(baselineVector);
-	return m_BaselineFunctor->GetBaseline(map);
+	return this->m_BaselineFunctor->GetBaseline(map);
 }
 
 
@@ -71,8 +73,9 @@ PlatformPositionToBaselineCalculator
 /**
  * Evaluate Baseline in RTN (Radial Tangential Normal) System coordinate 
  */
+template <class TFunctor>
 vnl_vector<double>
-PlatformPositionToBaselineCalculator
+PlatformPositionToBaselineCalculator<TFunctor>
 ::BaselineInRTNSystem(
 				std::vector<double> & masterPosition,
 				std::vector<double> & slavePosition,
@@ -112,39 +115,10 @@ PlatformPositionToBaselineCalculator
 	return baselineRTN;
 }
 
-void
-PlatformPositionToBaselineCalculator
-::SetBaselineFunctor(BaselineFunctorEnumType map)
-{
-  switch( map )
-    {
-    case HorizontalVertical:
-      {
-      typedef Functor::HorizontalVerticalBaselineFunctor SpecificBaselineFunctorType;
-      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
-      this->SetBaselineFunctor( baselineFunctor );
-      break;
-      }
-    case ParallelPerpendicular:
-      {
-      typedef Functor::ParallelPerpendicularBaselineFunctor SpecificBaselineFunctorType;
-      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
-      this->SetBaselineFunctor( baselineFunctor );
-      break;
-      }
-    case LengthOrientation: default:
-      {
-      typedef Functor::LengthOrientationBaselineFunctor SpecificBaselineFunctorType;
-      SpecificBaselineFunctorType::Pointer baselineFunctor = SpecificBaselineFunctorType::New();
-      this->SetBaselineFunctor( baselineFunctor );
-      break;
-      }
-    }
-}
 
-
+template <class TFunctor>
 void
-PlatformPositionToBaselineCalculator
+PlatformPositionToBaselineCalculator<TFunctor>
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);

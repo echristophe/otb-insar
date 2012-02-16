@@ -28,6 +28,7 @@ namespace otb
 namespace Functor {
 
 
+
 LengthOrientationBaselineFunctor::OutputType
 LengthOrientationBaselineFunctor
 ::GetLengthBaseline() const
@@ -43,10 +44,31 @@ LengthOrientationBaselineFunctor
 	vnl_vector<double> normalComponent(3);
 	normalComponent.fill(0.0);
 	normalComponent(2) = 1.0;
-	double baselineLength = this->GetHorizontalBaseline();
+	double baselineLength = this->GetLengthBaseline();
 	double angle = acos(dot_product(this->GetRTNBaseline(),normalComponent) / baselineLength) * CONST_180_PI; 
 	return angle;
 }
+
+LengthOrientationBaselineFunctor::OutputType
+LengthOrientationBaselineFunctor
+::GetBaseline(BaselineCalculusEnumType map)
+{
+  switch( map )
+    {
+    case Length:
+      {
+      return this->GetLengthBaseline();
+      break;
+      }
+    case Orientation:
+      {
+      return this->GetOrientationBaseline();
+      break;
+      }
+    }
+	return 0;
+}
+
 
 void
 LengthOrientationBaselineFunctor

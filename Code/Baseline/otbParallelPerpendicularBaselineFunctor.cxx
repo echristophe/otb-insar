@@ -27,18 +27,38 @@ namespace otb
 namespace Functor {
 
 
-ParallelPerpendicularBaselineFunctor::OutputType
+ParallelPerpendicularBaselineFunctor::OutputType 
 ParallelPerpendicularBaselineFunctor
 ::GetParallelBaseline() const
 {
 	itkExceptionMacro("GetParallelBaseline() not implemented");
 }
 
-ParallelPerpendicularBaselineFunctor::OutputType
+ParallelPerpendicularBaselineFunctor::OutputType 
 ParallelPerpendicularBaselineFunctor
 ::GetPerpendicularBaseline() const
 {
-	itkExceptionMacro("GetParallelBaseline() not implemented");
+	itkExceptionMacro("GetPerpendicularBaseline() not implemented");
+}
+
+ParallelPerpendicularBaselineFunctor::OutputType 
+ParallelPerpendicularBaselineFunctor
+::GetBaseline(BaselineCalculusEnumType map)
+{
+  switch( map )
+    {
+    case Parallel:
+      {
+      return this->GetParallelBaseline();
+      break;
+      }
+    case Perpendicular:
+      {
+      return this->GetPerpendicularBaseline();
+      break;
+      }
+    }
+	return 0;
 }
 
 

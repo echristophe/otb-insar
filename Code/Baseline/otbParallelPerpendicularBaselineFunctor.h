@@ -46,6 +46,10 @@ public:
 
   typedef Superclass::VectorType     VectorType;
 
+  typedef enum {Parallel, Perpendicular} BaselineCalculusEnumType;
+
+  OutputType GetBaseline(BaselineCalculusEnumType);
+
   virtual OutputType GetParallelBaseline() const;
   virtual OutputType GetPerpendicularBaseline() const;
 

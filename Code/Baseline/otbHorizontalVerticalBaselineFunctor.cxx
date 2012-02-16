@@ -47,6 +47,27 @@ HorizontalVerticalBaselineFunctor
 }
 
 
+HorizontalVerticalBaselineFunctor::OutputType
+HorizontalVerticalBaselineFunctor
+::GetBaseline(BaselineCalculusEnumType map)
+{
+  switch( map )
+    {
+    case Horizontal:
+      {
+      return this->GetHorizontalBaseline();
+      break;
+      }
+    case Vertical:
+      {
+      return this->GetVerticalBaseline();
+      break;
+      }
+    }
+	return 0;
+}
+
+
 void
 HorizontalVerticalBaselineFunctor
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const

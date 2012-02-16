@@ -27,7 +27,7 @@
 #include "otbImage.h"
 #include "otbImageFileReader.h"
 #include "otbBaselineCalculator.h"
-#include "otbBaselineFunctorBase.h"
+#include "otbLengthOrientationBaselineFunctor.h"
 #include "otbPlatformPositionToBaselineCalculator.h"
 
 int main(int argc, char* argv[])
@@ -55,13 +55,13 @@ int main(int argc, char* argv[])
 
   master->UpdateOutputInformation();
   slave->UpdateOutputInformation();
-
-  typedef otb::BaselineCalculator<ImageType,ImageType> BaselineCalculatorType;
+  typedef otb::Functor::LengthOrientationBaselineFunctor	BaselineFunctorType;
+  typedef otb::BaselineCalculator<ImageType,ImageType,
+									BaselineFunctorType>    BaselineCalculatorType;
   BaselineCalculatorType::Pointer baselineCalculator = BaselineCalculatorType::New();
   baselineCalculator->SetMasterImage(master->GetOutput());
   baselineCalculator->SetSlaveImage(slave->GetOutput());
-  baselineCalculator->GetPlateformPositionToBaselineCalculator()->SetBaselineFunctor(otb::PlatformPositionToBaselineCalculator::HorizontalVertical);
-  baselineCalculator->Compute(otb::Functor::BaselineFunctorBase::Horizontal);
+  baselineCalculator->Compute(otb::Functor::LengthOrientationBaselineFunctor::Length);
 
   double row = 0;
   double col = 0;

@@ -32,7 +32,7 @@ namespace otb
  *
  * \ingroup Operators
  */
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 class ITK_EXPORT BaselineCalculator : public itk::Object 
 {
 public:
@@ -64,7 +64,7 @@ public:
   itkSetConstObjectMacro(MasterImage,MasterImageType);
   itkSetConstObjectMacro(SlaveImage,SlaveImageType);
 
-  typedef otb::PlatformPositionToBaselineCalculator           BaselineType;
+  typedef otb::PlatformPositionToBaselineCalculator<TFunctor> BaselineType;
   typedef typename BaselineType::Pointer                      BaselinePointer;
   typedef typename BaselineType::ConstPointer                 BaselineConstPointer;
   typedef typename BaselineType::BaselineFunctorOutputType    OutputBaselineType;
