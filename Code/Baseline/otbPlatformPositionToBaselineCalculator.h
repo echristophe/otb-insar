@@ -33,6 +33,7 @@ namespace otb
  *
  * \ingroup Operators
  */
+template <class TFunctor>
 class ITK_EXPORT PlatformPositionToBaselineCalculator : public itk::Object 
 {
 public:
@@ -53,11 +54,10 @@ public:
   typedef PlatformType::Pointer            PlateformPointer;
 
   /** Type definition for Baseline Functor. */
-  typedef Functor::BaselineFunctorBase    BaselineFunctorType;
-  typedef BaselineFunctorType::Pointer    BaselineFunctorPointer;
-  typedef BaselineFunctorType::OutputType BaselineFunctorOutputType;
-  typedef BaselineFunctorType::BaselineCalculusEnumType BaselineCalculusEnumType;
-
+  typedef TFunctor                                 BaselineFunctorType;
+  typedef typename BaselineFunctorType::Pointer    BaselineFunctorPointer;
+  typedef typename BaselineFunctorType::OutputType BaselineFunctorOutputType;
+  typedef typename BaselineFunctorType::BaselineCalculusEnumType BaselineCalculusEnumType;
 
   /** Set the input image. */
   void SetMasterPlateform(const ImageKeywordlist& image_kwl)
@@ -69,30 +69,6 @@ public:
   {
 	  	m_SlavePlateform->CreateSensorModel(image_kwl); 
   }
-
-
-  /**
-   * Set/Get the BaselineFunctor object.
-   */
-  BaselineFunctorPointer GetBaselineFunctor() { return m_BaselineFunctor; }
-
-  void SetBaselineFunctor( BaselineFunctorType * baselineFunctor )
-    {
-    if ( m_BaselineFunctor != baselineFunctor )
-      {
-      m_BaselineFunctor = baselineFunctor;
-      this->Modified();
-      }
-    }
-
-  /**
-   * Enum type that provides for an easy interface to existing BaselineFunctor.
-   */
-  typedef enum {	HorizontalVertical, ParallelPerpendicular, 
-					LengthOrientation } BaselineFunctorEnumType;
-
-  void SetBaselineFunctor( BaselineFunctorEnumType );
-
 
   /** Compute the Baseline value. */
   virtual BaselineFunctorOutputType Evaluate(double line,
@@ -121,7 +97,7 @@ private:
 
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "otbPlatformPositionToBaselineCalculator.cxx"
+#include "otbPlatformPositionToBaselineCalculator.txx"
 #endif
 
 #endif /* __otbBaseline_h */

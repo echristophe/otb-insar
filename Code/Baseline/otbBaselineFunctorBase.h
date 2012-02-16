@@ -46,33 +46,19 @@ public:
   typedef vnl_vector<double>   VectorType;
   typedef double               OutputType;
 
-  typedef enum {Horizontal, Vertical, Parallel, Perpendicular, 
-					Length, Orientation } BaselineCalculusEnumType;
-
-  virtual OutputType GetHorizontalBaseline() const;
-  virtual OutputType GetVerticalBaseline() const;
-  virtual OutputType GetParallelBaseline() const;
-  virtual OutputType GetPerpendicularBaseline() const;
-  virtual OutputType GetLengthBaseline() const;
-  virtual OutputType GetOrientationBaseline() const;
-
-  OutputType GetBaseline(BaselineCalculusEnumType);
-
-  void SetRTNBaseline(VectorType & RTNBaseline)
-  {
-	m_RTNBaseline = RTNBaseline;
-  }
-
-  VectorType GetRTNBaseline() const
-  {
-	return m_RTNBaseline;
-  }
+  itkSetMacro( RTNBaseline, VectorType );
+  itkGetConstMacro( RTNBaseline, VectorType  );
 
 protected:
   BaselineFunctorBase() {};
   ~BaselineFunctorBase() {};
 
-  void PrintSelf(std::ostream& os, itk::Indent indent) const;
+  void PrintSelf(std::ostream& os, itk::Indent indent) const
+  {
+	Superclass::PrintSelf(os,indent);
+	os << indent << " RTNBaseline vector : " << m_RTNBaseline << std::endl;
+  }
+
 
 private:
   BaselineFunctorBase(const Self&); //purposely not implemented
@@ -84,11 +70,6 @@ private:
 } // end namespace functor
 
 } // end namespace otb
-
-
-#ifndef ITK_MANUAL_INSTANTIATION
-#include "otbBaselineFunctorBase.cxx"
-#endif
 
 
 #endif /* __otbBaselineFunctorBase_h */

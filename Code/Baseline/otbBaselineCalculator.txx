@@ -35,8 +35,8 @@ namespace otb
 /**
  * Constructor
  */
-template <class TMasterInputImage,class TSlaveInputImage>
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::BaselineCalculator()
 {
   m_MasterImage = TMasterInputImage::New();
@@ -49,9 +49,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 /**
  * Compute Min and Max of m_Image
  */
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::Compute(BaselineCalculusEnumType map) 
 {
   std::vector<MasterImageType::PointType> pointImage;
@@ -65,9 +65,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::ExtractBaseline(  BaselineCalculusEnumType map,
 					std::vector<typename MasterImageType::PointType> & pointImage,
 					std::vector<double> & baselineImage) 
@@ -92,10 +92,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		double baselineLength = baselineCalculator->Evaluate(ImgPoint[0],map);
-		std::cout << ImgPoint << " --> " << baselineLength << std::endl;
+		double baselineValue = baselineCalculator->Evaluate(ImgPoint[0],map);
 		pointImage.push_back(ImgPoint);
-		baselineImage.push_back(baselineLength);
+		baselineImage.push_back(baselineValue);
 		}
 	}
 
@@ -104,9 +103,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 vnl_vector<double>
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::BaselineLinearSolve(std::vector<typename MasterImageType::PointType> & pointImage,
 		   std::vector<double> & baselineImage) 
 {
@@ -153,9 +152,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 	return solution;
 }
 
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 double
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::EvaluateBaseline(double row,double col)
 {
 	double result = 0;
@@ -170,9 +169,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage>
+template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage>
+BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);

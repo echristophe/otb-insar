@@ -27,94 +27,13 @@ namespace otb
 namespace Functor {
 
 
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetHorizontalBaseline() const
-{
-	itkExceptionMacro("GetHorizontalBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetVerticalBaseline() const
-{
-	itkExceptionMacro("GetVerticalBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetParallelBaseline() const
-{
-	itkExceptionMacro("GetParallelBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetPerpendicularBaseline() const
-{
-	itkExceptionMacro("GetPerpendicularBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetLengthBaseline() const
-{
-	itkExceptionMacro("GetLengthBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetOrientationBaseline() const
-{
-	itkExceptionMacro("GetOrientationBaseline() not implemented");
-}
-
-BaselineFunctorBase::OutputType 
-BaselineFunctorBase
-::GetBaseline(BaselineCalculusEnumType map)
-{
-  switch( map )
-    {
-    case Horizontal:
-      {
-      return this->GetHorizontalBaseline();
-      break;
-      }
-    case Vertical:
-      {
-      return this->GetVerticalBaseline();
-      break;
-      }
-    case Parallel:
-      {
-      return this->GetParallelBaseline();
-      break;
-      }
-    case Perpendicular:
-      {
-      return this->GetPerpendicularBaseline();
-      break;
-      }
-    case Length:
-      {
-      return this->GetLengthBaseline();
-      break;
-      }
-    case Orientation:
-      {
-      return this->GetOrientationBaseline();
-      break;
-      }
-    }
-}
 
 void
 BaselineFunctorBase
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
-  os << " RTNBaseline vector : " << std::endl;
-  os << m_RTNBaseline << std::endl;
+  os << indent << " RTNBaseline vector : " << m_RTNBaseline << std::endl;
 }
 
 
