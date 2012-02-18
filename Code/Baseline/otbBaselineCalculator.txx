@@ -54,7 +54,7 @@ void
 BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 ::Compute(BaselineCalculusEnumType map) 
 {
-  std::vector<MasterImageType::PointType> pointImage;
+  std::vector<typename MasterImageType::PointType> pointImage;
   pointImage.clear();
   std::vector<double> baselineImage;
   baselineImage.clear();
@@ -75,7 +75,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
   unsigned int numberOfRow  = m_MasterImage->GetLargestPossibleRegion().GetSize()[0];
   unsigned int numberOfCol  = m_MasterImage->GetLargestPossibleRegion().GetSize()[1];
 
-  BaselineType::Pointer baselineCalculator = BaselineType::New();
+  typename BaselineType::Pointer baselineCalculator = BaselineType::New();
   baselineCalculator->SetMasterPlateform(m_MasterImage->GetImageKeywordlist());
   baselineCalculator->SetSlavePlateform(m_SlaveImage->GetImageKeywordlist());
 
@@ -86,7 +86,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 	{
 	for(unsigned int j=0 ; j< numberOfCol ; j+=500)
 		{
-		MasterImageType::PointType ImgPoint;
+		typename MasterImageType::PointType ImgPoint;
 
 		// References
 		ImgPoint[0] = i;

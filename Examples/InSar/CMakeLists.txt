@@ -30,8 +30,9 @@ TARGET_LINK_LIBRARIES(CoherenceComputation OTBCommon OTBIO)
 #ADD_EXECUTABLE(ComplexCoarseFineStepTest ComplexCoarseFineStepTest.cxx)
 #TARGET_LINK_LIBRARIES(ComplexCoarseFineStepTest OTBCommon OTBIO Interpolation)
 
-ADD_EXECUTABLE(InterferometricChain InterferometricChain.cxx)
-TARGET_LINK_LIBRARIES(InterferometricChain OTBCommon OTBIO Coregistration Interpolation InterferogramFormation)
+# Note: couldn't compile this, had to deactivate (emmanuel)
+#ADD_EXECUTABLE(InterferometricChain InterferometricChain.cxx)
+#TARGET_LINK_LIBRARIES(InterferometricChain OTBCommon OTBIO Coregistration Interpolation InterferogramFormation)
 
 ADD_EXECUTABLE(FlatEarthRemovalFFT FlatEarthRemovalFFT.cxx)
 TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation)

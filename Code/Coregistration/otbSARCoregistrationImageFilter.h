@@ -100,7 +100,7 @@ public:
 									TInputImage::ImageDimension > LSQPointType;
   typedef typename otb::LeastSquareAffineTransformEstimator< 
 												LSQPointType >    EstimateFilterType;
-  typedef typename TInterpolateFunction							  FunctionType;
+  typedef TInterpolateFunction							  FunctionType;
   typedef typename itk::ConstantBoundaryCondition< TInputImage >  BoundaryConditionType;
   typedef typename PixelType::value_type						  CoordRepType;
   typedef typename otb::ComplexInterpolateImageFunction< 

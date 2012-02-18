@@ -22,11 +22,10 @@
 #include "otbBaselineFunctorBase.h"
 
 namespace otb
-{ 
+{
 
-namespace Functor {
-
-
+namespace Functor
+{
 
 void
 BaselineFunctorBase

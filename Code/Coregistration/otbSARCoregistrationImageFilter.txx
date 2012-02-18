@@ -39,7 +39,10 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
   m_UseSpacing = true;
 
   // Default interpolator
-  m_Interpolator = otb::ComplexInterpolateImageFunction<TInputImage, otb::Function::BlackmanWindowFunction< PixelType::value_type >, BoundaryConditionType, double>::New();
+  m_Interpolator = otb::ComplexInterpolateImageFunction<
+		TInputImage, 
+		otb::Function::BlackmanWindowFunction< PixelType::value_type >, 
+		BoundaryConditionType, double>::New();
 
   // Grid Step
   m_GridStep.Fill(1);
@@ -263,8 +266,8 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
   // Define grid points from master image with requested number of Tie Points
   SizeType masterSize = masterPtr->GetRequestedRegion().GetSize();
 
-  PointSetSourceType::Pointer pointSet = PointSetSourceType::New();
-  PointSetType::PointType minPoint, maxPoint;
+  typename PointSetSourceType::Pointer pointSet = PointSetSourceType::New();
+  typename PointSetType::PointType minPoint, maxPoint;
 
   SizeType patchSize;
 
@@ -283,17 +286,17 @@ SARCoregistrationImageFilter<TInputImage, TInterpolateFunction>
   pointSet->Update();
 
   // Get reference to points from grid
-  PointSetSourceType::PointsContainerPointer points;
+  typename PointSetSourceType::PointsContainerPointer points;
   points = pointSet->GetOutput()->GetPoints();
 
   // Define estimator for affine transform
-  EstimateFilterType::Pointer estimate = EstimateFilterType::New();
+  typename EstimateFilterType::Pointer estimate = EstimateFilterType::New();
 
   // support progress methods/callbacks
   itk::ProgressReporter progress(this, 0, points->Size());
 
   // Walk the grid point by point
-  PointsContainerType::ConstIterator gridIt = points->Begin();
+  typename PointsContainerType::ConstIterator gridIt = points->Begin();
   while (gridIt != points->End() )
     {
 		PointType masterPoint = gridIt.Value();
