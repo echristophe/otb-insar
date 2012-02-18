@@ -21,12 +21,7 @@
 
 #include "otbPlatformPositionToBaselineCalculator.h"
 #include "otbPlatformPositionAdapter.h"
-#include <map>
 #include <vnl/vnl_cross.h>
-#include "otbHorizontalVerticalBaselineFunctor.h"
-#include "otbParallelPerpendicularBaselineFunctor.h"
-#include "otbLengthOrientationBaselineFunctor.h"
-#include "otbBaselineFunctorBase.h"
 
 namespace otb
 { 
@@ -85,9 +80,9 @@ PlatformPositionToBaselineCalculator<TFunctor>
 
 	/** Define the Radial vector */
 	vnl_vector<double> radialVector(3);
-	radialVector(0) = masterPosition[0];
-	radialVector(1) = masterPosition[1];
-	radialVector(2) = masterPosition[2];
+	radialVector(0) = - masterPosition[0];
+	radialVector(1) = - masterPosition[1];
+	radialVector(2) = - masterPosition[2];
 	radialVector.normalize();
 
     /** Define the Tagential vector */
