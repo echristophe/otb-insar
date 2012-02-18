@@ -1,0 +1,8 @@
+
+# Find part files
+SET(RELATED_SRCS  
+  InSAR.tex
+  )
+
+# Add the main latex doc
+ADD_LATEX_DOCUMENT(SOCISReport.tex INPUTS ${RELATED_SRCS} MANGLE_TARGET_NAMES DEFAULT_PDF IMAGE_DIRS ../Art)
