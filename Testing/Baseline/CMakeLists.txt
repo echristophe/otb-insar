@@ -24,12 +24,22 @@ ADD_TEST(blTuHorizontalVerticalBaselineFunctorTest ${BASELINE_TESTS}
 otbHorizontalVerticalBaselineFunctorTest
 )
 
+# -------------  otb::LengthOrientationBaselineFunctor---------------
+ADD_TEST(blTuLengthOrientationBaselineFunctorNew ${BASELINE_TESTS}
+otbLengthOrientationBaselineFunctorNew
+)
+
+ADD_TEST(blTuLengthOrientationBaselineFunctorTest ${BASELINE_TESTS}
+otbLengthOrientationBaselineFunctorTest
+)
 							       
 SET(BASELINE_SRCS
 otbBaselineTests.cxx
 otbBaselineFunctorBaseNew.cxx
 otbHorizontalVerticalBaselineFunctorNew.cxx
 otbHorizontalVerticalBaselineFunctorTest.cxx
+otbLengthOrientationBaselineFunctorNew.cxx
+otbLengthOrientationBaselineFunctorTest.cxx
 )
 
 

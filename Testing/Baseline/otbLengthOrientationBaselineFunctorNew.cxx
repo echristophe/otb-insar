@@ -16,20 +16,21 @@
    limitations under the License.
 
 =========================================================================*/
+#include "itkMacro.h"
 
-// this file defines the otbCommonTest for the test driver
-// and all it expects is that you have a function called RegisterTests
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#include "otbLengthOrientationBaselineFunctor.h"
 
-#include "otbTestMain.h"
 
-void RegisterTests()
+int otbLengthOrientationBaselineFunctorNew(int argc, char * argv[])
 {
-  REGISTER_TEST(otbBaselineFunctorBaseNew);
-  REGISTER_TEST(otbHorizontalVerticalBaselineFunctorNew);
-  REGISTER_TEST(otbHorizontalVerticalBaselineFunctorTest);
-  REGISTER_TEST(otbLengthOrientationBaselineFunctorNew);
-  REGISTER_TEST(otbLengthOrientationBaselineFunctorTest);
+
+
+  typedef otb::Functor::LengthOrientationBaselineFunctor BaselineFunctorType;
+
+  // Instantiating object
+  BaselineFunctorType::Pointer baseline = BaselineFunctorType::New();
+
+  std::cout << baseline << std::endl;
+
+  return EXIT_SUCCESS;
 }
