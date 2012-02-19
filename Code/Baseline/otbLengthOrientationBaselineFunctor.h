@@ -68,8 +68,4 @@ private:
 } // end namespace functor
 } // end namespace otb
 
-#ifndef ITK_MANUAL_INSTANTIATION
-#include "otbLengthOrientationBaselineFunctor.cxx"
-#endif
-
 #endif /* __otbLengthOrientationBaselineFunctor_h */
