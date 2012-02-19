@@ -22,6 +22,7 @@
 #include "itkObject.h"
 #include "itkObjectFactory.h"
 #include "itkLightObject.h"
+#include "itkObjectFactory.h"
 #include <vnl/vnl_vector.h>
 
 namespace otb
@@ -42,7 +43,7 @@ public:
   itkNewMacro( Self );
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(BaselineFunctorBase, itk::Object);
+  itkTypeMacro(BaselineFunctorBase, Object);
 
   typedef vnl_vector<double>   VectorType;
   typedef double               OutputType;
