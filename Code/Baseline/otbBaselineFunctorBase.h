@@ -22,7 +22,6 @@
 #include "itkObject.h"
 #include "itkObjectFactory.h"
 #include "itkLightObject.h"
-#include "itkObjectFactory.h"
 #include <vnl/vnl_vector.h>
 
 namespace otb
