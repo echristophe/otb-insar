@@ -29,6 +29,12 @@ namespace otb
 namespace Functor
 {
 
+/** \class otbBaselineFunctorBase
+ * BaselineFunctorBase is an abstract class for the baseline calculation
+ *
+ * \ingroup Functor
+ */
+
 class ITK_EXPORT BaselineFunctorBase : public itk::Object
 {
 public:
