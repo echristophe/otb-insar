@@ -19,11 +19,17 @@ otbBaselineFunctorBaseNew
 ADD_TEST(blTuHorizontalVerticalBaselineFunctorNew ${BASELINE_TESTS}
 otbHorizontalVerticalBaselineFunctorNew
 )
+
+ADD_TEST(blTuHorizontalVerticalBaselineFunctorTest ${BASELINE_TESTS}
+otbHorizontalVerticalBaselineFunctorTest
+)
+
 							       
 SET(BASELINE_SRCS
 otbBaselineTests.cxx
 otbBaselineFunctorBaseNew.cxx
 otbHorizontalVerticalBaselineFunctorNew.cxx
+otbHorizontalVerticalBaselineFunctorTest.cxx
 )
 
 

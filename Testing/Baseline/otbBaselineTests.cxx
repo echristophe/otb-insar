@@ -29,4 +29,5 @@ void RegisterTests()
 {
   REGISTER_TEST(otbBaselineFunctorBaseNew);
   REGISTER_TEST(otbHorizontalVerticalBaselineFunctorNew);
+  REGISTER_TEST(otbHorizontalVerticalBaselineFunctorTest);
 }

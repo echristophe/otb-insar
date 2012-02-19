@@ -81,8 +81,8 @@ private:
 } // end namespace functor
 } // end namespace otb
 
-#ifndef ITK_MANUAL_INSTANTIATION
-#include "otbHorizontalVerticalBaselineFunctor.cxx"
-#endif
+//#ifndef ITK_MANUAL_INSTANTIATION
+//#include "otbHorizontalVerticalBaselineFunctor.cxx"
+//#endif
 
 #endif /* __otbParallelPerpendicularBaselineFunctor_h */
