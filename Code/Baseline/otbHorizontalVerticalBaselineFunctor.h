@@ -29,6 +29,18 @@ namespace otb
 
 namespace Functor {
 
+/** \class otbHorizontalVerticalBaselineFunctor
+ * HorizontalVerticalBaselineFunctor evaluate the horizontal and vertical baseline from 
+ * the baseline vector estimate in an (Radial,Tangential,Normal) referential associated to
+ * the master plateform position :
+ * $$\vec{B}=(\begin{array}{ccc} B_{R} & B_{T} & B_{N} \end{array})^{T} $ 
+ * 
+ * Horizontal baseline is: $ B_{N} $
+ * Vertical baseline is: $ -B_{R} $
+ *
+ * \ingroup Functor
+ */
+
 class ITK_EXPORT HorizontalVerticalBaselineFunctor : public BaselineFunctorBase
 {
 public:
