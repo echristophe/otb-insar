@@ -33,6 +33,11 @@ ENDIF(OTB_FOUND)
 
 
 #-------------------------------
+# External libraries
+#-------------------------------
+INCLUDE(ImportVTK)
+
+#-------------------------------
 # Librairie FFTW
 #-------------------------------
 find_package(fftw3 REQUIRED)
