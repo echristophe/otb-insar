@@ -5,6 +5,10 @@ TARGET_LINK_LIBRARIES(BasicInterferogramComputation OTBCommon OTBIO)
 ADD_EXECUTABLE(BaselineComputation BaselineComputation.cxx)
 TARGET_LINK_LIBRARIES(BaselineComputation OTBCommon OTBIO Baseline)
 
+IF(InSAR_USE_VTK)
+ADD_EXECUTABLE(BaselinePlot BaselinePlot.cxx)
+TARGET_LINK_LIBRARIES(BaselinePlot OTBCommon OTBIO Baseline vtkHybrid vtkCharts)
+ENDIF(InSAR_USE_VTK)
 
 ADD_EXECUTABLE(JustTheInterferogramComputation JustTheInterferogramComputation.cxx)
 TARGET_LINK_LIBRARIES(JustTheInterferogramComputation OTBCommon OTBIO InterferogramFormation)
@@ -38,3 +42,4 @@ TARGET_LINK_LIBRARIES(FlatEarthRemovalFFT OTBCommon OTBIO InterferogramFormation
 
 ADD_EXECUTABLE(InterferogramHSVColorGeneration InterferogramHSVColorGeneration.cxx)
 TARGET_LINK_LIBRARIES(InterferogramHSVColorGeneration OTBCommon OTBIO)
+
