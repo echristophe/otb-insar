@@ -50,6 +50,20 @@ int otbHorizontalVerticalBaselineFunctorTest(int argc, char * argv[])
     return EXIT_FAILURE;
   }
 
+  if(std::abs(baseline->GetBaseline(otb::Functor::HorizontalVerticalBaselineFunctor::Horizontal)
+	          - baseline->GetHorizontalBaseline()) >0.0)
+  {
+	std::cout << " Exception when calling GetBaseline() for Horizontal value" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  if(std::abs(baseline->GetBaseline(otb::Functor::HorizontalVerticalBaselineFunctor::Vertical)
+	          - baseline->GetVerticalBaseline()) >0.0)
+  {
+	std::cout << " Exception when calling GetBaseline() for vertical value" << std::endl;
+    return EXIT_FAILURE;
+  }
+
 
   return EXIT_SUCCESS;
 }
