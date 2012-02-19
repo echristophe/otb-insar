@@ -42,7 +42,7 @@ HorizontalVerticalBaselineFunctor
 ::GetVerticalBaseline() const
 {
 	OutputType verticalBaseline;
-	verticalBaseline = this->GetRTNBaseline().get(1);
+	verticalBaseline = - this->GetRTNBaseline().get(0);
 	return verticalBaseline;
 }
 
