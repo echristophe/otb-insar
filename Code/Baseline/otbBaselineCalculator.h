@@ -80,14 +80,16 @@ public:
 
   itkGetObjectMacro(PlateformPositionToBaselineCalculator,BaselineType);
 
+  void ExtractBaseline(	BaselineCalculusEnumType map,
+						std::vector<typename MasterImageType::PointType> & pointImage,
+						std::vector<double> & baselineImage);
+
+
 protected:
   BaselineCalculator();
   virtual ~BaselineCalculator() {};
   void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
-  void ExtractBaseline(	BaselineCalculusEnumType map,
-						std::vector<typename MasterImageType::PointType> & pointImage,
-						std::vector<double> & baselineImage);
 
   vnl_vector<double> BaselineLinearSolve(
 						std::vector<typename MasterImageType::PointType> & pointImage,
