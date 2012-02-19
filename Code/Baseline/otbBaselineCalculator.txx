@@ -25,9 +25,6 @@
 #include "otbBaselineFunctorBase.h"
 
 #include <vnl/vnl_sparse_matrix.h>
-#include <vnl/algo/vnl_lsqr.h>
-#include <vnl/vnl_sparse_matrix_linear_system.h>
-#include <vnl/vnl_least_squares_function.h>
 
 namespace otb
 { 
@@ -123,7 +120,7 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
     //                     a20*row^2 + a02*col^2
    ****************************************************************/
 
-	vnl_sparse_matrix<double> A(nbPoints,6);
+	vnl_matrix<double> A(nbPoints,6);
 	vnl_vector<double> b(nbPoints,0);
 	for(unsigned int pId = 0 ; pId < nbPoints ;pId++ )
 	{
@@ -137,17 +134,10 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 		b[pId] = baselineImage[pId];
 
 	}
-    // Declare a linear system
-    vnl_sparse_matrix_linear_system<double> linearSystem(A, b);
 
     // A vector where the solution will be stored
     vnl_vector<double> solution(6);
-
-    // Declare the solver
-    vnl_lsqr linearSystemSolver(linearSystem);
-
-    // And solve it
-    linearSystemSolver.minimize(solution);
+	solution = vnl_matrix_inverse<double>(A.transpose()*A)*(A.transpose()*b);
 
 	return solution;
 }
