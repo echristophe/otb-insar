@@ -41,11 +41,7 @@ LengthOrientationBaselineFunctor::OutputType
 LengthOrientationBaselineFunctor
 ::GetOrientationBaseline() const
 {
-	vnl_vector<double> normalComponent(3);
-	normalComponent.fill(0.0);
-	normalComponent(2) = 1.0;
-	double baselineLength = this->GetLengthBaseline();
-	double angle = acos(dot_product(this->GetRTNBaseline(),normalComponent) / baselineLength) * CONST_180_PI; 
+	double angle = std::atan2(-this->GetRTNBaseline()[0],this->GetRTNBaseline()[2]) * CONST_180_PI;
 	return angle;
 }
 
