@@ -29,7 +29,21 @@ namespace otb
 
 namespace Functor {
 
-class ITK_EXPORT LengthOrientationBaselineFunctor : public BaselineFunctorBase
+/** \class otbLengthOrientationBaselineFunctor
+ * LengthOrientationBaselineFunctor evaluate the Length and orientation baseline from 
+ * the baseline vector estimate in an (Radial,Tangential,Normal) referential associated to
+ * the master plateform position :
+ * $$\vec{B}=(\begin{array}{ccc} B_{R} & B_{T} & B_{N} \end{array})^{T} $ 
+ * 
+ * Length baseline is: $ $\sqrt{B_{R}^{2}+B_{N}^{2}}$ $
+ * Orientation baseline is: $ $\arctan(\frac{B_{R}}{B_{N}})$ $
+ *
+ * Orientation value is coded in degree.
+ *
+ * \ingroup Functor
+ */
+
+	class ITK_EXPORT LengthOrientationBaselineFunctor : public BaselineFunctorBase
 {
 public:
 
