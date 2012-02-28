@@ -16,23 +16,21 @@
    limitations under the License.
 
 =========================================================================*/
+#include "itkMacro.h"
 
-// this file defines the otbCommonTest for the test driver
-// and all it expects is that you have a function called RegisterTests
-#if defined(_MSC_VER)
-#pragma warning ( disable : 4786 )
-#endif
+#include "otbPlatformPositionToBaselineCalculator.h"
+#include "otbHorizontalVerticalBaselineFunctor.h"
 
-#include "otbTestMain.h"
 
-void RegisterTests()
+int otbPlatformPositionToBaselineCalculatorNew(int argc, char * argv[])
 {
-  REGISTER_TEST(otbBaselineFunctorBaseNew);
-  REGISTER_TEST(otbHorizontalVerticalBaselineFunctorNew);
-  REGISTER_TEST(otbHorizontalVerticalBaselineFunctorTest);
-  REGISTER_TEST(otbLengthOrientationBaselineFunctorNew);
-  REGISTER_TEST(otbLengthOrientationBaselineFunctorTest);
-  REGISTER_TEST(otbParallelPerpendicularBaselineFunctorNew);
-  REGISTER_TEST(otbParallelPerpendicularBaselineFunctorTest);
-  REGISTER_TEST(otbPlatformPositionToBaselineCalculatorNew);
+  typedef otb::Functor::HorizontalVerticalBaselineFunctor        FunctorType;
+  typedef otb::PlatformPositionToBaselineCalculator<FunctorType> BaselineCalculatorType;
+
+  // Instantiating object
+  BaselineCalculatorType::Pointer baselineCalculator = BaselineCalculatorType::New();
+
+  std::cout << baselineCalculator << std::endl;
+
+  return EXIT_SUCCESS;
 }
