@@ -36,28 +36,26 @@ ParallelPerpendicularBaselineFunctor
 	VectorType parallelVector;
 	parallelVector = m_RefPoint;
 	parallelVector(1) = 0.0;
-
-	return dot_product(this->GetRTNBaseline(),parallelVector.normalize());
+	
+	return element_product(this->GetRTNBaseline(),parallelVector.normalize()).sum();
 }
 
 ParallelPerpendicularBaselineFunctor::OutputType 
 ParallelPerpendicularBaselineFunctor
 ::GetPerpendicularBaseline() const
 {
-
-	VectorType parallelVector;
+	VectorType parallelVector(3);
 	parallelVector = m_RefPoint;
 	parallelVector(1) = 0.0;
 
-	VectorType tangentialVector;
+	VectorType tangentialVector(3);
 	tangentialVector.fill(0.0);
 	tangentialVector(1) = 1.0;
 
 	VectorType perpendicularVector;
 	perpendicularVector = vnl_cross_3d(parallelVector,tangentialVector);
 
-	return dot_product(this->GetRTNBaseline(),perpendicularVector.normalize());
-	itkExceptionMacro("GetPerpendicularBaseline() not implemented");
+	return element_product(this->GetRTNBaseline(),perpendicularVector.normalize()).sum();
 }
 
 
