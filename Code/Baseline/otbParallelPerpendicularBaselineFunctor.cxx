@@ -20,6 +20,7 @@
 #define __otbParallelPerpendicularBaselineFunctor_cxx
 
 #include "otbParallelPerpendicularBaselineFunctor.h"
+#include <vnl/vnl_cross.h>
 
 namespace otb
 { 
@@ -31,15 +32,34 @@ ParallelPerpendicularBaselineFunctor::OutputType
 ParallelPerpendicularBaselineFunctor
 ::GetParallelBaseline() const
 {
-	itkExceptionMacro("GetParallelBaseline() not implemented");
+	
+	VectorType parallelVector;
+	parallelVector = m_RefPoint;
+	parallelVector(1) = 0.0;
+
+	return dot_product(this->GetRTNBaseline(),parallelVector.normalize());
 }
 
 ParallelPerpendicularBaselineFunctor::OutputType 
 ParallelPerpendicularBaselineFunctor
 ::GetPerpendicularBaseline() const
 {
+
+	VectorType parallelVector;
+	parallelVector = m_RefPoint;
+	parallelVector(1) = 0.0;
+
+	VectorType tangentialVector;
+	tangentialVector.fill(0.0);
+	tangentialVector(1) = 1.0;
+
+	VectorType perpendicularVector;
+	perpendicularVector = vnl_cross_3d(parallelVector,tangentialVector);
+
+	return dot_product(this->GetRTNBaseline(),perpendicularVector.normalize());
 	itkExceptionMacro("GetPerpendicularBaseline() not implemented");
 }
+
 
 ParallelPerpendicularBaselineFunctor::OutputType 
 ParallelPerpendicularBaselineFunctor

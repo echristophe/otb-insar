@@ -33,4 +33,5 @@ void RegisterTests()
   REGISTER_TEST(otbLengthOrientationBaselineFunctorNew);
   REGISTER_TEST(otbLengthOrientationBaselineFunctorTest);
   REGISTER_TEST(otbParallelPerpendicularBaselineFunctorNew);
+  REGISTER_TEST(otbParallelPerpendicularBaselineFunctorTest);
 }
