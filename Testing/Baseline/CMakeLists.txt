@@ -42,7 +42,13 @@ ADD_TEST(blTuParallelPerpendicularBaselineFunctorTest ${BASELINE_TESTS}
 otbParallelPerpendicularBaselineFunctorTest
 )
 
+# -------------  otb::PlatformPositionToBaselineCalculator---------------
+ADD_TEST(blTuPlatformPositionToBaselineCalculatorNew ${BASELINE_TESTS}
+otbPlatformPositionToBaselineCalculatorNew
+)
+
 IF(OTB_DATA_USE_LARGEINPUT)
+
 
 ENDIF(OTB_DATA_USE_LARGEINPUT)
 							       
@@ -55,6 +61,7 @@ otbLengthOrientationBaselineFunctorNew.cxx
 otbLengthOrientationBaselineFunctorTest.cxx
 otbParallelPerpendicularBaselineFunctorNew.cxx
 otbParallelPerpendicularBaselineFunctorTest.cxx
+otbPlatformPositionToBaselineCalculatorNew.cxx
 )
 
 
