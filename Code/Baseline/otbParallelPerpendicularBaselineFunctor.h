@@ -68,7 +68,8 @@ protected:
   ParallelPerpendicularBaselineFunctor() {};
   ~ParallelPerpendicularBaselineFunctor() {};
 
-  void PrintSelf(std::ostream& os, itk::Indent indent) const;
+
+void PrintSelf(std::ostream& os, itk::Indent indent) const;
 
 private:
   ParallelPerpendicularBaselineFunctor(const Self&); //purposely not implemented
@@ -81,9 +82,5 @@ private:
 		
 } // end namespace functor
 } // end namespace otb
-
-#ifndef ITK_MANUAL_INSTANTIATION
-#include "otbParallelPerpendicularBaselineFunctor.cxx"
-#endif
 
 #endif /* __otbParallelPerpendicularBaselineFunctor_h */

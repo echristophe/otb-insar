@@ -38,6 +38,13 @@ ADD_TEST(blTuParallelPerpendicularBaselineFunctorNew ${BASELINE_TESTS}
 otbParallelPerpendicularBaselineFunctorNew
 )
 
+ADD_TEST(blTuParallelPerpendicularBaselineFunctorTest ${BASELINE_TESTS}
+otbParallelPerpendicularBaselineFunctorTest
+)
+
+IF(OTB_DATA_USE_LARGEINPUT)
+
+ENDIF(OTB_DATA_USE_LARGEINPUT)
 							       
 SET(BASELINE_SRCS
 otbBaselineTests.cxx
@@ -47,6 +54,7 @@ otbHorizontalVerticalBaselineFunctorTest.cxx
 otbLengthOrientationBaselineFunctorNew.cxx
 otbLengthOrientationBaselineFunctorTest.cxx
 otbParallelPerpendicularBaselineFunctorNew.cxx
+otbParallelPerpendicularBaselineFunctorTest.cxx
 )
 
 
