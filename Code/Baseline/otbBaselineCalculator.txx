@@ -32,13 +32,11 @@ namespace otb
 /**
  * Constructor
  */
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
-::BaselineCalculator()
+template <class TFunctor,unsigned int Dimension>
+BaselineCalculator<TFunctor,Dimension>
+::BaselineCalculator() : m_Region()
 {
-  m_MasterImage = TMasterInputImage::New();
-  m_SlaveImage = TSlaveInputImage::New();
-  m_PlateformPositionToBaselineCalculator = BaselineType::New();
+  m_PlateformPositionToBaselineCalculator = PlateformPositionToBaselineCalculatorType::New();
   m_BaselineCoefficient.clear();
 }
 
@@ -46,12 +44,12 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 /**
  * Compute Min and Max of m_Image
  */
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
+BaselineCalculator<TFunctor,Dimension>
 ::Compute(BaselineCalculusEnumType map) 
 {
-  std::vector<typename MasterImageType::PointType> pointImage;
+  std::vector<PointType> pointImage;
   pointImage.clear();
   std::vector<double> baselineImage;
   baselineImage.clear();
@@ -62,34 +60,29 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
+BaselineCalculator<TFunctor,Dimension>
 ::ExtractBaseline(  BaselineCalculusEnumType map,
-					std::vector<typename MasterImageType::PointType> & pointImage,
+					std::vector<PointType> & pointImage,
 					std::vector<double> & baselineImage) 
 {
-  unsigned int numberOfRow  = m_MasterImage->GetLargestPossibleRegion().GetSize()[0];
-  unsigned int numberOfCol  = m_MasterImage->GetLargestPossibleRegion().GetSize()[1];
+  unsigned int numberOfRow  = m_Region.GetSize()[0];
+  unsigned int numberOfCol  = m_Region.GetSize()[1];
 
-  typename BaselineType::Pointer baselineCalculator = BaselineType::New();
-  baselineCalculator->SetMasterPlateform(m_MasterImage->GetImageKeywordlist());
-  baselineCalculator->SetSlavePlateform(m_SlaveImage->GetImageKeywordlist());
-
-  std::vector<double> lengthBaselineImage;
-  lengthBaselineImage.clear();
+  baselineImage.clear();
 
   for(unsigned int i=0 ; i< numberOfRow ; i+=500)
 	{
 	for(unsigned int j=0 ; j< numberOfCol ; j+=500)
 		{
-		typename MasterImageType::PointType ImgPoint;
+		PointType ImgPoint;
 
 		// References
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		double baselineValue = baselineCalculator->Evaluate(ImgPoint[0],map);
+		double baselineValue = m_PlateformPositionToBaselineCalculator->Evaluate(ImgPoint[0],map);
 		pointImage.push_back(ImgPoint);
 		baselineImage.push_back(baselineValue);
 		}
@@ -100,10 +93,10 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension>
 vnl_vector<double>
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
-::BaselineLinearSolve(std::vector<typename MasterImageType::PointType> & pointImage,
+BaselineCalculator<TFunctor,Dimension>
+::BaselineLinearSolve(std::vector<PointType> & pointImage,
 		   std::vector<double> & baselineImage) 
 {
   unsigned int nbPoints = pointImage.size();
@@ -142,9 +135,9 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 	return solution;
 }
 
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension>
 double
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
+BaselineCalculator<TFunctor,Dimension>
 ::EvaluateBaseline(double row,double col)
 {
 	double result = 0;
@@ -159,18 +152,14 @@ BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
 }
 
 
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension>
 void
-BaselineCalculator<TMasterInputImage,TSlaveInputImage, TFunctor>
+BaselineCalculator<TFunctor,Dimension>
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
 
-  os << indent << "MasterImage: " << std::endl;
-  m_MasterImage->Print(os, indent.GetNextIndent());
-  os << indent << "SlaveImage: " << std::endl;
-  m_SlaveImage->Print(os, indent.GetNextIndent());
-  os << indent << "SlaveImage: " << m_BaselineCoefficient << std::endl;
+  os << indent << "BaselineCoefficient : " << m_BaselineCoefficient << std::endl;
 
 }
 

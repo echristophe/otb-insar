@@ -69,14 +69,19 @@ int main(int argc, char* argv[])
   master->UpdateOutputInformation();
   slave->UpdateOutputInformation();
   typedef otb::Functor::LengthOrientationBaselineFunctor	BaselineFunctorType;
-  typedef otb::BaselineCalculator<ImageType,ImageType,
-									BaselineFunctorType>    BaselineCalculatorType;
+  typedef otb::BaselineCalculator<BaselineFunctorType>    BaselineCalculatorType;
+  typedef BaselineCalculatorType::PlateformPositionToBaselineCalculatorType PlateformPositionToBaselineCalculatorType;
+
   BaselineCalculatorType::Pointer baselineCalculator = BaselineCalculatorType::New();
-  baselineCalculator->SetMasterImage(master->GetOutput());
-  baselineCalculator->SetSlaveImage(slave->GetOutput());
+
+  BaselineCalculatorType::PlateformPositionToBaselinePointer plateformPositionToBaseline =  PlateformPositionToBaselineCalculatorType::New();
+  plateformPositionToBaseline->SetMasterPlateform(master->GetOutput()->GetImageKeywordlist());
+  plateformPositionToBaseline->SetSlavePlateform(slave->GetOutput()->GetImageKeywordlist());
+
+  baselineCalculator->SetPlateformPositionToBaselineCalculator(plateformPositionToBaseline);
   baselineCalculator->Compute(otb::Functor::LengthOrientationBaselineFunctor::Length);
 
-  std::vector<BaselineCalculatorType::MasterImageType::PointType> pointImage;
+  std::vector<BaselineCalculatorType::PointType> pointImage;
   pointImage.clear();
   std::vector<double> baselineImage;
   baselineImage.clear();
