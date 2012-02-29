@@ -34,10 +34,10 @@ namespace otb
  */
 template <class TFunctor,unsigned int Dimension>
 BaselineCalculator<TFunctor,Dimension>
-::BaselineCalculator() : m_Region()
+::BaselineCalculator() : m_Region(),
+						 m_BaselineCoefficient(),
+						 m_PlateformPositionToBaselineCalculator(NULL)
 {
-  m_PlateformPositionToBaselineCalculator = PlateformPositionToBaselineCalculatorType::New();
-  m_BaselineCoefficient.clear();
 }
 
 
@@ -71,6 +71,16 @@ BaselineCalculator<TFunctor,Dimension>
   unsigned int numberOfCol  = m_Region.GetSize()[1];
 
   baselineImage.clear();
+
+  if(numberOfRow ==0 || numberOfCol == 0)
+  {
+	itkExceptionMacro(<<"needs to Set Region");
+  }
+
+  if(m_PlateformPositionToBaselineCalculator.IsNull())
+  {
+	itkExceptionMacro(<<"needs to Set PlatformpositionToBaselineCalculator ");  
+  }
 
   for(unsigned int i=0 ; i< numberOfRow ; i+=500)
 	{
