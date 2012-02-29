@@ -59,6 +59,20 @@ otbPlatformPositionToBaselineCalculatorTest
 )
 ENDIF(INSAR_DATA_USE_LARGEINPUT)
 							       
+# -------------  otb::BaselineCalculator---------------
+ADD_TEST(blTuBaselineCalculatorNew ${BASELINE_TESTS}
+otbPlatformPositionToBaselineCalculatorNew
+)
+
+IF(INSAR_DATA_USE_LARGEINPUT)
+ADD_TEST(blTvBaselineCalculatorTest ${BASELINE_TESTS}
+otbBaselineCalculatorTest
+	${LARGEINPUT}/TERRASARX/2008-03-10_GrandCanyon_SSC/TSX1_SAR__SSC______SM_S_SRA_20080310T133220_20080310T133228/TSX1_SAR__SSC______SM_S_SRA_20080310T133220_20080310T133228.xml
+	${LARGEINPUT}/TERRASARX/2008-03-21_GrandCanyon_SSC/TSX1_SAR__SSC______SM_S_SRA_20080321T133220_20080321T133228/TSX1_SAR__SSC______SM_S_SRA_20080321T133220_20080321T133228.xml
+)
+ENDIF(INSAR_DATA_USE_LARGEINPUT)
+
+
 SET(BASELINE_SRCS
 otbBaselineTests.cxx
 otbBaselineFunctorBaseNew.cxx
@@ -70,6 +84,8 @@ otbParallelPerpendicularBaselineFunctorNew.cxx
 otbParallelPerpendicularBaselineFunctorTest.cxx
 otbPlatformPositionToBaselineCalculatorNew.cxx
 otbPlatformPositionToBaselineCalculatorTest.cxx
+otbBaselineCalculatorNew.cxx
+otbBaselineCalculatorTest.cxx
 )
 
 
