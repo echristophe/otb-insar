@@ -22,6 +22,8 @@
 #include "itkObject.h"
 #include "itkObjectFactory.h"
 #include "otbPlatformPositionToBaselineCalculator.h"
+#include "itkImageRegion.h"
+#include "itkPoint.h"
 #include <vnl/vnl_vector.h>
 
 namespace otb
@@ -32,7 +34,7 @@ namespace otb
  *
  * \ingroup Operators
  */
-template <class TMasterInputImage,class TSlaveInputImage, class TFunctor>
+template <class TFunctor,unsigned int Dimension = 2>
 class ITK_EXPORT BaselineCalculator : public itk::Object 
 {
 public:
@@ -48,27 +50,18 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(BaselineCalculator, itk::Object);
 
-  /** Type definition for the input image. */
-  typedef TMasterInputImage  MasterImageType;
-  typedef TSlaveInputImage   SlaveImageType;
+  itkStaticConstMacro(SpaceDimension, unsigned int, Dimension);
 
-  /** Pointer type for the image. */
-  typedef typename TMasterInputImage::Pointer  MasterImagePointer;
-  typedef typename TSlaveInputImage::Pointer   SlaveImagePointer;
-  
-  /** Const Pointer type for the image. */
-  typedef typename TMasterInputImage::ConstPointer MasterImageConstPointer;
-  typedef typename TSlaveInputImage::ConstPointer SlaveImageConstPointer;
 
-  /** Set the input image. */
-  itkSetConstObjectMacro(MasterImage,MasterImageType);
-  itkSetConstObjectMacro(SlaveImage,SlaveImageType);
+  typedef otb::PlatformPositionToBaselineCalculator<TFunctor>                              PlateformPositionToBaselineCalculatorType;
+  typedef typename PlateformPositionToBaselineCalculatorType::Pointer                      PlateformPositionToBaselinePointer;
+  typedef typename PlateformPositionToBaselineCalculatorType::ConstPointer                 BaselineConstPointer;
+  typedef typename PlateformPositionToBaselineCalculatorType::BaselineFunctorOutputType    OutputBaselineType;
+  typedef typename PlateformPositionToBaselineCalculatorType::BaselineCalculusEnumType     BaselineCalculusEnumType;
 
-  typedef otb::PlatformPositionToBaselineCalculator<TFunctor> BaselineType;
-  typedef typename BaselineType::Pointer                      BaselinePointer;
-  typedef typename BaselineType::ConstPointer                 BaselineConstPointer;
-  typedef typename BaselineType::BaselineFunctorOutputType    OutputBaselineType;
-  typedef typename BaselineType::BaselineCalculusEnumType     BaselineCalculusEnumType;
+  typedef itk::ImageRegion< Dimension >			ImageRegionType;
+
+  typedef itk::Point< double, Dimension >       PointType; 
 
   /** Typedef for Coefficient */
   typedef vnl_vector<double>            CoefficientType;        
@@ -78,10 +71,14 @@ public:
 
   double EvaluateBaseline(double row,double col);
 
-  itkGetObjectMacro(PlateformPositionToBaselineCalculator,BaselineType);
+  itkSetObjectMacro(PlateformPositionToBaselineCalculator,PlateformPositionToBaselineCalculatorType);
+  itkGetObjectMacro(PlateformPositionToBaselineCalculator,PlateformPositionToBaselineCalculatorType);
+
+  itkSetMacro(Region,ImageRegionType);
+  itkGetConstMacro(Region,ImageRegionType);
 
   void ExtractBaseline(	BaselineCalculusEnumType map,
-						std::vector<typename MasterImageType::PointType> & pointImage,
+						std::vector<PointType> & pointImage,
 						std::vector<double> & baselineImage);
 
 
@@ -92,17 +89,16 @@ protected:
 
 
   vnl_vector<double> BaselineLinearSolve(
-						std::vector<typename MasterImageType::PointType> & pointImage,
+						std::vector<PointType> & pointImage,
 						std::vector<double> & baselineImage);
 
 private:
   BaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  MasterImageConstPointer      m_MasterImage;
-  SlaveImageConstPointer       m_SlaveImage;
-  CoefficientType              m_BaselineCoefficient;
-  BaselinePointer              m_PlateformPositionToBaselineCalculator;
+  ImageRegionType                            m_Region;
+  CoefficientType                            m_BaselineCoefficient;
+  PlateformPositionToBaselinePointer  m_PlateformPositionToBaselineCalculator;
 };
 
 } // end namespace otb

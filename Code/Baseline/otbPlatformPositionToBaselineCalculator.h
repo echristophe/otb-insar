@@ -74,15 +74,16 @@ public:
   virtual BaselineFunctorOutputType Evaluate(double line,
 				BaselineCalculusEnumType map);
 
-  vnl_vector<double> BaselineInRTNSystem(
-				std::vector<double> & masterPosition,
-				std::vector<double> & slavePosition,
-				std::vector<double> & masterSpeed);
 
 protected:
   PlatformPositionToBaselineCalculator();
   virtual ~PlatformPositionToBaselineCalculator() {};
   void PrintSelf(std::ostream& os, itk::Indent indent) const;
+
+  vnl_vector<double> BaselineInRTNSystem(
+				std::vector<double> & masterPosition,
+				std::vector<double> & slavePosition,
+				std::vector<double> & masterSpeed);
 
 private:
   PlatformPositionToBaselineCalculator(const Self&); //purposely not implemented
