@@ -35,4 +35,5 @@ void RegisterTests()
   REGISTER_TEST(otbParallelPerpendicularBaselineFunctorNew);
   REGISTER_TEST(otbParallelPerpendicularBaselineFunctorTest);
   REGISTER_TEST(otbPlatformPositionToBaselineCalculatorNew);
+  REGISTER_TEST(otbPlatformPositionToBaselineCalculatorTest);
 }
