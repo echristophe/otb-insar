@@ -33,9 +33,10 @@ ParallelPerpendicularBaselineFunctor
 ::GetParallelBaseline() const
 {
 	
-	VectorType parallelVector;
-	parallelVector = m_RefPoint;
+	VectorType parallelVector(3);
+	parallelVector(0) = cos(m_LookDirection);
 	parallelVector(1) = 0.0;
+	parallelVector(2) = sin(m_LookDirection);
 	
 	return element_product(this->GetRTNBaseline(),parallelVector.normalize()).sum();
 }
@@ -44,16 +45,10 @@ ParallelPerpendicularBaselineFunctor::OutputType
 ParallelPerpendicularBaselineFunctor
 ::GetPerpendicularBaseline() const
 {
-	VectorType parallelVector(3);
-	parallelVector = m_RefPoint;
-	parallelVector(1) = 0.0;
-
-	VectorType tangentialVector(3);
-	tangentialVector.fill(0.0);
-	tangentialVector(1) = 1.0;
-
-	VectorType perpendicularVector;
-	perpendicularVector = vnl_cross_3d(parallelVector,tangentialVector);
+	VectorType perpendicularVector(3);
+	perpendicularVector(0) = -sin(m_LookDirection);
+	perpendicularVector(1) = 0.0;
+	perpendicularVector(2) = cos(m_LookDirection);
 
 	return element_product(this->GetRTNBaseline(),perpendicularVector.normalize()).sum();
 }
@@ -85,7 +80,7 @@ ParallelPerpendicularBaselineFunctor
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os,indent);
-  os << indent << "RefPoint : " << m_RefPoint << std::endl;
+  os << indent << "LookDirection : " << m_LookDirection << std::endl;
 }
 
 
