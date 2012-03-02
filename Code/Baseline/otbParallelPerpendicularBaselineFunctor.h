@@ -45,6 +45,7 @@ public:
   itkTypeMacro(ParallelPerpendicularBaselineFunctor, BaselineFunctorBase);
 
   typedef Superclass::VectorType     VectorType;
+  typedef double                     RealType;
 
   typedef enum {Parallel, Perpendicular} BaselineCalculusEnumType;
 
@@ -53,16 +54,8 @@ public:
   virtual OutputType GetParallelBaseline() const;
   virtual OutputType GetPerpendicularBaseline() const;
 
-  void SetRefPoint(VectorType & refPoint)
-  {
-	m_RefPoint = refPoint;
-  }
-
-  VectorType GetRefPoint()
-  {
-	return m_RefPoint;
-  }
-
+  itkSetMacro( LookDirection, RealType );
+  itkGetConstMacro( LookDirection, RealType  );
 
 protected:
   ParallelPerpendicularBaselineFunctor() {};
@@ -75,7 +68,7 @@ private:
   ParallelPerpendicularBaselineFunctor(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  VectorType m_RefPoint;
+  double m_LookDirection;
 
 };
 

@@ -63,7 +63,7 @@ int otbParallelPerpendicularBaselineFunctorTest(int argc, char * argv[])
   std::cout << "RTNBaseline : " << RTNBaseline << std::endl;
 
   baseline->SetRTNBaseline(RTNBaseline);
-  baseline->SetRefPoint(refPoint);
+  baseline->SetLookDirection(degToRad);
 
   if(std::abs(baseline->GetParallelBaseline() - parallelBaseline) > 0.000001 )
   {
