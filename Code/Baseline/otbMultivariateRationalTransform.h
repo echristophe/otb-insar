@@ -65,7 +65,7 @@ public:
   typedef itk::Point<double, Dimension>       OriginType;
   typedef itk::Index<Dimension>               IndexType;
   typedef itk::VectorContainer<unsigned int, IndexType>   IndexContainerType;
-  typedef typename IndexContainerType::Pointer                     IndexContainerPointer;
+  typedef typename IndexContainerType::Pointer            IndexContainerPointer;
 
   typedef typename Superclass::InverseTransformBasePointer InverseTransformBasePointer;
   typedef typename Superclass::ParametersType              ParametersType;
@@ -141,15 +141,15 @@ public:
       {
 		  std::vector<double> coefficient(1);
 		  coefficient[0]=1.0;
-		  for(unsigned int idx = SpaceDimension-1 ; idx != 0  ; --idx)
+		  for(unsigned int idx = SpaceDimension ; idx > 0  ; idx--)
 		  {
 			std::vector<double> coeffTemp;
 			coeffTemp = coefficient;
 			coefficient.clear();
-			for(unsigned int deg = 0 ; deg <=m_NumeratorDegree->GetElement(dim)[idx] ; ++deg)
+			for(unsigned int deg = 0 ; deg <=m_NumeratorDegree->GetElement(dim)[idx-1] ; deg++)
 			{						
 				coefficient.insert(coefficient.end(),coeffTemp.begin(),coeffTemp.end());
-				for(unsigned int idx2 =0 ; idx2 < coeffTemp.size(); ++idx2)
+				for(unsigned int idx2 =0 ; idx2 < coeffTemp.size(); idx2++)
 				{
 					coeffTemp[idx2] = inputPoint[dim] * coeffTemp[idx2];			
 				}
@@ -166,12 +166,12 @@ public:
 
 		  coefficient.resize(1);
 		  coefficient[0]=1.0;
-		  for(unsigned int idx = SpaceDimension-1 ; idx != 0  ; --idx)
+		  for(unsigned int idx = SpaceDimension ; idx > 0  ; idx--)
 		  {
 			std::vector<double> coeffTemp;
 			coeffTemp = coefficient;
 			coefficient.clear();
-			for(unsigned int deg = 0 ; deg <=m_DenominatorDegree->GetElement(dim)[idx] ; ++deg)
+			for(unsigned int deg = 0 ; deg <=m_DenominatorDegree->GetElement(dim)[idx-1] ; ++deg)
 			{						
 				coefficient.insert(coefficient.end(),coeffTemp.begin(),coeffTemp.end());
 				for(unsigned int idx2 =0 ; idx2 < coeffTemp.size(); ++idx2)
