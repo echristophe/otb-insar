@@ -72,6 +72,21 @@ otbBaselineCalculatorTest
 )
 ENDIF(INSAR_DATA_USE_LARGEINPUT)
 
+#----- otb::MultivariateRationalTransform ------------------------
+ADD_TEST(blTuMultivariateRationalTransformNew ${BASELINE_TESTS}
+otbMultivariateRationalTransformNew)
+
+ADD_TEST(prTvMultivariateRationalTransform ${BASELINE_TESTS}
+#  --compare-ascii ${NOTOL}
+#  ${BASELINE_FILES}/otbMultivariateRationalTransformOutput.txt
+#  ${TEMP}/otbMultivariateRationalTransformOutput.txt
+otbMultivariateRationalTransformTest
+${TEMP}/otbMultivariateRationalTransformOutput.txt
+0 0
+1 1
+10 10
+-10 -10
+)
 
 SET(BASELINE_SRCS
 otbBaselineTests.cxx
@@ -86,6 +101,7 @@ otbPlatformPositionToBaselineCalculatorNew.cxx
 otbPlatformPositionToBaselineCalculatorTest.cxx
 otbBaselineCalculatorNew.cxx
 otbBaselineCalculatorTest.cxx
+otbMultivariateRationalTransform.cxx
 )
 
 
