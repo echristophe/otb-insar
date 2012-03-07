@@ -38,4 +38,6 @@ void RegisterTests()
   REGISTER_TEST(otbPlatformPositionToBaselineCalculatorTest);
   REGISTER_TEST(otbBaselineCalculatorNew);
   REGISTER_TEST(otbBaselineCalculatorTest);
+  REGISTER_TEST(otbMultivariateRationalTransformNew);
+  REGISTER_TEST(otbMultivariateRationalTransformTest);
 }
