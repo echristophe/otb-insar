@@ -62,6 +62,29 @@ PlatformPositionToBaselineCalculator<TFunctor>
 	return this->m_BaselineFunctor->GetBaseline(map);
 }
 
+/**
+ * Compute Min and Max of m_Image
+ */
+template <class TFunctor>
+typename PlatformPositionToBaselineCalculator<TFunctor>::BaselineFunctorOutputType
+PlatformPositionToBaselineCalculator<TFunctor>
+::Evaluate(double line, double lineOffsetWithMaster, BaselineCalculusEnumType map) 
+{
+	std::vector<double> masterPosition(3);
+	std::vector<double> slavePosition(3);
+	std::vector<double> masterSpeed(3);
+	std::vector<double> slaveSpeed(3);
+
+	m_MasterPlateform->GetPlatformPosition(line, masterPosition, masterSpeed);
+	m_SlavePlateform->GetPlatformPosition(line+lineOffsetWithMaster, slavePosition, slaveSpeed);
+
+	vnl_vector<double> baselineVector(3);
+
+	baselineVector = this->BaselineInRTNSystem(masterPosition, slavePosition, masterSpeed);
+	m_BaselineFunctor->SetRTNBaseline(baselineVector);
+	return this->m_BaselineFunctor->GetBaseline(map);
+}
+
 
 template <class TFunctor>
 typename PlatformPositionToBaselineCalculator<TFunctor>::BaselineFunctorOutputType
