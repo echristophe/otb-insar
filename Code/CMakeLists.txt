@@ -1,1 +1,1 @@
-SUBDIRS(Interpolation Coregistration InterferogramFormation Baseline)
+SUBDIRS(Interpolation Coregistration InterferogramFormation Baseline Projection)
