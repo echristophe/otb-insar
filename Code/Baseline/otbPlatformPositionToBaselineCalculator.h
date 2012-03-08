@@ -76,6 +76,11 @@ public:
 				BaselineCalculusEnumType map);
 
   /** Compute the Baseline value. */
+  virtual BaselineFunctorOutputType Evaluate(double line,
+				double lineOffsetWithMaster,
+				BaselineCalculusEnumType map);
+
+  /** Compute the Baseline value. */
   virtual BaselineFunctorOutputType EvaluateAtTime(
 						ossimplugins::JSDDateTime masterTime,
 						ossimplugins::JSDDateTime slaveTime,
