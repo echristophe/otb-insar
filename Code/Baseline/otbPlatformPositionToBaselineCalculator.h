@@ -74,6 +74,10 @@ public:
   virtual BaselineFunctorOutputType Evaluate(double line,
 				BaselineCalculusEnumType map);
 
+  /** Compute the Baseline value. */
+  virtual BaselineFunctorOutputType EvaluateAtTime(double masterTime,
+							double slaveTime,
+				BaselineCalculusEnumType map);
 
 protected:
   PlatformPositionToBaselineCalculator();
