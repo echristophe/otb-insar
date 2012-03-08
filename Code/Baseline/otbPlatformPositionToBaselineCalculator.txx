@@ -66,7 +66,8 @@ PlatformPositionToBaselineCalculator<TFunctor>
 template <class TFunctor>
 typename PlatformPositionToBaselineCalculator<TFunctor>::BaselineFunctorOutputType
 PlatformPositionToBaselineCalculator<TFunctor>
-::EvaluateAtTime(double masterTime, double slaveTime,
+::EvaluateAtTime(	ossimplugins::JSDDateTime masterTime, 
+					ossimplugins::JSDDateTime slaveTime,
 					BaselineCalculusEnumType map) 
 {
 	std::vector<double> masterPosition(3);

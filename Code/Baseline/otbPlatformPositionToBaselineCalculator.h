@@ -25,6 +25,7 @@
 #include <vnl/vnl_vector.h>
 #include "otbPlatformPositionAdapter.h"
 #include "otbBaselineFunctorBase.h"
+#include "otb/JSDDateTime.h"
 
 namespace otb
 {
@@ -75,9 +76,13 @@ public:
 				BaselineCalculusEnumType map);
 
   /** Compute the Baseline value. */
-  virtual BaselineFunctorOutputType EvaluateAtTime(double masterTime,
-							double slaveTime,
-				BaselineCalculusEnumType map);
+  virtual BaselineFunctorOutputType EvaluateAtTime(
+						ossimplugins::JSDDateTime masterTime,
+						ossimplugins::JSDDateTime slaveTime,
+						BaselineCalculusEnumType map);
+
+  itkGetConstMacro(MasterPlateform,PlateformPointer);
+  itkGetConstMacro(SlavePlateform,PlateformPointer);
 
 protected:
   PlatformPositionToBaselineCalculator();
