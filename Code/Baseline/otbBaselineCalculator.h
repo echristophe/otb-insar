@@ -77,6 +77,9 @@ public:
   itkSetMacro(Region,ImageRegionType);
   itkGetConstMacro(Region,ImageRegionType);
 
+  itkSetMacro(LineOffsetWithMaster,double);
+  itkGetConstMacro(LineOffsetWithMaster,double);
+
   void ExtractBaseline(	BaselineCalculusEnumType map,
 						std::vector<PointType> & pointImage,
 						std::vector<double> & baselineImage);
@@ -96,9 +99,10 @@ private:
   BaselineCalculator(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  ImageRegionType                            m_Region;
-  CoefficientType                            m_BaselineCoefficient;
+  ImageRegionType                     m_Region;
+  CoefficientType                     m_BaselineCoefficient;
   PlateformPositionToBaselinePointer  m_PlateformPositionToBaselineCalculator;
+  double							  m_LineOffsetWithMaster;	
 };
 
 } // end namespace otb

@@ -36,7 +36,8 @@ template <class TFunctor,unsigned int Dimension>
 BaselineCalculator<TFunctor,Dimension>
 ::BaselineCalculator() : m_Region(),
 						 m_BaselineCoefficient(),
-						 m_PlateformPositionToBaselineCalculator(NULL)
+						 m_PlateformPositionToBaselineCalculator(NULL),
+						 m_LineOffsetWithMaster(0.0)
 {
 }
 
@@ -92,6 +93,7 @@ BaselineCalculator<TFunctor,Dimension>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
+		//ossimplugins::JSDDateTime m_PlateformPositionToBaselineCalculator->GetMasterPlateform();
 		double baselineValue = m_PlateformPositionToBaselineCalculator->Evaluate(ImgPoint[0],map);
 		pointImage.push_back(ImgPoint);
 		baselineImage.push_back(baselineValue);
