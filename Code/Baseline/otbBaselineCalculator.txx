@@ -93,8 +93,7 @@ BaselineCalculator<TFunctor,Dimension>
 		ImgPoint[0] = i;
 		ImgPoint[1] = j;
 
-		//ossimplugins::JSDDateTime m_PlateformPositionToBaselineCalculator->GetMasterPlateform();
-		double baselineValue = m_PlateformPositionToBaselineCalculator->Evaluate(ImgPoint[0],map);
+		double baselineValue = m_PlateformPositionToBaselineCalculator->Evaluate(ImgPoint[0],m_LineOffsetWithMaster,map);
 		pointImage.push_back(ImgPoint);
 		baselineImage.push_back(baselineValue);
 		}
