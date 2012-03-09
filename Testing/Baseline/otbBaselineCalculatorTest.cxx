@@ -69,5 +69,10 @@ int otbBaselineCalculatorTest(int argc, char * argv[])
 
   std::cout << baselineCalculator << std::endl;
 
+  baselineCalculator->FoundMinimumTangentialBaseline();
+  baselineCalculator->Compute(otb::Functor::HorizontalVerticalBaselineFunctor::Horizontal);
+
+  std::cout << baselineCalculator << std::endl;
+
   return EXIT_SUCCESS;
 }
