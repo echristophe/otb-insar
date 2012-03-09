@@ -37,7 +37,7 @@ BaselineCalculator<TFunctor,Dimension>
 ::BaselineCalculator() : m_Region(),
 						 m_BaselineCoefficient(),
 						 m_PlateformPositionToBaselineCalculator(NULL),
-						 m_LineOffsetWithMaster(10.0)
+						 m_LineOffsetWithMaster(0.0)
 {
 }
 
@@ -58,6 +58,19 @@ BaselineCalculator<TFunctor,Dimension>
   this->ExtractBaseline(map, pointImage, baselineImage);
 
   m_BaselineCoefficient = this->BaselineLinearSolve(pointImage,baselineImage);
+}
+
+
+/**
+ * Search the minimum tangential baseline and set the value to LineOffsetWithMaster attribut
+ * 
+ */
+template <class TFunctor,unsigned int Dimension>
+void
+BaselineCalculator<TFunctor,Dimension>
+::FoundMinimumTangentialBaseline() 
+{
+	m_LineOffsetWithMaster = m_PlateformPositionToBaselineCalculator->FoundMinimumTangentialBaseline(m_Region.GetSize()[0]);
 }
 
 

@@ -89,6 +89,9 @@ public:
   itkGetConstMacro(MasterPlateform,PlateformPointer);
   itkGetConstMacro(SlavePlateform,PlateformPointer);
 
+  /** Search minimum tangential baseline */
+  double FoundMinimumTangentialBaseline(unsigned int maxNumberOfRow);
+
 protected:
   PlatformPositionToBaselineCalculator();
   virtual ~PlatformPositionToBaselineCalculator() {};

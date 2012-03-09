@@ -84,6 +84,7 @@ public:
 						std::vector<PointType> & pointImage,
 						std::vector<double> & baselineImage);
 
+  void FoundMinimumTangentialBaseline();
 
 protected:
   BaselineCalculator();
