@@ -118,22 +118,23 @@ PlatformPositionToBaselineCalculator<TFunctor>
 ::FoundMinimumTangentialBaseline(unsigned int maxNumberOfRow)
 {	
 	bool minimumFound = false;
-	double minTangentialBaseline = this->Evaluate(0.0, 0.0, BaselineCalculusEnumType::Tangential);
+	double minTangentialBaseline = std::abs(this->Evaluate(0.0, 0.0, BaselineCalculusEnumType::Tangential));
 	double offsetValue = 1.0;
-	while(!minimumFound || (offsetValue < maxNumberOfRow))
+	while((minimumFound ==false) && (offsetValue < maxNumberOfRow))
 	{
-		double tempTangentialBaseline = this->Evaluate(0.0, offsetValue, BaselineCalculusEnumType::Tangential);
-		if(minTangentialBaseline > tempTangentialBaseline)
+		double tempTangentialBaseline = std::abs(this->Evaluate(0.0, offsetValue, BaselineCalculusEnumType::Tangential));
+		if(minTangentialBaseline >= tempTangentialBaseline)
 		{
 			minTangentialBaseline = tempTangentialBaseline;
+			offsetValue++;
 		}
 		else
 		{
 			minimumFound = true;
+			offsetValue--;
 		}
 	}
-	return minTangentialBaseline;
-
+	return (offsetValue);
 }
 
 
