@@ -97,9 +97,12 @@ PlatformPositionToBaselineCalculator<TFunctor>
 {	
 	bool minimumFound = false;
 	double minTangentialBaseline = std::abs(this->Evaluate(0.0, 0.0, BaselineCalculusEnumType::Tangential));
+
+	/* Positive search */
 	double offsetValue = 1.0;
 	while((minimumFound ==false) && (offsetValue < maxNumberOfRow))
 	{
+
 		double tempTangentialBaseline = std::abs(this->Evaluate(0.0, offsetValue, BaselineCalculusEnumType::Tangential));
 		if(minTangentialBaseline >= tempTangentialBaseline)
 		{
@@ -112,6 +115,27 @@ PlatformPositionToBaselineCalculator<TFunctor>
 			offsetValue--;
 		}
 	}
+
+	/* Negative search */
+	minimumFound = false;
+	offsetValue--;
+	while(minimumFound ==false)
+	{
+
+		double tempTangentialBaseline = std::abs(this->Evaluate(0.0, offsetValue, BaselineCalculusEnumType::Tangential));
+		if(minTangentialBaseline >= tempTangentialBaseline)
+		{
+			minTangentialBaseline = tempTangentialBaseline;
+			offsetValue--;
+		}
+		else
+		{
+			minimumFound = true;
+			offsetValue++;
+		}
+	}
+
+	std::cout <<"offsetValue : " << offsetValue << std::endl;
 	return (offsetValue);
 }
 
