@@ -56,6 +56,8 @@ public:
   itkSetMacro( RTNBaseline, VectorType );
   itkGetConstMacro( RTNBaseline, VectorType  );
 
+  virtual OutputType GetTangentialBaseline() const;
+
 protected:
   BaselineFunctorBase() {};
   ~BaselineFunctorBase() {};
