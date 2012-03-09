@@ -47,7 +47,7 @@ public:
   typedef Superclass::VectorType     VectorType;
   typedef double                     RealType;
 
-  typedef enum {Parallel, Perpendicular} BaselineCalculusEnumType;
+  typedef enum {Parallel, Perpendicular, Tangential} BaselineCalculusEnumType;
 
   OutputType GetBaseline(BaselineCalculusEnumType);
 

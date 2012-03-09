@@ -63,6 +63,11 @@ HorizontalVerticalBaselineFunctor
       return this->GetVerticalBaseline();
       break;
       }
+    case Tangential:
+      {
+      return this->GetTangentialBaseline();
+      break;
+      }	  
     }
 	return 0;
 }
