@@ -61,6 +61,11 @@ LengthOrientationBaselineFunctor
       return this->GetOrientationBaseline();
       break;
       }
+    case Tangential:
+      {
+      return this->GetTangentialBaseline();
+      break;
+      }
     }
 	return 0;
 }

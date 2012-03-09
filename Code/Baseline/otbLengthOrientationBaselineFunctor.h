@@ -60,7 +60,7 @@ public:
 
   typedef Superclass::VectorType     VectorType;
 
-  typedef enum {Length, Orientation } BaselineCalculusEnumType;
+  typedef enum {Length, Orientation, Tangential} BaselineCalculusEnumType;
 
   OutputType GetBaseline(BaselineCalculusEnumType);
 

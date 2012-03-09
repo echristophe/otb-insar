@@ -58,7 +58,7 @@ public:
 
   typedef Superclass::VectorType  VectorType;
 
-  typedef enum {Horizontal, Vertical} BaselineCalculusEnumType;
+  typedef enum {Horizontal, Vertical, Tangential} BaselineCalculusEnumType;
 
 
   virtual OutputType GetHorizontalBaseline() const;
