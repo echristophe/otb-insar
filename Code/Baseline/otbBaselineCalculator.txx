@@ -37,7 +37,7 @@ BaselineCalculator<TFunctor,Dimension>
 ::BaselineCalculator() : m_Region(),
 						 m_BaselineCoefficient(),
 						 m_PlateformPositionToBaselineCalculator(NULL),
-						 m_LineOffsetWithMaster(0.0)
+						 m_LineOffsetWithMaster(10.0)
 {
 }
 
