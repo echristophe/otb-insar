@@ -27,6 +27,14 @@ namespace otb
 namespace Functor
 {
 
+
+BaselineFunctorBase::OutputType
+BaselineFunctorBase
+::GetTangentialBaseline() const
+{
+	return this->GetRTNBaseline().get(1);
+}
+
 void
 BaselineFunctorBase
 ::PrintSelf( std::ostream& os, itk::Indent indent ) const
