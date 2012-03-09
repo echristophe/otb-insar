@@ -110,6 +110,34 @@ PlatformPositionToBaselineCalculator<TFunctor>
 
 
 /**
+ * Search minimum tangential baseline 
+ */
+template <class TFunctor>
+double 
+PlatformPositionToBaselineCalculator<TFunctor>
+::FoundMinimumTangentialBaseline(unsigned int maxNumberOfRow)
+{	
+	bool minimumFound = false;
+	double minTangentialBaseline = this->Evaluate(0.0, 0.0, BaselineCalculusEnumType::Tangential);
+	double offsetValue = 1.0;
+	while(!minimumFound || (offsetValue < maxNumberOfRow))
+	{
+		double tempTangentialBaseline = this->Evaluate(0.0, offsetValue, BaselineCalculusEnumType::Tangential);
+		if(minTangentialBaseline > tempTangentialBaseline)
+		{
+			minTangentialBaseline = tempTangentialBaseline;
+		}
+		else
+		{
+			minimumFound = true;
+		}
+	}
+	return minTangentialBaseline;
+
+}
+
+
+/**
  * Evaluate Baseline in RTN (Radial Tangential Normal) System coordinate 
  */
 template <class TFunctor>
