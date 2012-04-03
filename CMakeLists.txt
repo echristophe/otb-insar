@@ -56,9 +56,33 @@ INCLUDE_DIRECTORIES (
   ${CMAKE_CURRENT_SOURCE_DIR}/Code/InterferogramFormation
   ${CMAKE_CURRENT_SOURCE_DIR}/Code/Coregistration
   ${CMAKE_CURRENT_SOURCE_DIR}/Code/Baseline
+  ${CMAKE_CURRENT_SOURCE_DIR}/Code/BasicFilter
   ${CMAKE_CURRENT_BINARY_DIR}/Code
   ${FFTW3_INCLUDE_DIRS}
 )
+
+# Generate Monteverdi modules
+OPTION(GENERATE_MONTEVERDI_APPLICATION "Generate the Monteverdi application." OFF)
+
+IF(GENERATE_MONTEVERDI_APPLICATION)
+  #Find Monteverdi and load its settings.
+  FIND_PACKAGE(Monteverdi)
+  IF(Monteverdi_FOUND)
+    MESSAGE("Monteverdi use file: ${Monteverdi_USE_FILE}")
+    INCLUDE(${Monteverdi_USE_FILE})
+    INCLUDE_DIRECTORIES(${InSAR_SOURCE_DIR}/Monteverdi/Modules/DynamicFringeViewer/ 
+                        ${InSAR_BINARY_DIR}/Monteverdi/Modules/DynamicFringeViewer/
+                        )
+    SUBDIRS(Monteverdi)
+
+	#IF(BUILD_TESTING)
+	#	ADD_SUBDIRECTORY(Monteverdi/Testing)
+	#ENDIF(BUILD_TESTING)
+
+  ELSE(Monteverdi_FOUND)
+    MESSAGE("Monteverdi not found.  Please set Monteverdi_DIR")
+  ENDIF(Monteverdi_FOUND)
+ENDIF(GENERATE_MONTEVERDI_APPLICATION)
 
 
 SET(InSAR_DATA ${InSAR_SOURCE_DIR}/Data)
