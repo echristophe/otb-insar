@@ -70,7 +70,8 @@ IF(GENERATE_MONTEVERDI_APPLICATION)
   IF(Monteverdi_FOUND)
     MESSAGE("Monteverdi use file: ${Monteverdi_USE_FILE}")
     INCLUDE(${Monteverdi_USE_FILE})
-    INCLUDE_DIRECTORIES(${InSAR_SOURCE_DIR}/Monteverdi/Modules/DynamicFringeViewer/ 
+    INCLUDE_DIRECTORIES(${InSAR_SOURCE_DIR}/Monteverdi/Modules/DynamicFringeViewer/
+	                    ${InSAR_SOURCE_DIR}/Monteverdi/Common/    
                         ${InSAR_BINARY_DIR}/Monteverdi/Modules/DynamicFringeViewer/
                         )
     SUBDIRS(Monteverdi)
