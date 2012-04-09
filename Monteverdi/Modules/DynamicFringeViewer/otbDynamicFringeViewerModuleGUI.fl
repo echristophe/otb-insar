@@ -1,0 +1,297 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0109 
+i18n_type 1 
+i18n_include "otbI18n.h" 
+i18n_function otbGetTextMacro 
+header_name {.h} 
+code_name {.cxx}
+decl {\#include <FLU/Flu_File_Chooser.h>} {public
+} 
+
+class DynamicFringeViewerModuleGUI {open
+} {
+  Function {DynamicFringeViewerModuleGUI()} {return_type void
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {Build()} {open
+  } {
+    Fl_Window bSetupWindow {
+      label {Data properties}
+      callback {this->Quit();} open
+      xywh {925 199 560 343} type Double box PLASTIC_DOWN_BOX color 47 resizable size_range {0 0 785 320} visible
+    } {
+      Fl_Tabs gVectorData {
+        callback {this->TabSetupPosition();} open
+        xywh {0 0 700 340} box PLASTIC_DOWN_BOX resizable
+      } {
+        Fl_Group guiTabData {
+          label Data
+          callback {this->TabSetupPosition();} open selected
+          tooltip {Vector data properties} xywh {0 40 700 275} box PLASTIC_DOWN_BOX color 48 labelfont 1 labelsize 12 labelcolor 186
+        } {
+          Fl_Button bClearAll {
+            label {Pause @||}
+            tooltip {Clear all vector data} xywh {245 250 100 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+          }
+          Fl_Button bDisplay {
+            label {Play @>}
+            tooltip {Clear all vector data} xywh {351 250 100 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+          }
+          Fl_Round_Button guiSlideShowMode {
+            label {Slide show mode}
+            callback {this->ActivateSlideShowMode();}
+            xywh {250 225 200 25} type Radio down_box ROUND_DOWN_BOX shortcut 0x73 value 1 labelfont 2 labelcolor 186
+          }
+          Fl_Button bPreviousImage {
+            label {@< Previous}
+            callback {this->ShowPreviousImage();}
+            tooltip {Display previous image in the list} xywh {20 250 100 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX shortcut 0x70 color 7 labelfont 1 labelsize 12 labelcolor 186
+          }
+          Fl_Button bNextImage {
+            label {Next @>}
+            callback {this->ShowNextImage();}
+            tooltip {Display next image in the list} xywh {125 250 100 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX shortcut 0x6e color 7 labelfont 1 labelsize 12 labelcolor 186
+          }
+          Fl_Value_Slider guiFringeSpeed {
+            label {Fringe Speed}
+            callback {this->SetFringeSpeed();}
+            tooltip {Select the transparency rate of the "transparent image"} xywh {20 175 430 25} type Horizontal box PLASTIC_DOWN_BOX color 23 labelsize 12 labelcolor 186 align 5 when 4 minimum -256 maximum 256 step 1 slider_size 0.01 textsize 14
+          }
+          Fl_Round_Button guiStepByStep {
+            label {Step by step}
+            callback {this->ActivateSlideShowMode();}
+            xywh {20 220 200 30} type Radio down_box ROUND_DOWN_BOX shortcut 0x73 value 1 labelfont 2 labelcolor 186
+          }
+          Fl_Group {} {
+            label {Rendering ColorBar} open
+            tooltip {Image value must be comprise between 0 and 255} xywh {20 69 430 83} box PLASTIC_DOWN_BOX labelfont 1 labelsize 12 labelcolor 186 align 5
+          } {
+            Fl_Group oRenderingColorBar {open
+              xywh {35 80 405 41}
+            } {}
+          }
+        }
+        Fl_Group guiTabSetup {
+          label Setup
+          callback {this->TabSetupPosition();} open
+          xywh {0 30 558 275} box PLASTIC_DOWN_BOX color 48 labelfont 1 labelsize 12 labelcolor 186 hide
+        } {
+          Fl_Button bScreenShot {
+            label {Export to PNG ...}
+            callback {wScreenShot->show();}
+            tooltip {Allows to export the scroll, zoom and full view to png} xywh {15 205 210 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+          }
+          Fl_Group {} {
+            label {Windows layout} open
+            xywh {15 113 210 82} box PLASTIC_DOWN_FRAME
+          } {
+            Fl_Round_Button guiViewerSetupSplittedLayout {
+              label {Splitted windows layout}
+              callback {this->SplittedLayout();}
+              tooltip {Show informations in independent windows} xywh {28 125 185 25} type Radio box PLASTIC_DOWN_FRAME down_box ROUND_DOWN_BOX color 7 selection_color 22 labelcolor 186
+            }
+            Fl_Round_Button guiViewerSetupPackedLayout {
+              label {Packed windows layout}
+              callback {this->PackedLayout();}
+              tooltip {Show informations in integrated windows} xywh {28 158 185 25} type Radio box PLASTIC_DOWN_FRAME down_box ROUND_DOWN_BOX value 1 color 7 selection_color 22 labelcolor 186
+            }
+          }
+          Fl_Group {} {open
+            xywh {10 54 355 42}
+          } {
+            Fl_Group {} {
+              label {Select ColorMap} open
+              tooltip {Image value must be comprise between 0 and 255} xywh {10 54 355 41} box PLASTIC_DOWN_BOX labelfont 1 labelsize 12 labelcolor 186 align 5
+            } {
+              Fl_Group {} {open
+                xywh {36 65 151 20}
+              } {
+                Fl_Choice iColorMap {
+                  callback {this->UpdateColorBar();
+this->ColorMappingProcess();}
+                  xywh {36 65 151 20} down_box BORDER_BOX labelcolor 186
+                } {
+                  MenuItem {} {
+                    label Red
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Green
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Blue
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Grey
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Hot
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Cool
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Spring
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Summer
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Autumn
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Winter
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Copper
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Jet
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label HSV
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label OverUnder
+                    xywh {10 10 100 20}
+                  }
+                  MenuItem {} {
+                    label Relief
+                    xywh {10 10 100 20}
+                  }
+                }
+              }
+              Fl_Group oColorBar {open
+                xywh {210 66 135 20}
+              } {}
+            }
+          }
+        }
+      }
+      Fl_Return_Button bQuit {
+        label Quit
+        callback {this->Quit();}
+        xywh {370 315 80 25} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX shortcut 0x71 color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+      Fl_Button bShowHide {
+        label Show
+        callback {this->ShowHide();}
+        xywh {280 315 80 25} box PLASTIC_DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+    }
+  }
+  Function {BuildScreenShot()} {return_type {virtual void}
+  } {
+    Fl_Window wScreenShot {
+      label Screenshots open
+      xywh {374 302 260 175} type Double box PLASTIC_DOWN_BOX color 55 labelfont 1 labelsize 12 labelcolor 186 hide resizable
+    } {
+      Fl_Check_Button rbScreenZoom {
+        label {Save zoom view}
+        xywh {20 20 20 20} down_box DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+      Fl_Check_Button rbScreenFull {
+        label {Save full view}
+        xywh {20 57 20 20} down_box DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+      Fl_Check_Button rbScreenNav {
+        label {Save navigation view}
+        xywh {20 95 20 20} down_box DOWN_BOX color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+      Fl_Button {} {
+        label Ok
+        callback {ScreenShot();}
+        tooltip {Save changes and leave viewer set up interface} xywh {90 142 75 23} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX shortcut 0xff0d color 7 selection_color 23 labelfont 1 labelsize 12 labelcolor 186
+      }
+      Fl_Return_Button gQuitScreen {
+        label Quit
+        callback {wScreenShot->hide();}
+        xywh {175 142 64 23} box PLASTIC_DOWN_BOX down_box PLASTIC_DOWN_BOX shortcut 0xff1b color 7 labelfont 1 labelsize 12 labelcolor 186
+      }
+    }
+  }
+  Function {~DynamicFringeViewerModuleGUI()} {return_type virtual
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ViewerSetupOk()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {TabSetupPosition()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ShowHide()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {Quit()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {SplittedLayout()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {PackedLayout()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {SetFringeSpeed()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ActivateSlideShowMode()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ShowPreviousImage()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ShowNextImage()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ScreenShot()} {return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {UpdateColorBar()} {open return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+  Function {ColorMappingProcess()} {open return_type {virtual void}
+  } {
+    comment {for fluid 1.3} {in_source not_in_header
+    }
+  }
+} 
