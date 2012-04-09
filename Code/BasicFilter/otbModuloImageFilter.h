@@ -27,8 +27,8 @@ namespace otb
 /** \class ModuloImageFilter
  * \brief Computes the function Modulo pixel-wise
  *
- * Every output pixel is equal to x Modulo K . where x is the intensity of the
- * homologous input pixel, and K is a user-provided constant.
+ * Every output pixel is equal to (x+a) Modulo K . where x is the intensity of the
+ * homologous input pixel, a us a offset provided by user and K is a user-provided constant.
  * 
  * \ingroup IntensityImageFilters  Multithreaded
  *
@@ -39,12 +39,12 @@ template< class TInput, class TOutput>
 class Modulo
 {
 public:
-  Modulo() { m_Factor = 1.0; }
+  Modulo() { m_Factor = 1.0; m_Offset =0.0; }
   ~Modulo() {};
 
   bool operator!=( const Modulo & other ) const
     {
-    if( m_Factor != other.m_Factor )
+		if( (m_Factor != other.m_Factor) && (m_Offset != other.m_Offset) )
       {
       return true;
       }
@@ -57,7 +57,8 @@ public:
   
   inline TOutput operator()( const TInput & A ) const
     {
-    return static_cast<TOutput>( static_cast<double>(A) - floor(static_cast<double>(A) /m_Factor)* m_Factor );
+    double tempValue = static_cast<double>(A) - m_Offset;
+    return static_cast<TOutput>( tempValue - floor(static_cast<double>(tempValue) /m_Factor)* m_Factor );
     }
 
   void SetFactor( double factor )
@@ -68,8 +69,17 @@ public:
     {
     return m_Factor;
     }
+  void SetOffset( double offset )
+    {
+    m_Offset = offset;
+    }
+  double GetOffset() const
+    {
+    return m_Offset;
+    }
 private:
   double  m_Factor;
+  double  m_Offset;
 }; 
 }
 template <class TInputImage, class TOutputImage>
@@ -104,6 +114,17 @@ public:
       return;
       }
     this->GetFunctor().SetFactor( factor );
+    this->Modified();
+    }
+
+
+  void SetOffset( double offset )
+    {
+    if( offset == this->GetFunctor().GetOffset() ) 
+      {
+      return;
+      }
+    this->GetFunctor().SetOffset( offset );
     this->Modified();
     }
 
