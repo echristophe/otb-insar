@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<MULTIVARIATERATIONAL_TRANSFORM_FILE>
+    <SPACE_DIMENSION VALUE="2" />
+    <NUMERATOR_DEGREE VALUE="2" />
+    <DENOMINATOR_DEGREE VALUE="0" />
+    <COEFFICIENT_LIST>
+        <DIMENSION INDEX="0">
+            <NUMERATOR_COEFFICIENT>
+                <COEFFICIENT>
+                  <DEGREE DIMENSION="0" VALUE="0" />
+                  <DEGREE DIMENSION="1" VALUE="0" />
+                  <VALUE>1.0</VALUE> 
+                </COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="1" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>5.0</VALUE>
+              </COEFFICIENT>
+            </NUMERATOR_COEFFICIENT>
+            <DENOMINATOR_COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="0" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>1.0</VALUE>
+              </COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="1" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>5.0</VALUE>
+              </COEFFICIENT>
+            </DENOMINATOR_COEFFICIENT>
+        </DIMENSION>
+        <DIMENSION INDEX="1">
+            <NUMERATOR_COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="0" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>1.0</VALUE>
+              </COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="1" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>5.0</VALUE>
+              </COEFFICIENT>
+            </NUMERATOR_COEFFICIENT>
+            <DENOMINATOR_COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="0" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>1.0</VALUE>
+              </COEFFICIENT>
+              <COEFFICIENT>
+                <DEGREE DIMENSION="0" VALUE="1" />
+                <DEGREE DIMENSION="1" VALUE="0" />
+                <VALUE>5.0</VALUE>
+              </COEFFICIENT>
+            </DENOMINATOR_COEFFICIENT>
+        </DIMENSION>
+    </COEFFICIENT_LIST>
+</RATIONAL_TRANSFORM_FILE>
