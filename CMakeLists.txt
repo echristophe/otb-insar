@@ -41,7 +41,11 @@ ENDIF(INSAR_DATA_USE_LARGEINPUT)
 #-------------------------------
 # External libraries
 #-------------------------------
-INCLUDE(ImportVTK)
+FIND_PACKAGE(VTK QUIET)
+IF(VTK_FOUND)
+	MESSAGE(STATUS "VTK Found")
+	INCLUDE(${VTK_USE_FILE})
+ENDIF(VTK_FOUND)
 
 #-------------------------------
 # Librairie FFTW
@@ -75,10 +79,6 @@ IF(GENERATE_MONTEVERDI_APPLICATION)
                         ${InSAR_BINARY_DIR}/Monteverdi/Modules/DynamicFringeViewer/
                         )
     SUBDIRS(Monteverdi)
-
-	#IF(BUILD_TESTING)
-	#	ADD_SUBDIRECTORY(Monteverdi/Testing)
-	#ENDIF(BUILD_TESTING)
 
   ELSE(Monteverdi_FOUND)
     MESSAGE("Monteverdi not found.  Please set Monteverdi_DIR")
