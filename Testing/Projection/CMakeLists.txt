@@ -31,34 +31,11 @@ ${TEMP}/otbMultivariateRationalTransformOutput.txt
 -10 -10
 )
 
-# -------      otb::MultivariateRationalTransformXMLFileReader -----------------------------------
- 
-ADD_TEST(prTuMultivariateRationalTransformXMLFileReaderNew ${PROJECTION_TESTS} 
-	otbMultivariateRationalTransformXMLFileReaderNew)
-
-ADD_TEST(prTvMultivariateRationalTransformXMLFileReader ${PROJECTION_TESTS} 
-	otbMultivariateRationalTransformXMLFileReader
-        ${BASELINE_FILES}/otbMultivariateRationalTransform_test.xml
-        )
-
-# -------      otb::MultivariateRationalTransformXMLFileWriter -----------------------------------
- 
-ADD_TEST(prTuHpMultivariateRationalTransformXMLFileWriterNew ${PROJECTION_TESTS} 
-	otbMultivariateRationalTransformXMLFileWriterNew)
-
-ADD_TEST(prTvHpMultivariateRationalTransformXMLFileWriter ${PROJECTION_TESTS} 
-	otbMultivariateRationalTransformXMLFileWriter
-        ${TEMP}/otbTvHpMultivariateRationalTransformXMLFileWriter_output.xml
-        )
 
 
 SET(PROJECTION_SRCS
 otbProjectionTests.cxx
 otbMultivariateRationalTransform.cxx
-otbMultivariateRationalTransformXMLFileReaderNew.cxx
-otbMultivariateRationalTransformXMLFileReader.cxx
-otbMultivariateRationalTransformXMLFileWriterNew.cxx
-otbMultivariateRationalTransformXMLFileWriter.cxx
 )
 
 
